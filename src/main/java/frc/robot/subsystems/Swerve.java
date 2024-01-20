@@ -52,7 +52,7 @@ public class Swerve extends SubsystemBase {
    * Standard deviations of the vision measurements. Increase these numbers to trust global measurements from vision
    * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and radians.
    */
-  private static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(15));
+  private static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(5));
 
   public Swerve() {
     gyro = new Pigeon2(Constants.Swerve.pigeonID);
@@ -135,9 +135,9 @@ public class Swerve extends SubsystemBase {
     Pose2d pose = LimelightHelpers.getBotPose2d("limelight");
     Translation2d poseTranslation = pose.getTranslation();
 
-    // Get the position of the primary tag. If it's further than 2.5 meters away, discard the data.
+    // Get the position of the primary tag. If it's further than 5 meters away, discard the data.
     double distance = LimelightHelpers.getTargetPose3d_CameraSpace("limelight").getTranslation().getDistance(new Translation3d());
-    if(distance > 2.5) return;
+    if(distance > 5) return;
 
     // Offset the pose to the center of the field because the limelight returns (0, 0)
     // as the center instead of (16.45, 8.09). This should probably be fixed in
@@ -150,11 +150,23 @@ public class Swerve extends SubsystemBase {
     double[] botpose = LimelightHelpers.getBotPose("limelight");
     if(botpose.length == 0) return;
 
-    addVisionMeasurement(fixedPose, botpose[6]);
+    // Scale the vision measurement expected standard deviation exponentially by the distance 
+    double standardDeviationScalar = Math.max(0, 0.2 * Math.pow(2.2, distance) - 0.03);
+    // SmartDashboard.putNumber("Limelight closest tag distance", distance);
+    // SmartDashboard.putNumber("Limelight standard deviation scalar", standardDeviationScalar);
+    // SmartDashboard.putString("Vision measurement predicted standard deviation", 
+    //   "(" + Math.round(visionMeasurementStdDevs.get(0, 0) * standardDeviationScalar * 1000) / 1000. + ", " +
+    //   Math.round(visionMeasurementStdDevs.get(1, 0) * standardDeviationScalar * 1000) / 1000. + ", " +
+    //   Math.round(visionMeasurementStdDevs.get(2, 0) * standardDeviationScalar * 1000) / 1000. + ")");
+    addVisionMeasurement(fixedPose, botpose[6], standardDeviationScalar);
   }
 
-  public void addVisionMeasurement(Pose2d pose, double timestamp) {
-    swerveOdometry.addVisionMeasurement(pose, Timer.getFPGATimestamp() - (timestamp / 1000.0));
+  public void addVisionMeasurement(Pose2d pose, double pipelineLatency, double standardDeviationScalar) {
+    swerveOdometry.addVisionMeasurement(
+      pose,
+      Timer.getFPGATimestamp() - (pipelineLatency / 1000.0),
+      visionMeasurementStdDevs.times(standardDeviationScalar)
+    );
   }
 
   /**
