@@ -38,6 +38,7 @@ public class RobotContainer {
 
   /* Controllers */
   private final Joystick driver = new Joystick(0);
+  
   private final XboxController operator = new XboxController(1);
 
   /* Drive Controls */
