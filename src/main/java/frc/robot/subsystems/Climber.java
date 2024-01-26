@@ -11,15 +11,21 @@ import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 
 // List class features here, including any motors, sensors, and functionality:
-public class Template extends SubsystemBase {
+public class Climber extends SubsystemBase {
   // Declare member variables here
+  private CANSparkMax leftClimberMotor;
+  private CANSparkMax rightClimberMotor;
 
+  private RelativeEncoder leftClimberEncoder;
+  private RelativeEncoder rightClimberEncoder;
 
-
-
-
-  public Template() {
+  public Climber() {
     // Instantiate member variables and necessary code
+    leftClimberMotor = new CANSparkMax(81, CANSparkMax.MotorType.kBrushless);
+    rightClimberMotor = new CANSparkMax(82, CANSparkMax.MotorType.kBrushless);
+    
+    leftClimberEncoder = leftClimberMotor.getEncoder();
+    rightClimberEncoder = rightClimberMotor.getEncoder();
 
   }  
 
