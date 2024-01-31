@@ -1,5 +1,6 @@
 package frc.robot;
 
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -134,7 +135,7 @@ public final class Constants {
     }
   }
 
-  public static final class AutoConstants {
+  public static final class Auto {
     public static final double kMaxSpeedMetersPerSecond = 3; //3.25
     public static final double kMaxAccelerationMetersPerSecondSquared = 3;
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
@@ -148,5 +149,56 @@ public final class Constants {
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
         new TrapezoidProfile.Constraints(
             kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
+  }
+
+  public static final class Launcher {
+    public static final int topRollerCANID = 59;
+    public static final int bottomRollerCANID = 52;
+    public static final int angleMotorCANID = 27;
+    public static final int angleMotorID = 0;
+
+    public static final IdleMode rollerIdleMode = CANSparkMax.IdleMode.kCoast;
+    /**
+     * The current limit for the launch rollers, in amps, per motor.
+     */
+    public static final int rollerCurrentLimit = 30;
+    
+    /* Roller motor PID Values */
+    public static final double rollerKP = 0.5;
+    public static final double rollerKI = 0.0;
+    public static final double rollerKD = 0.0;
+    public static final double rollerKFF = 0.0;
+
+    public static final IdleMode angleIdleMode = CANSparkMax.IdleMode.kBrake;
+    /**
+     * The current limit for the launch rollers, in amps, per motor.
+     */
+    public static final int angleCurrentLimit = 30;
+    
+    /* Roller motor PID Values */
+    public static final double angleKP = 0.5;
+    public static final double angleKI = 0.0;
+    public static final double angleKD = 0.0;
+    public static final double angleKFF = 0.0;
+    
+    /* Launcher Voltage Compensation */
+    public static final double voltageComp = 12.0;
+
+    /**
+     * The launch roller velocity in revolutions per minute.
+     */
+    public static final double launchRollerVelocity = 4340.0;
+
+    public static final double angleMotorGearboxReduction = 125;
+
+    /**
+     * The conch angle offset, in degrees. 0 degrees should be where the axle sits at the lowest point.
+     */
+    public static final double angleOffset = 0;
+
+    /**
+     * If we should invert the angle motor direction.
+     */
+    public static final boolean invertAngle = false;
   }
 }

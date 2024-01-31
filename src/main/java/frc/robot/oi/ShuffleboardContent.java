@@ -19,11 +19,9 @@ public class ShuffleboardContent {
                 .getLayout(swerveModuleHeader, BuiltInLayouts.kList).withPosition(moduleNumber * 2, 0)
                 .withSize(2, 3).withProperties(Map.of("Label position", "LEFT"));
 
-        swerveModuleLayout.addNumber("Position (" + modulePositionAbbreviation + ")",
-                () -> module.getRelativeAngle());
-        swerveModuleLayout.addNumber("CAN Angular Position (" + modulePositionAbbreviation + ")",
-                () -> module.getAbsoluteModuleAngle());
-        swerveModuleLayout.addNumber("Encoder Angular Position (" + modulePositionAbbreviation + ")",
+        swerveModuleLayout.addNumber("ABS Angular Position (" + modulePositionAbbreviation + ")",
+                () -> module.getAbsoluteModuleAngleDegrees());
+        swerveModuleLayout.addNumber("Angular Position (" + modulePositionAbbreviation + ")",
                 () -> module.getRelativeAngle());
         swerveModuleLayout.addNumber("Velocity (" + modulePositionAbbreviation + ")",
                 () -> module.getVelocity());

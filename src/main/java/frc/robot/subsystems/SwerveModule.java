@@ -32,7 +32,7 @@ public class SwerveModule {
 
   private RelativeEncoder driveEncoder;
   private RelativeEncoder integratedAngleEncoder;
-  private CANcoder angleEncoder;
+  private CANcoder absoluteAngleEncoder;
 
   private final SparkPIDController driveController;
   private final SparkPIDController angleController;
@@ -46,7 +46,7 @@ public class SwerveModule {
     angleOffset = moduleConstants.angleOffset;
 
     /* Angle Encoder Config */
-    angleEncoder = new CANcoder(moduleConstants.cancoderID);
+    absoluteAngleEncoder = new CANcoder(moduleConstants.cancoderID);
     configAngleEncoder();
 
     /* Angle Motor Config */
@@ -78,14 +78,14 @@ public class SwerveModule {
   }
 
   private void resetToAbsolute() {
-    double absolutePositionDegrees = getAbsoluteModuleAngle() - angleOffset.getDegrees();
+    double absolutePositionDegrees = getAbsoluteModuleAngleDegrees() - angleOffset.getDegrees();
     integratedAngleEncoder.setPosition(absolutePositionDegrees);
   }
 
   private void configAngleEncoder() {
-    angleEncoder.getConfigurator().apply(new CANcoderConfiguration());
-    CANCoderUtil.setCANCoderBusUsage(angleEncoder, CCUsage.kMinimal);
-    angleEncoder.getConfigurator().apply(Robot.ctreConfigs.swerveCanCoderConfig);
+    absoluteAngleEncoder.getConfigurator().apply(new CANcoderConfiguration());
+    CANCoderUtil.setCANCoderBusUsage(absoluteAngleEncoder, CCUsage.kMinimal);
+    absoluteAngleEncoder.getConfigurator().apply(Robot.ctreConfigs.swerveCanCoderConfig);
   }
 
   private void configAngleMotor() {
@@ -149,8 +149,8 @@ public class SwerveModule {
     return integratedAngleEncoder.getPosition();
   }
 
-  public double getAbsoluteModuleAngle() {
-    return angleEncoder.getAbsolutePosition().getValueAsDouble() * 360.;
+  public double getAbsoluteModuleAngleDegrees() {
+    return absoluteAngleEncoder.getAbsolutePosition().getValueAsDouble() * 360.;
   }
 
   public double getVelocity() {
@@ -162,7 +162,7 @@ public class SwerveModule {
   }
 
   public Rotation2d getCANcoderAbsoluteAngle() {
-    return Rotation2d.fromDegrees(getAbsoluteModuleAngle());
+    return Rotation2d.fromDegrees(getAbsoluteModuleAngleDegrees());
   }
 
   public SwerveModuleState getState() {
@@ -193,7 +193,7 @@ public class SwerveModule {
   }
 
   public StatusSignal<MagnetHealthValue> getMagnetFieldStrength() {
-    return angleEncoder.getMagnetHealth();
+    return absoluteAngleEncoder.getMagnetHealth();
   }
 
 }
