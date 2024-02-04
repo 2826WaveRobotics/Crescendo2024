@@ -11,10 +11,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
+import frc.robot.subsystems.Launcher;
 import frc.robot.subsystems.Swerve;
 
 public class TeleopSwerve extends CommandBase {
   private Swerve swerveSubsystem;
+  // private Launcher launchSubsystem;
   /**
    * A supplier for X velocity values.
    * When constructing this command, we pass a lambda expression to return the current X velocity. This supplier provides that.
@@ -51,17 +53,23 @@ public class TeleopSwerve extends CommandBase {
 
   public TeleopSwerve(
       Swerve swerveSubsystem,
+      // Launcher launchSubsystem,
       DoubleSupplier xVelocitySupplier,
       DoubleSupplier yVelocitySupplier,
       DoubleSupplier rotationSupplier,
       BooleanSupplier fieldRelativeSupplier) {
     this.swerveSubsystem = swerveSubsystem;
+    // this.launchSubsystem = launchSubsystem;
     addRequirements(swerveSubsystem);
 
     this.xVelocitySupplier = xVelocitySupplier;
     this.yVelocitySupplier = yVelocitySupplier;
     this.rotationSupplier = rotationSupplier;
     this.fieldRelativeSupplier = fieldRelativeSupplier;
+  }
+
+  @Override
+  public void initialize() {
   }
 
   @Override

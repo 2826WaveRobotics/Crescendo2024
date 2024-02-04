@@ -25,6 +25,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.subsystems.*;
+import frc.robot.commands.DisableLaunch;
+import frc.robot.commands.LaunchNode;
 import frc.robot.commands.TeleopSwerve;;
 
 /**
@@ -34,11 +36,12 @@ import frc.robot.commands.TeleopSwerve;;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+
   private final SendableChooser<Command> autoChooser;
 
   /* Controllers */
   private final Joystick driver = new Joystick(0);
-  
+
   private final XboxController operator = new XboxController(1);
 
   /* Drive Controls */
@@ -51,22 +54,26 @@ public class RobotContainer {
       new JoystickButton(driver, XboxController.Button.kY.value);
   private final JoystickButton robotCentric =
       new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
-      // TESTING
-      private final JoystickButton updateOdometryPose = 
+  // TESTING
+  private final JoystickButton updateOdometryPose = 
       new JoystickButton(driver, XboxController.Button.kB.value);
 
   /* Subsystems */
   private final Swerve swerveSubsystem = new Swerve();
+  private final Launcher launcherSubsystem;
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
     swerveSubsystem.setDefaultCommand(
         new TeleopSwerve(
             swerveSubsystem,
+            // launcherSubsystem,
             () -> -driver.getRawAxis(translationAxis),
             () -> -driver.getRawAxis(strafeAxis),
             () -> -driver.getRawAxis(rotationAxis),
             () -> !robotCentric.getAsBoolean()));
+
+    launcherSubsystem = new Launcher(operator);
 
     // Configure the button bindings
     configureButtonBindings();
@@ -88,8 +95,22 @@ public class RobotContainer {
     updateOdometryPose.onTrue(new InstantCommand(() -> {
       swerveSubsystem.updateOdometryPose();
     }));
+
+    /* Operator Buttons */
+    final JoystickButton buttonA = new JoystickButton(operator, XboxController.Button.kA.value);
+    buttonA.onTrue(new LaunchNode(launcherSubsystem));
+
+    final JoystickButton rightBumper = new JoystickButton(operator, XboxController.Button.kRightBumper.value);
+    rightBumper.onTrue(new DisableLaunch(launcherSubsystem));
+  }
+  
+  public XboxController getOperator() {
+    return operator;
   }
 
+  public Launcher getLauncher(){
+    return launcherSubsystem;
+  }
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *

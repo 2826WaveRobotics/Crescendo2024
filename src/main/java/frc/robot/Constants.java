@@ -94,42 +94,42 @@ public final class Constants {
     /* Module Specific Constants */
     /* Front Left Module - Module 0 */
     public static final class Mod0 {
-      public static final int driveMotorID = 16;
-      public static final int angleMotorID = 43;
-      public static final int canCoderID = 7;
+      public static final int driveMotorID = 11;
+      public static final int angleMotorID = 12;
+      public static final int canCoderID = 13;
       // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(187);
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(8.4);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(35);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
 
     /* Front Right Module - Module 1 */
     public static final class Mod1 {
-      public static final int driveMotorID = 6;
-      public static final int angleMotorID = 17;
-      public static final int canCoderID = 5;
+      public static final int driveMotorID = 21;
+      public static final int angleMotorID = 22;
+      public static final int canCoderID = 23;
       // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(303.5);
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(122.4);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(103.1);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
 
     /* Back Left Module - Module 2 */
     public static final class Mod2 {
-      public static final int driveMotorID = 18;
-      public static final int angleMotorID = 38;
-      public static final int canCoderID = 8;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(310);
+      public static final int driveMotorID = 31;
+      public static final int angleMotorID = 32;
+      public static final int canCoderID = 33;
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(166.9);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
 
     /* Back Right Module - Module 3 */
     public static final class Mod3 {
-      public static final int driveMotorID = 3;
-      public static final int angleMotorID = 12;
-      public static final int canCoderID = 4;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(169.2);
+      public static final int driveMotorID = 41;
+      public static final int angleMotorID = 42;
+      public static final int canCoderID = 43;
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(307.35);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -163,11 +163,11 @@ public final class Constants {
      */
     public static final int rollerCurrentLimit = 30;
     
-    /* Roller motor PID Values */
-    public static final double rollerKP = 0.5;
+    /* launcher Roller motor PID Values */
+    public static final double rollerKP = 6e-5;
     public static final double rollerKI = 0.0;
     public static final double rollerKD = 0.0;
-    public static final double rollerKFF = 0.0;
+    public static final double rollerKFF = 0.000175; 
 
     public static final IdleMode angleIdleMode = CANSparkMax.IdleMode.kBrake;
     /**
@@ -175,11 +175,11 @@ public final class Constants {
      */
     public static final int angleCurrentLimit = 30;
     
-    /* Roller motor PID Values */
-    public static final double angleKP = 0.5;
+    /* launcher ANGLE motor PID Values */
+    public static final double angleKP = 6e-5;
     public static final double angleKI = 0.0;
     public static final double angleKD = 0.0;
-    public static final double angleKFF = 0.0;
+    public static final double angleKFF = 0.000175; 
     
     /* Launcher Voltage Compensation */
     public static final double voltageComp = 12.0;
@@ -187,7 +187,9 @@ public final class Constants {
     /**
      * The launch roller velocity in revolutions per minute.
      */
-    public static final double launchRollerVelocity = 4340.0;
+    // public static final double launchRollerVelocity = 4340.0;
+    public static final double launchRollerVelocity = 2100.0;
+    public static final double maxRollerVelocity = 6000.0;
 
     public static final double angleMotorGearboxReduction = 125;
 
