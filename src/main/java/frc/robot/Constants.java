@@ -18,9 +18,9 @@ public final class Constants {
     public static final boolean invertGyro = false; // Always ensure Gyro is CCW+ CW-
 
     /* Drivetrain Constants */
-    public static final double trackWidth = Units.inchesToMeters(22);//21.73); //22
+    public static final double trackWidth = Units.inchesToMeters(20);
     // distance between centers of right and left wheels on robot
-    public static final double wheelBase = Units.inchesToMeters(24);//21.73); //27
+    public static final double wheelBase = Units.inchesToMeters(21);
     public static final double wheelDiameter = Units.inchesToMeters(4.0); //4
     public static final double wheelCircumference = wheelDiameter * Math.PI;
 
@@ -37,8 +37,8 @@ public final class Constants {
         new SwerveDriveKinematics(
             new Translation2d(wheelBase / 2.0, trackWidth / 2.0),     // fl
             new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),    // fr
-            new Translation2d(-wheelBase / 2.0, trackWidth / 2.0),    // bl
-            new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0));  // br
+            new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0),   // bl
+            new Translation2d(-wheelBase / 2.0, trackWidth / 2.0));   // br
 
     /* Swerve Voltage Compensation */
     public static final double voltageComp = 12.0;
@@ -171,12 +171,12 @@ public final class Constants {
 
     public static final IdleMode angleIdleMode = CANSparkMax.IdleMode.kBrake;
     /**
-     * The current limit for the launch rollers, in amps, per motor.
+     * The current limit for the angle motor, in amps.
      */
-    public static final int angleCurrentLimit = 30;
+    public static final int angleCurrentLimit = 10;
     
     /* launcher ANGLE motor PID Values */
-    public static final double angleKP = 6e-5;
+    public static final double angleKP = 0.1;
     public static final double angleKI = 0.0;
     public static final double angleKD = 0.0;
     public static final double angleKFF = 0.000175; 
@@ -185,18 +185,29 @@ public final class Constants {
     public static final double voltageComp = 12.0;
 
     /**
-     * The launch roller velocity in revolutions per minute.
+     * The idle launch roller velocity in revolutions per minute.
      */
-    // public static final double launchRollerVelocity = 4340.0;
-    public static final double launchRollerVelocity = 2100.0;
-    public static final double maxRollerVelocity = 6000.0;
+    public static final double launchRollerVelocity = 1500.0;
+    /**
+     * The launch roller velocity, when shooting, in revolutions per minute.
+     */
+    // public static final double maxRollerVelocity = 4340.0;
+    public static final double maxRollerVelocity = 1700.0;
 
-    public static final double angleMotorGearboxReduction = 125;
+    public static final Rotation2d softStopMarginLow = Rotation2d.fromDegrees(10);
+    public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(45);
+
+    /**
+     * The maximum rate of change of the launch roller velocity, in RPM per second.
+     */
+    public static final double launchVelocityRateLimit = 50000.;
+
+    public static final double angleMotorGearboxReduction = Math.pow(5.23, 3);
 
     /**
      * The conch angle offset, in degrees. 0 degrees should be where the axle sits at the lowest point.
      */
-    public static final double angleOffset = 0;
+    public static final double angleOffset = 108;
 
     /**
      * If we should invert the angle motor direction.

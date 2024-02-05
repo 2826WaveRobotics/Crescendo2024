@@ -21,13 +21,11 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
-import frc.robot.commands.DisableLaunch;
-import frc.robot.commands.LaunchNode;
-import frc.robot.commands.TeleopSwerve;;
+import frc.robot.commands.TeleopSwerve;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -92,16 +90,17 @@ public class RobotContainer {
     /* Driver Buttons */
     zeroGyro.onTrue(new InstantCommand(swerveSubsystem::zeroGyro));
 
-    updateOdometryPose.onTrue(new InstantCommand(() -> {
-      swerveSubsystem.updateOdometryPose();
-    }));
+    updateOdometryPose.onTrue(new InstantCommand(swerveSubsystem::updateOdometryPose));
 
     /* Operator Buttons */
     final JoystickButton buttonA = new JoystickButton(operator, XboxController.Button.kA.value);
-    buttonA.onTrue(new LaunchNode(launcherSubsystem));
+    buttonA.onTrue(new InstantCommand(() -> {
+      System.out.println("Rollers fast");
+      launcherSubsystem.launchRollersFast();
+    }));
 
     final JoystickButton rightBumper = new JoystickButton(operator, XboxController.Button.kRightBumper.value);
-    rightBumper.onTrue(new DisableLaunch(launcherSubsystem));
+    rightBumper.onTrue(new InstantCommand(launcherSubsystem::launchRollersSlow));
   }
   
   public XboxController getOperator() {
