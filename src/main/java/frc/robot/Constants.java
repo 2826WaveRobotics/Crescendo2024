@@ -214,4 +214,37 @@ public final class Constants {
      */
     public static final boolean invertAngle = false;
   }
+
+  public static final class Intake {
+    public static final double voltageComp = 12.0;
+
+    /* Intake motors' PID Values */
+    public static final double intakeKP = 6e-5;
+    public static final double intakeKI = 0.0;
+    public static final double intakeKD = 0.0;
+    public static final double intakeKFF = 0.000175;
+
+    public static final IdleMode intakeIdleMode = IdleMode.kCoast;
+
+    /**
+     * The current limit for each intake motor.
+     */
+    public static final int intakeCurrentLimit = 5;
+
+    /**
+     * The belt pulley radius, in meters.
+     */
+    public static final double beltPulleyRadius = Units.inchesToMeters(15.0 / 16.0);
+
+    /**
+     * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at)
+     * when the intake trigger is fully held down, in meters per second.
+     */
+    public static final double maximumIntakeSpeed = 0.25;
+
+    /**
+     * The deadband on the intake trigger.
+     */
+    public static final double intakeDeadband = 0.03;
+  }
 }

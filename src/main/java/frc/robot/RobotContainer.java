@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
+import frc.robot.commands.TeleopIntake;
 import frc.robot.commands.TeleopSwerve;
 
 /**
@@ -56,22 +57,31 @@ public class RobotContainer {
   private final JoystickButton updateOdometryPose = 
       new JoystickButton(driver, XboxController.Button.kB.value);
 
+
+  /* Operator Buttons */
+  private static final int intakeSpeedAxis = XboxController.Axis.kRightTrigger.value;
+
   /* Subsystems */
   private final Swerve swerveSubsystem = new Swerve();
-  private final Launcher launcherSubsystem;
+  private final Launcher launcherSubsystem = new Launcher(operator);
+  private final Intake intakeSubsystem = new Intake();
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
     swerveSubsystem.setDefaultCommand(
-        new TeleopSwerve(
-            swerveSubsystem,
-            // launcherSubsystem,
-            () -> -driver.getRawAxis(translationAxis),
-            () -> -driver.getRawAxis(strafeAxis),
-            () -> -driver.getRawAxis(rotationAxis),
-            () -> !robotCentric.getAsBoolean()));
+      new TeleopSwerve(
+        swerveSubsystem,
+        () -> -driver.getRawAxis(translationAxis),
+        () -> -driver.getRawAxis(strafeAxis),
+        () -> -driver.getRawAxis(rotationAxis),
+        () -> !robotCentric.getAsBoolean()
+      ));
 
-    launcherSubsystem = new Launcher(operator);
+    intakeSubsystem.setDefaultCommand(
+      new TeleopIntake(
+        intakeSubsystem,
+        () -> operator.getRawAxis(intakeSpeedAxis)
+      ));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -100,7 +110,7 @@ public class RobotContainer {
     }));
 
     final JoystickButton rightBumper = new JoystickButton(operator, XboxController.Button.kRightBumper.value);
-    rightBumper.onTrue(new InstantCommand(launcherSubsystem::launchRollersSlow));
+    rightBumper.onTrue(new InstantCommand(launcherSubsystem::launchRollersSlow));  
   }
   
   public XboxController getOperator() {
