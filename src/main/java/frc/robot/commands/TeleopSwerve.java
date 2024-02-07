@@ -4,17 +4,15 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
-import frc.robot.LimelightHelpers;
 import frc.robot.subsystems.Swerve;
 
-public class TeleopSwerve extends CommandBase {
+public class TeleopSwerve extends Command {
   private Swerve swerveSubsystem;
+  
   /**
    * A supplier for X velocity values.
    * When constructing this command, we pass a lambda expression to return the current X velocity. This supplier provides that.
@@ -62,6 +60,10 @@ public class TeleopSwerve extends CommandBase {
     this.yVelocitySupplier = yVelocitySupplier;
     this.rotationSupplier = rotationSupplier;
     this.fieldRelativeSupplier = fieldRelativeSupplier;
+  }
+
+  @Override
+  public void initialize() {
   }
 
   @Override

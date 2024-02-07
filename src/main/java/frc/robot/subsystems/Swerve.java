@@ -83,6 +83,7 @@ public class Swerve extends SubsystemBase {
       visionMeasurementStdDevs
     );
 
+    // utility used to build auto paths
     AutoBuilder.configureHolonomic(
       this::getPose, // Robot pose supplier
       this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
