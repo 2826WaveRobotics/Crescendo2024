@@ -4,6 +4,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -34,14 +35,15 @@ public class Launcher extends SubsystemBase {
   private final SparkPIDController bottomLaunchRollerPIDController;
   private final SparkPIDController anglePIDController;
 
-  private final XboxController operatorController;
+  // private final XboxController operatorController;
+  private final Joystick operatorController;
   private SlewRateLimiter launchVelocitySlewLimiter;
   private double launchVelocityTarget = 0;
   
-  double launcherAngle = 45;
-  double launcherSpeed = 1800;
+  double launcherAngle = 0; //45;
+  double launcherSpeed =  1200; //3700;
   
-  public Launcher(XboxController controller) {
+  public Launcher(Joystick controller) {
     // Instantiate member variables and necessary code
     topRollerMotor = new CANSparkMax(Constants.Launcher.topRollerCANID, CANSparkMax.MotorType.kBrushless);
     bottomRollerMotor = new CANSparkMax(Constants.Launcher.bottomRollerCANID, CANSparkMax.MotorType.kBrushless);

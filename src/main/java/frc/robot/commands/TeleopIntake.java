@@ -4,41 +4,47 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.subsystems.Intake;
 
 public class TeleopIntake extends Command {
-  private Intake intakeSubsystem;
-  
-  /**
-   * A double supplier for the intake's speed, from 0 to 1. Gets the value from the intake speed axis.
-   */
-  private DoubleSupplier intakeSpeedSupplier;
+    private Intake intakeSubsystem;
 
-  /**
-   * Limits the rate of change of the intake speed.
-   */
-  private SlewRateLimiter intakeSpeedLimiter = new SlewRateLimiter(3.0);
+    // Driver controller
+    private Joystick driver;
 
-  public TeleopIntake(
-      Intake intakeSubsystem,
-      DoubleSupplier intakeSpeedSupplier) {
-    this.intakeSubsystem = intakeSubsystem;
-    addRequirements(intakeSubsystem);
+    public TeleopIntake(
+            Intake intakeSubsystem,
+            Joystick driver) {
+        this.intakeSubsystem = intakeSubsystem;
+        addRequirements(intakeSubsystem);
 
-    this.intakeSpeedSupplier = intakeSpeedSupplier;
-  }
+        this.driver = driver;
+    }
 
-  @Override
-  public void initialize() {
-  }
+    @Override
+    public void initialize() {
+        /**
+         * A trigger for the intake toggle button, from 0 to 1. Gets the value from
+         * the intake speed axis.
+         */
+        Trigger intakeTrigger  = new Trigger (() -> {
+            return driver.getRawAxis(XboxController.Axis.kRightTrigger.value) > Constants.Intake.intakeDeadband;
+        });
 
-  @Override
-  public void execute() {
-    /* Get Values, Deadband */
-    double intakeSpeed = intakeSpeedLimiter.calculate(MathUtil.applyDeadband(intakeSpeedSupplier.getAsDouble(), Constants.Intake.intakeDeadband));
+        intakeTrigger.onTrue(new InstantCommand(() -> 
+            intakeSubsystem.intakeOn()
+        ));
 
-    intakeSubsystem.setIntakeSpeed(intakeSpeed * Constants.Intake.maximumIntakeSpeed);
-  }
+        intakeTrigger.onFalse(new InstantCommand(() -> 
+            intakeSubsystem.intakeOff()
+        ));
+
+    }
 }

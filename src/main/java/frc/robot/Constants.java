@@ -216,6 +216,10 @@ public final class Constants {
   }
 
   public static final class Intake {
+    public static final int frontIntakeMotorCANID = 46;
+    // public static final int backIntakeMotorCANID = 51; // FIXME - Only 2 motors
+    public static final int beltIntakeMotorCANID = 4;
+      
     public static final double voltageComp = 12.0;
 
     /* Intake motors' PID Values */
@@ -229,7 +233,7 @@ public final class Constants {
     /**
      * The current limit for each intake motor.
      */
-    public static final int intakeCurrentLimit = 5;
+    public static final int intakeCurrentLimit = 20;
 
     /**
      * The belt pulley radius, in meters.
@@ -237,14 +241,107 @@ public final class Constants {
     public static final double beltPulleyRadius = Units.inchesToMeters(15.0 / 16.0);
 
     /**
-     * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at)
-     * when the intake trigger is fully held down, in meters per second.
+     * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at), in meters per second.
      */
-    public static final double maximumIntakeSpeed = 0.25;
+    public static final double intakeSpeed = 0.25;
+
+    /**
+     * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at)
+     * when ejecting notes. This happens when we accidentally intake two notes. When this happens,
+     * the front and back intake rollers run quickly in reverse to eject the note.
+     */
+    public static final double ejectSpeedMetersPerSecond = 0.5;
 
     /**
      * The deadband on the intake trigger.
      */
     public static final double intakeDeadband = 0.03;
+  }
+
+  public static final class Elevator {
+    /**
+     * The DIO port of the through beam sensor detecting if notes are in the intake.
+     */
+    public static final int intakeSensorDIOPort = 2;
+    /**
+     * The DIO port of the through beam sensor detecting if the note is in position.
+     */
+    public static final int noteInPositionSensorDIOPort = 3;
+    /**
+     * The DIO port of the through beam sensor detecting if the note is transitioning to the resting position.
+     */
+    public static final int noteInTransitionSensorDIOPort = 4;
+
+    public static final int positionMotorCANID = 10;
+    public static final int angleMotorCANID = 11;
+
+    public static final IdleMode elevatorIdleMode = CANSparkMax.IdleMode.kCoast;
+    /**
+     * The current limit for the elevator position motor, in amps, per motor.
+     */
+    public static final int extRetCurrentLimit = 30;
+    
+    /* Elevator position motor PID Values */
+    public static final double elevatorKP = 6e-5;
+    public static final double elevatorKI = 0.0;
+    public static final double elevatorKD = 0.0;
+    public static final double elevatorKFF = 0.000175; 
+
+    public static final IdleMode eAngleIdleMode = CANSparkMax.IdleMode.kBrake;
+    /**
+     * The current limit for the elevator angle motor, in amps.
+     */
+    public static final int eAngleCurrentLimit = 10;
+    
+    /* Elevator ANGLE motor PID Values */
+    public static final double eAngleKP = 0.1;
+    public static final double eAngleKI = 0.0;
+    public static final double eAngleKD = 0.0;
+    public static final double eAngleKFF = 0.000175; 
+    
+    /* Elevator Voltage Compensation */
+    public static final double voltageComp = 12.0;
+  
+    /**
+     * If we should invert the angle motor direction.
+     */
+    public static final boolean invertAngle = false;
+    /**
+     * If we should invert the position motor direction.
+     */
+    public static final boolean invertPosition = false;
+
+    /**
+     * The maximum velocity of the elevator, meters per second.
+     */
+    public static final double elevatorVelocity = 10;
+
+    /**
+     * The ratio of the gearbox (including the ratio created by the cascade elevator linkage).
+     */
+    public static final double elevatorPositionGearboxRatio = 25. / 3.;
+  }
+  
+  public static final class Transport {
+    public static final int upperTransportMotorCANID = 57;
+    public static final int lowerTransportMotorCANID = 54;
+
+    public static final IdleMode transportIdleMode = CANSparkMax.IdleMode.kCoast;
+    /**
+     * The current limit for the launch rollers, in amps, per motor.
+     */
+    public static final int transportCurrentLimit = 5;
+    public static final double voltageComp = 12;
+    
+    /* launcher Roller motor PID Values */
+    public static final double upperTransportKP = 6e-5;
+    public static final double upperTransportKI = 0.0;
+    public static final double upperTransportKD = 0.0;
+    public static final double upperTransportKFF = 0.000175; 
+    
+    public static final double lowerTransportKP = 6e-5;
+    public static final double lowerTransportKI = 0.0;
+    public static final double lowerTransportKD = 0.0;
+    public static final double lowerTransportKFF = 0.000175; 
   }
 }

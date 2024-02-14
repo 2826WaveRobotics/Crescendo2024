@@ -16,64 +16,139 @@ import frc.robot.Constants;
 // This is the intake subsystem where the intake is fully internal in the robot
 public class Intake extends SubsystemBase {
   // Declare member variables here
-  private CANSparkMax primaryIntakeMotor;
-  private CANSparkMax secondaryIntakeMotor;
+  private CANSparkMax frontIntakeMotor;
+  private CANSparkMax backIntakeMotor;
+  private CANSparkMax beltIntakeMotor;
 
-  private SparkPIDController primaryIntakePIDController;
-  private SparkPIDController secondaryIntakePIDController;
+  private SparkPIDController frontIntakePIDController;
+  private SparkPIDController backIntakePIDController;
+  private SparkPIDController beltIntakePIDController;
 
   public Intake() {
     // Instantiate member variables and necessary code
-    primaryIntakeMotor = new CANSparkMax(51, CANSparkMax.MotorType.kBrushless);
-    secondaryIntakeMotor = new CANSparkMax(52, CANSparkMax.MotorType.kBrushless);
+    frontIntakeMotor = new CANSparkMax(Constants.Intake.frontIntakeMotorCANID, CANSparkMax.MotorType.kBrushless);
+    // backIntakeMotor = new CANSparkMax(Constants.Intake.backIntakeMotorCANID, CANSparkMax.MotorType.kBrushless); // FIXME - only 2 motors
+    beltIntakeMotor = new CANSparkMax(Constants.Intake.beltIntakeMotorCANID, CANSparkMax.MotorType.kBrushless);
 
-    primaryIntakePIDController = primaryIntakeMotor.getPIDController();
-    secondaryIntakePIDController = secondaryIntakeMotor.getPIDController();
+    frontIntakePIDController = frontIntakeMotor.getPIDController();
+    // backIntakePIDController = backIntakeMotor.getPIDController();
+    beltIntakePIDController = beltIntakeMotor.getPIDController();
     
     configMotorControllers();
   }
 
   
   public void configMotorControllers() {
-    primaryIntakeMotor.restoreFactoryDefaults();
-    CANSparkMaxUtil.setCANSparkMaxBusUsage(primaryIntakeMotor, Usage.kPositionOnly);
-    primaryIntakeMotor.setSmartCurrentLimit(Constants.Intake.intakeCurrentLimit);
-    primaryIntakeMotor.setIdleMode(Constants.Intake.intakeIdleMode);
-    primaryIntakePIDController.setP(Constants.Intake.intakeKP);
-    primaryIntakePIDController.setI(Constants.Intake.intakeKI);
-    primaryIntakePIDController.setD(Constants.Intake.intakeKD);
-    primaryIntakePIDController.setFF(Constants.Intake.intakeKFF);
-    primaryIntakeMotor.enableVoltageCompensation(Constants.Intake.voltageComp);
-    primaryIntakeMotor.burnFlash();
+    frontIntakeMotor.restoreFactoryDefaults();
+    // CANSparkMaxUtil.setCANSparkMaxBusUsage(frontIntakeMotor, Usage.kPositionOnly);
+    frontIntakeMotor.setSmartCurrentLimit(Constants.Intake.intakeCurrentLimit);
+    frontIntakeMotor.setIdleMode(Constants.Intake.intakeIdleMode);
+    frontIntakePIDController.setP(Constants.Intake.intakeKP);
+    frontIntakePIDController.setI(Constants.Intake.intakeKI);
+    frontIntakePIDController.setD(Constants.Intake.intakeKD);
+    frontIntakePIDController.setFF(Constants.Intake.intakeKFF);
+    frontIntakeMotor.enableVoltageCompensation(Constants.Intake.voltageComp);
+    frontIntakeMotor.burnFlash();
     
-    secondaryIntakeMotor.restoreFactoryDefaults();
-    CANSparkMaxUtil.setCANSparkMaxBusUsage(secondaryIntakeMotor, Usage.kPositionOnly);
-    secondaryIntakeMotor.setSmartCurrentLimit(Constants.Intake.intakeCurrentLimit);
-    secondaryIntakeMotor.setIdleMode(Constants.Intake.intakeIdleMode);
-    secondaryIntakePIDController.setP(Constants.Intake.intakeKP);
-    secondaryIntakePIDController.setI(Constants.Intake.intakeKI);
-    secondaryIntakePIDController.setD(Constants.Intake.intakeKD);
-    secondaryIntakePIDController.setFF(Constants.Intake.intakeKFF);
-    secondaryIntakeMotor.enableVoltageCompensation(Constants.Intake.voltageComp);
-    secondaryIntakeMotor.burnFlash();
+    // backIntakeMotor.restoreFactoryDefaults();
+    // CANSparkMaxUtil.setCANSparkMaxBusUsage(backIntakeMotor, Usage.kPositionOnly);
+    // backIntakeMotor.setSmartCurrentLimit(Constants.Intake.intakeCurrentLimit);
+    // backIntakeMotor.setIdleMode(Constants.Intake.intakeIdleMode);
+    // backIntakePIDController.setP(Constants.Intake.intakeKP);
+    // backIntakePIDController.setI(Constants.Intake.intakeKI);
+    // backIntakePIDController.setD(Constants.Intake.intakeKD);
+    // backIntakePIDController.setFF(Constants.Intake.intakeKFF);
+    // backIntakeMotor.enableVoltageCompensation(Constants.Intake.voltageComp);
+    // backIntakeMotor.burnFlash();
+    
+    beltIntakeMotor.restoreFactoryDefaults();
+    // CANSparkMaxUtil.setCANSparkMaxBusUsage(beltIntakeMotor, Usage.kPositionOnly);
+    beltIntakeMotor.setSmartCurrentLimit(Constants.Intake.intakeCurrentLimit);
+    beltIntakeMotor.setIdleMode(Constants.Intake.intakeIdleMode);
+    beltIntakePIDController.setP(Constants.Intake.intakeKP);
+    beltIntakePIDController.setI(Constants.Intake.intakeKI);
+    beltIntakePIDController.setD(Constants.Intake.intakeKD);
+    beltIntakePIDController.setFF(Constants.Intake.intakeKFF);
+    beltIntakeMotor.enableVoltageCompensation(Constants.Intake.voltageComp);
+    beltIntakeMotor.burnFlash();
+  }
+
+  double desiredSpeedMetersPerSecond = 0;
+  /**
+   * If we're currently ejecting a note.
+   * This happens when we accidentally intake two notes.
+   * When this is true, the front and back intake rollers
+   * run quickly in reverse to eject the note.
+   */
+  boolean isEjectingNote = false;
+
+  /**
+   * Returns if the intake is currently active, meaning the speed is nonzero.
+   * @return
+   */
+  public boolean isActive() {
+    return desiredSpeedMetersPerSecond != 0;
+  }
+
+  /**
+   * Sets the intake active. False sets the speed to 0 and true sets the speed to `Constants.Intake.intakeSpeed`.
+   * @param active
+   */
+  public void setActive(boolean active) {
+    setIntakeSpeed(active ? Constants.Intake.intakeSpeed : 0);
   }
 
   /**
    * Sets the intake motors to the given speed.
    * @param speed The speed the the belt/edge of intake wheels will move at, in meters per second.
    */
-  public void setIntakeSpeed(double speedInMetersPerSecond) {
-    double beltPulleyCircumference = Constants.Intake.beltPulleyRadius * Math.PI * 2;
-    double revolutionsPerSecond = speedInMetersPerSecond / beltPulleyCircumference;
-    double rpm = revolutionsPerSecond * 60;
+  private void setIntakeSpeed(double speedInMetersPerSecond) {
+    desiredSpeedMetersPerSecond = speedInMetersPerSecond;
+  }
 
-    primaryIntakePIDController.setReference(rpm, ControlType.kVelocity);
-    secondaryIntakePIDController.setReference(rpm, ControlType.kVelocity);
+  /**
+   * TESTING - TURN INTAKE ON
+   */
+  public void intakeOn() {
+    frontIntakePIDController.setReference(5500, ControlType.kVelocity);
+    beltIntakePIDController.setReference(5500, ControlType.kVelocity); //from -5500, changed to 3000 for testing - Ben
+  }
+
+  /**
+   * TESTING - TURN INTAKE OFF
+   */
+  public void intakeOff() {
+    frontIntakePIDController.setReference(0, ControlType.kVelocity);
+    beltIntakePIDController.setReference(0, ControlType.kVelocity);
+  }
+
+  /**
+   * Begin ejecting the note currently in the intake.  
+   * This happens when we accidentally intake two notes.
+   */
+  public void ejectNote() {
+    isEjectingNote = true;
+  }
+
+  /**
+   * Begin ejecting the note currently in the intake.  
+   * This happens when we accidentally intake two notes.
+   */
+  public void stopEjectingNote() {
+    isEjectingNote = false;
   }
 
   @Override
   public void periodic() {
-    // Insert periodic code here
+    // TESTING - REMOVING LOGIC
+    // double speedMetersPerSecond = isEjectingNote ? -Constants.Intake.ejectSpeedMetersPerSecond : desiredSpeedMetersPerSecond;
     
+    // double beltPulleyCircumference = Constants.Intake.beltPulleyRadius * Math.PI * 2;
+    // double revolutionsPerSecond = speedMetersPerSecond / beltPulleyCircumference;
+    // double rpm = revolutionsPerSecond * 60;
+
+    // frontIntakePIDController.setReference(rpm, ControlType.kVelocity);
+    // // backIntakePIDController.setReference(-rpm, ControlType.kVelocity); // FIXME - Only 2 motors
+    // beltIntakePIDController.setReference(-rpm, ControlType.kVelocity);
   }
 }

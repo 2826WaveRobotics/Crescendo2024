@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
 import frc.robot.commands.TeleopIntake;
 import frc.robot.commands.TeleopSwerve;
+import frc.robot.commands.TeleopTransport;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -40,8 +41,7 @@ public class RobotContainer {
 
   /* Controllers */
   private final Joystick driver = new Joystick(0);
-
-  private final XboxController operator = new XboxController(1);
+  private final Joystick operator = new Joystick(1);
 
   /* Drive Controls */
   private static final int translationAxis = XboxController.Axis.kLeftY.value;
@@ -53,18 +53,18 @@ public class RobotContainer {
       new JoystickButton(driver, XboxController.Button.kY.value);
   private final JoystickButton robotCentric =
       new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
-  // TESTING
   private final JoystickButton updateOdometryPose = 
       new JoystickButton(driver, XboxController.Button.kB.value);
 
-
+  // FIXME - Remove?
   /* Operator Buttons */
-  private static final int intakeSpeedAxis = XboxController.Axis.kRightTrigger.value;
+  // private static final int intakeSpeedAxis = XboxController.Axis.kRightTrigger.value;
 
   /* Subsystems */
   private final Swerve swerveSubsystem = new Swerve();
   private final Launcher launcherSubsystem = new Launcher(operator);
   private final Intake intakeSubsystem = new Intake();
+  private final Transport transportSubsystem = new Transport();
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
@@ -80,9 +80,16 @@ public class RobotContainer {
     intakeSubsystem.setDefaultCommand(
       new TeleopIntake(
         intakeSubsystem,
-        () -> operator.getRawAxis(intakeSpeedAxis)
+        driver
       ));
-
+    
+    transportSubsystem.setDefaultCommand(
+      new TeleopTransport(
+        transportSubsystem, 
+        driver, 
+        operator
+    ));
+    
     // Configure the button bindings
     configureButtonBindings();
 
@@ -112,12 +119,12 @@ public class RobotContainer {
     final JoystickButton rightBumper = new JoystickButton(operator, XboxController.Button.kRightBumper.value);
     rightBumper.onTrue(new InstantCommand(launcherSubsystem::launchRollersSlow));  
   }
-  
-  public XboxController getOperator() {
+
+  public Joystick getOperator() {
     return operator;
   }
 
-  public Launcher getLauncher(){
+  public Launcher getLauncher() {
     return launcherSubsystem;
   }
   /**
