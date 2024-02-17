@@ -35,13 +35,12 @@ public class Launcher extends SubsystemBase {
   private final SparkPIDController bottomLaunchRollerPIDController;
   private final SparkPIDController anglePIDController;
 
-  // private final XboxController operatorController;
   private final Joystick operatorController;
   private SlewRateLimiter launchVelocitySlewLimiter;
   private double launchVelocityTarget = 0;
   
-  double launcherAngle = 0; //45;
-  double launcherSpeed =  1200; //3700;
+  double launcherAngle = 45;
+  double launcherSpeed =  1200;
   
   public Launcher(Joystick controller) {
     // Instantiate member variables and necessary code

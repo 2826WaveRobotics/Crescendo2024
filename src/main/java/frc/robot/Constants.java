@@ -266,11 +266,11 @@ public final class Constants {
     /**
      * The DIO port of the through beam sensor detecting if the note is in position.
      */
-    public static final int noteInPositionSensorDIOPort = 3;
+    public static final int noteInPositionSensorDIOPort = 4;
     /**
      * The DIO port of the through beam sensor detecting if the note is transitioning to the resting position.
      */
-    public static final int noteInTransitionSensorDIOPort = 4;
+    public static final int noteInTransitionSensorDIOPort = 6;
 
     public static final int positionMotorCANID = 10;
     public static final int angleMotorCANID = 11;
@@ -315,11 +315,43 @@ public final class Constants {
      * The maximum velocity of the elevator, meters per second.
      */
     public static final double elevatorVelocity = 10;
+    
+    /**
+     * The number of rotations on the elevator extension motor required to fully extend the elevator. 
+     */
+    public static final double rotationsForFullExtension = 65.57;
+    /**
+     * The total extension height of the elevator, in meters.
+     */
+    public static final double totalElevatorExtensionHeight = 1.016;
 
     /**
-     * The ratio of the gearbox (including the ratio created by the cascade elevator linkage).
+     * The target height of the elevator when it's fully extended.
      */
-    public static final double elevatorPositionGearboxRatio = 25. / 3.;
+    public static final double elevatorExtendedHeight = 0.9;
+
+    /**
+     * The angle of the elevator when it's tilted upward.
+     */
+    public static final double elevatorUpAngle = 90;
+
+    /**
+     * The speed that the elevator angle motor should run at when changing angles.
+     */
+    public static final double angleSpeed = 10;
+
+    /**
+     * The DIO port of the elevator angle through-bore absolute encoder.
+     */
+    public static final int elevatorAbsoluteEncoderDIOPort = 8;
+    /**
+     * The angle offset of the elevator absolute encoder.
+     */
+    public static final double elevatorAbsoluteEncoderOffset = 0;
+    /**
+     * If we should invert the elevator absolute encoder.
+     */
+    public static final boolean invertAngleAbsoluteEncoder = false;
   }
   
   public static final class Transport {
@@ -334,14 +366,18 @@ public final class Constants {
     public static final double voltageComp = 12;
     
     /* launcher Roller motor PID Values */
-    public static final double upperTransportKP = 6e-5;
-    public static final double upperTransportKI = 0.0;
-    public static final double upperTransportKD = 0.0;
-    public static final double upperTransportKFF = 0.000175; 
-    
-    public static final double lowerTransportKP = 6e-5;
-    public static final double lowerTransportKI = 0.0;
-    public static final double lowerTransportKD = 0.0;
-    public static final double lowerTransportKFF = 0.000175; 
+    public static final double transportKP = 6e-5;
+    public static final double transportKI = 0.0;
+    public static final double transportKD = 0.0;
+    public static final double transportKFF = 0.000175;
+
+    /**
+     * The speed that notes are moved into the launcher to shoot, in meters per second.
+     */
+    public static final double launchNoteTransportSpeed = 5;
+    /**
+     * The speed that notes are moved out of the transport for putting them into the trap, in meters per second.
+     */
+    public static final double trapEjectSpeed = 1;
   }
 }

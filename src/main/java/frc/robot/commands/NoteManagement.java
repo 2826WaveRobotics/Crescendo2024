@@ -3,9 +3,11 @@ package frc.robot.commands;
 import java.util.HashMap;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
 import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Transport;
 
 public class NoteManagement extends Command {
     /**
@@ -68,16 +70,53 @@ public class NoteManagement extends Command {
         );
     }
 
-    private Intake intakeSubsystem;
     private Elevator elevatorSubsystem;
+    private Transport transportSubsystem;
+    private Trigger launchNoteTrigger;
 
     public NoteManagement(
-            Intake intakeSubsystem,
-            Elevator elevatorSubsystem) {
-        this.intakeSubsystem = intakeSubsystem;
+            Elevator elevatorSubsystem,
+            Transport transportSubsystem,
+            Trigger launchNoteTrigger) {
         this.elevatorSubsystem = elevatorSubsystem;
+        this.transportSubsystem = transportSubsystem;
+        this.launchNoteTrigger = launchNoteTrigger;
 
-        addRequirements(intakeSubsystem, elevatorSubsystem);
+        addRequirements(transportSubsystem, elevatorSubsystem);
+    }
+
+    /**
+     * If we're currently launching a note.
+     */
+    private boolean launchingNote = false;
+
+    /**
+     * If we're currently ejecting the note for trapping.
+     */
+    private boolean ejectingNoteForTrap = false;
+
+    /**
+     * Launches a note. This is mostly temporary logic.
+     */
+    public void launchNote() {
+        if(currentState != NoteState.ReadyToLaunch) return;
+        
+        launchingNote = true;
+        new WaitCommand(0.5).andThen(new InstantCommand(() -> {
+            launchingNote = false;
+        })).schedule();
+    }
+
+    /**
+     * Ejects the current note for the trap.
+     */
+    public void ejectNoteForTrap() {
+        // TODO: This should only work when the elevator is tilted up. We don't store that state yet, though.
+
+        ejectingNoteForTrap = true;
+        new WaitCommand(0.5).andThen(new InstantCommand(() -> {
+            ejectingNoteForTrap = false;
+        })).schedule();
     }
 
     @Override
@@ -85,17 +124,25 @@ public class NoteManagement extends Command {
         Trigger ejecting = new Trigger(() -> {
             return currentState == NoteState.EjectingNote;
         });
-        ejecting.onTrue(new InstantCommand(() -> intakeSubsystem.ejectNote()));
-        ejecting.onFalse(new InstantCommand(() -> intakeSubsystem.stopEjectingNote()));
+        ejecting.onTrue(new InstantCommand(() -> transportSubsystem.ejectNote()));
+        ejecting.onFalse(new WaitCommand(0.5).andThen(new InstantCommand(() -> transportSubsystem.stopEjectingNote())));
 
-        Trigger readyToLaunch = new Trigger(() -> {
-            return currentState == NoteState.ReadyToLaunch;
-        });
-        readyToLaunch.onTrue(new InstantCommand(() -> intakeSubsystem.setActive(false)));
+        Trigger readyToLaunch = new Trigger(() -> currentState == NoteState.ReadyToLaunch);
+        readyToLaunch.onTrue(new InstantCommand(() -> transportSubsystem.setActive(false)));
+
+        launchNoteTrigger.onTrue(new InstantCommand(this::launchNote));
     }
 
     @Override
     public void execute() {
-        updateNoteState();        
+        updateNoteState();
+        
+        double upperTransportSpeed = 0;
+        if(launchingNote) {
+            upperTransportSpeed = Constants.Transport.launchNoteTransportSpeed;
+        } else if(ejectingNoteForTrap) {
+            upperTransportSpeed = Constants.Transport.trapEjectSpeed;
+        }
+        transportSubsystem.setUpperTransportSpeed(upperTransportSpeed);
     }
 }

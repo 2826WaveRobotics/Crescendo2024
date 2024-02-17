@@ -11,19 +11,19 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Transport;
 
 public class TeleopIntake extends Command {
-    private Intake intakeSubsystem;
+    private Transport transportSubsystem;
 
     // Driver controller
     private Joystick driver;
 
     public TeleopIntake(
-            Intake intakeSubsystem,
+            Transport transportSubsystem,
             Joystick driver) {
-        this.intakeSubsystem = intakeSubsystem;
-        addRequirements(intakeSubsystem);
+        this.transportSubsystem = transportSubsystem;
+        addRequirements(transportSubsystem);
 
         this.driver = driver;
     }
@@ -39,12 +39,7 @@ public class TeleopIntake extends Command {
         });
 
         intakeTrigger.onTrue(new InstantCommand(() -> 
-            intakeSubsystem.intakeOn()
+            transportSubsystem.setActive(!transportSubsystem.isActive())
         ));
-
-        intakeTrigger.onFalse(new InstantCommand(() -> 
-            intakeSubsystem.intakeOff()
-        ));
-
     }
 }

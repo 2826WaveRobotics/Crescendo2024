@@ -1,41 +1,64 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.CANSparkMaxUtil;
 import frc.lib.util.CANSparkMaxUtil.Usage;
 import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
-    // Elevator Motor to extend and retract the Elevator
-    private CANSparkMax elevatorExtRetMotor;
+    /**
+     * The states that the elevator can be in.
+     */
+    public enum ElevatorState {
+        /**
+         * The state where the elevator is contracted and angled downward (pointing toward the launcher).
+         */
+        Stowed,
+        /**
+         * The state where the elevator is contracted but angled upward (perpendicular to the robot base).
+         */
+        AngledUp, 
+        /**
+         * The state where the elevator is extended and angled upward.
+         */
+        Extended
+    }
 
-    // Elevator Motor to swing up and down the Elevator
+    public ElevatorState currentState = ElevatorState.Stowed;
+
+    /**
+     * The elevator motor that extends and retracts the elevator
+     */
+    private CANSparkMax elevatorExtensionMotor;
+
+    /**
+     * The elevator motor that changes the angle of the elevator
+     */
     private CANSparkMax elevatorAngleMotor;
 
-    // Saves location og the Elevator in the vertical direction
-    private RelativeEncoder elevatorExtRetEncoder;
+    private RelativeEncoder elevatorExtensionEncoder;
 
-    // Saves location of the Elevator angle (normally swing from straight up to the Launcher position)
     private RelativeEncoder elevatorAngleEncoder;
 
     // Internal PID Controller for the Elevator extend-retract Motor
-    private SparkPIDController elevatorExtRetPIDController;
+    private SparkPIDController elevatorExtensionPIDController;
 
     // Internal PID Controller for the Elevator angular position
     private SparkPIDController elevatorAnglePIDController;
 
-    // Current command to move the elevator angular direction
-    private double targetElevatorAngle;
-
-    // Current commanded velocity to extend and retract the elevator
-    private double targetElevatorPosition;
+    /**
+     * The through-bore absolute encoder on the elevator axis.
+     */
+    private DutyCycleEncoder elevatorAngleAbsoluteEncoder;
 
     /**
      * The through beam sensor for detecting if notes are in the intake.
@@ -76,40 +99,37 @@ public class Elevator extends SubsystemBase {
     }
 
     public Elevator() {
-        elevatorExtRetMotor = new CANSparkMax(Constants.Elevator.positionMotorCANID, MotorType.kBrushless);
-        elevatorExtRetMotor.setInverted(false);
+        elevatorExtensionMotor = new CANSparkMax(Constants.Elevator.positionMotorCANID, MotorType.kBrushless);
+        elevatorExtensionMotor.setInverted(false);
         elevatorAngleMotor = new CANSparkMax(Constants.Elevator.angleMotorCANID, MotorType.kBrushless);
         elevatorAngleMotor.setInverted(false);
 
-        elevatorExtRetEncoder = elevatorExtRetMotor.getEncoder();
+        elevatorExtensionEncoder = elevatorExtensionMotor.getEncoder();
         elevatorAngleEncoder = elevatorAngleMotor.getEncoder();
 
-        elevatorExtRetMotor.restoreFactoryDefaults();
+        elevatorExtensionMotor.restoreFactoryDefaults();
         elevatorAngleMotor.restoreFactoryDefaults();
 
-        elevatorExtRetPIDController = elevatorExtRetMotor.getPIDController();
+        elevatorExtensionPIDController = elevatorExtensionMotor.getPIDController();
         elevatorAnglePIDController = elevatorAngleMotor.getPIDController();
 
+        elevatorAngleAbsoluteEncoder = new DutyCycleEncoder(Constants.Elevator.elevatorAbsoluteEncoderDIOPort);
+
         configMotorControllers();
-
-        // temporary for testing
-        targetElevatorPosition = 0; //1000; 
-        targetElevatorAngle = 0;
-
     }
 
     public void configMotorControllers() {
-        elevatorExtRetMotor.restoreFactoryDefaults();
-        CANSparkMaxUtil.setCANSparkMaxBusUsage(elevatorExtRetMotor, Usage.kPositionOnly);
-        elevatorExtRetMotor.setSmartCurrentLimit(Constants.Elevator.extRetCurrentLimit);
-        elevatorExtRetMotor.setIdleMode(Constants.Elevator.elevatorIdleMode);
-        elevatorExtRetPIDController.setP(Constants.Elevator.elevatorKP);
-        elevatorExtRetPIDController.setD(Constants.Elevator.elevatorKD);
-        elevatorExtRetPIDController.setI(Constants.Elevator.elevatorKI);
-        elevatorExtRetPIDController.setFF(Constants.Elevator.elevatorKFF);
-        elevatorExtRetMotor.enableVoltageCompensation(Constants.Elevator.voltageComp);
-        elevatorExtRetMotor.setInverted(Constants.Elevator.invertPosition);
-        elevatorExtRetMotor.burnFlash();
+        elevatorExtensionMotor.restoreFactoryDefaults();
+        CANSparkMaxUtil.setCANSparkMaxBusUsage(elevatorExtensionMotor, Usage.kPositionOnly);
+        elevatorExtensionMotor.setSmartCurrentLimit(Constants.Elevator.extRetCurrentLimit);
+        elevatorExtensionMotor.setIdleMode(Constants.Elevator.elevatorIdleMode);
+        elevatorExtensionPIDController.setP(Constants.Elevator.elevatorKP);
+        elevatorExtensionPIDController.setD(Constants.Elevator.elevatorKD);
+        elevatorExtensionPIDController.setI(Constants.Elevator.elevatorKI);
+        elevatorExtensionPIDController.setFF(Constants.Elevator.elevatorKFF);
+        elevatorExtensionMotor.enableVoltageCompensation(Constants.Elevator.voltageComp);
+        elevatorExtensionMotor.setInverted(Constants.Elevator.invertPosition);
+        elevatorExtensionMotor.burnFlash();
            
         elevatorAngleMotor.restoreFactoryDefaults();
         CANSparkMaxUtil.setCANSparkMaxBusUsage(elevatorAngleMotor, Usage.kPositionOnly);
@@ -122,24 +142,73 @@ public class Elevator extends SubsystemBase {
         elevatorAngleMotor.enableVoltageCompensation(Constants.Elevator.voltageComp);
         elevatorAngleMotor.setInverted(Constants.Elevator.invertAngle);
         elevatorAngleMotor.burnFlash();
-    }    
-    
-    @Override
-    public void periodic() {
-        // Elevator extend-retract command
-        elevatorExtRetPIDController.setReference(targetElevatorPosition * Constants.Elevator.elevatorPositionGearboxRatio, CANSparkMax.ControlType.kVelocity);
-
-        // Elevator angular movement command
-        elevatorAnglePIDController.setReference(targetElevatorAngle, CANSparkMax.ControlType.kPosition);
-
     }
 
     /**
-     * Runs the elevator upward until it 
+     * Resets the extension motor encoder.
      */
-    public void extendElevator() {        
+    public void resetExtensionEncoder() {
+        elevatorExtensionEncoder.setPosition(0);
     }
 
-    public void retractElevator() {
+    /**
+     * Resets the elevator angle encoder.
+     */
+    public void resetAngleEncoder() {
+        elevatorAngleAbsoluteEncoder.reset();
+    }
+
+    /**
+     * Gets the extension height of the elevator, relative to when `resetExtensionEncoder` was last called.
+     * @return
+     */
+    public double getExtensionHeight() {
+        return elevatorExtensionEncoder.getPosition()
+            / Constants.Elevator.rotationsForFullExtension
+            * Constants.Elevator.totalElevatorExtensionHeight;
+    }
+
+    /**
+     * Sets the extension motor speed in RPM. Positive numbers move the elevator downward.  
+     * // TODO: We should probably use a PID based on position.
+     * @param speed The target speed, in RPM.
+     */
+    public void setExtensionSpeed(double speed) {
+        elevatorExtensionPIDController.setReference(speed, ControlType.kVelocity);
+    }
+
+    /**
+     * Sets the angle motor speed in RPM. Positive numbers rotate toward the intake side of the robot, which is the direction of the elevator pointing upward.
+     * @param speed
+     */
+    public void setAngleSpeed(double speed) {
+        elevatorAnglePIDController.setReference(speed, ControlType.kVelocity);
+    }
+
+    /**
+     * Checks if the extension motor is currently stalling.
+     * @return
+     */
+    public boolean extensionMotorIsStalling() {
+        // TODO: Figure out the real number.
+        return elevatorExtensionMotor.getOutputCurrent() > 10;
+    }
+
+    /**
+     * Checks if the angle motor is currently stalling.
+     * @return
+     */
+    public boolean angleMotorIsStalling() {
+        // TODO: Figure out the real number.
+        return elevatorAngleMotor.getOutputCurrent() > 10;
+    }
+
+    /**
+     * Gets the elevator angle in degrees, relative to the last time `resetAngleEncoder` was called.
+     * 0 degrees is parallel to the robot frame, and the angle increases as the elevator tilts upward (in the direction of the intake side of the robot).
+     * @return
+     */
+    public double getAngle() {
+        return (elevatorAngleAbsoluteEncoder.getAbsolutePosition() - elevatorAngleAbsoluteEncoder.getPositionOffset()) * 360;
     }
 }

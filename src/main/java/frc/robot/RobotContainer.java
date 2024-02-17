@@ -21,13 +21,14 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
+import frc.robot.commands.NoteManagement;
 import frc.robot.commands.TeleopIntake;
 import frc.robot.commands.TeleopSwerve;
-import frc.robot.commands.TeleopTransport;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -56,15 +57,15 @@ public class RobotContainer {
   private final JoystickButton updateOdometryPose = 
       new JoystickButton(driver, XboxController.Button.kB.value);
 
-  // FIXME - Remove?
   /* Operator Buttons */
-  // private static final int intakeSpeedAxis = XboxController.Axis.kRightTrigger.value;
+  private final JoystickButton launchNote =
+      new JoystickButton(operator, XboxController.Button.kA.value);
 
   /* Subsystems */
   private final Swerve swerveSubsystem = new Swerve();
   private final Launcher launcherSubsystem = new Launcher(operator);
-  private final Intake intakeSubsystem = new Intake();
   private final Transport transportSubsystem = new Transport();
+  private final Elevator elevatorSubsystem = new Elevator();
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
@@ -77,18 +78,19 @@ public class RobotContainer {
         () -> !robotCentric.getAsBoolean()
       ));
 
-    intakeSubsystem.setDefaultCommand(
+    transportSubsystem.setDefaultCommand(
       new TeleopIntake(
-        intakeSubsystem,
+        transportSubsystem,
         driver
       ));
-    
-    transportSubsystem.setDefaultCommand(
-      new TeleopTransport(
-        transportSubsystem, 
-        driver, 
-        operator
-    ));
+
+    elevatorSubsystem.setDefaultCommand(
+      new NoteManagement(
+        elevatorSubsystem,
+        transportSubsystem,
+        launchNote
+      )
+    );
     
     // Configure the button bindings
     configureButtonBindings();
