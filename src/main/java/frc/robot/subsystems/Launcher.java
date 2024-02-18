@@ -37,10 +37,10 @@ public class Launcher extends SubsystemBase {
 
   private final Joystick operatorController;
   private SlewRateLimiter launchVelocitySlewLimiter;
-  private double launchVelocityTarget = 0;
   
   double launcherAngle = 45;
   double launcherSpeed =  1200;
+  boolean intakingNote = false;
   
   public Launcher(Joystick controller) {
     // Instantiate member variables and necessary code
@@ -100,9 +100,6 @@ public class Launcher extends SubsystemBase {
 
       SmartDashboard.putNumber("LauncherSpeed", launcherSpeed);
     }));
-  }
-
-  public void initLauncher() {
   }
 
   public double getAbsoluteLauncherAngleDegrees() {
@@ -191,25 +188,44 @@ public class Launcher extends SubsystemBase {
    * Enables the launch rollers.
    */
   public void launchRollersFast() {
-    launchVelocityTarget = Constants.Launcher.maxRollerVelocity;
-    System.out.println("Launch rollers on");
+    launcherSpeed = Constants.Launcher.maxRollerVelocity;
   }
 
   /**
    * Disables the launch rollers.
    */
   public void launchRollersSlow() {
-    launchVelocityTarget = Constants.Launcher.launchRollerVelocity;
-    System.out.println("Launch rollers off");
+    launcherSpeed = Constants.Launcher.launchRollerVelocity;
+  }
+
+  /**
+   * Use to take a Note in through the Launcher.
+   */
+  public void setLaunchNoteIn() {
+    intakingNote = true;
+  }
+
+  public void setLaunchNoteOut() {
+    intakingNote = false;
+  }
+
+  public void runLauncher() {
+    double launchVelocity = launcherSpeed;
+
+    if (intakingNote) {
+      topLaunchRollerPIDController.setReference(-launchVelocity, CANSparkMax.ControlType.kVelocity);
+      bottomLaunchRollerPIDController.setReference(-launchVelocity, CANSparkMax.ControlType.kVelocity);    
+    } else {
+      topLaunchRollerPIDController.setReference(launchVelocity, CANSparkMax.ControlType.kVelocity);
+      bottomLaunchRollerPIDController.setReference(launchVelocity, CANSparkMax.ControlType.kVelocity);    
+    }
   }
 
   @Override
   public void periodic() {
-    // double launchVelocity = launchVelocitySlewLimiter.calculate(launchVelocityTarget);
-    double launchVelocity = launcherSpeed;
 
-    topLaunchRollerPIDController.setReference(launchVelocity, CANSparkMax.ControlType.kVelocity);
-    bottomLaunchRollerPIDController.setReference(launchVelocity, CANSparkMax.ControlType.kVelocity);    
+    runLauncher();
+    // double launchVelocity = launchVelocitySlewLimiter.calculate(launchVelocityTarget);
     
     SmartDashboard.putNumber("Launcher absolute encoder", getAbsoluteLauncherAngleDegrees());
     SmartDashboard.putNumber("Launcher relative encoder", getLauncherAngleDegrees());

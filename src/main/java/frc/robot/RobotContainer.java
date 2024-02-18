@@ -29,6 +29,7 @@ import frc.robot.subsystems.*;
 import frc.robot.commands.NoteManagement;
 import frc.robot.commands.TeleopIntake;
 import frc.robot.commands.TeleopSwerve;
+import frc.robot.commands.Auto.LaunchAndDrive;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -96,6 +97,7 @@ public class RobotContainer {
     configureButtonBindings();
 
     autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
+    autoChooser.addOption("Lunch and Drive", new LaunchAndDrive(swerveSubsystem, launcherSubsystem, 5.0));
     SmartDashboard.putData("Auto Mode", autoChooser);
   }
 
@@ -112,10 +114,25 @@ public class RobotContainer {
     updateOdometryPose.onTrue(new InstantCommand(swerveSubsystem::updateOdometryPose));
 
     /* Operator Buttons */
+
+    /*
+     * Operator Button A to Launch the Note
+     */
     final JoystickButton buttonA = new JoystickButton(operator, XboxController.Button.kA.value);
     buttonA.onTrue(new InstantCommand(() -> {
-      System.out.println("Rollers fast");
+      System.out.println("Launching Rollers fast");
       launcherSubsystem.launchRollersFast();
+    }));
+
+    /*
+     * Operator Y button would set the Launcer to intake the Note.
+     * This feature may be temporary to reverse the Launcer rollers.
+     */
+    final JoystickButton buttonY = new JoystickButton(operator, XboxController.Button.kY.value);
+    buttonY.onTrue(new InstantCommand(() -> {
+      launcherSubsystem.setLaunchNoteIn();
+      launcherSubsystem.launchRollersFast();
+      System.out.println("Intaking Note Rollers fast");
     }));
 
     final JoystickButton rightBumper = new JoystickButton(operator, XboxController.Button.kRightBumper.value);
