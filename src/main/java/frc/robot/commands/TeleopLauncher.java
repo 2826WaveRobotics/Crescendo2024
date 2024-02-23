@@ -4,28 +4,28 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.subsystems.Transport;
+import frc.robot.subsystems.Launcher;
 
-public class TeleopIntake extends Command {
-    private Transport transportSubsystem;
+public class TeleopLauncher extends Command {
+    private Launcher launcherSubsystem;
 
     // Driver controller
     private Joystick operator;
 
-    public TeleopIntake(
-            Transport transportSubsystem,
+    public TeleopLauncher(
+            Launcher launcherSubsystem,
             Joystick operator) {
-        this.transportSubsystem = transportSubsystem;
-        addRequirements(transportSubsystem);
+        this.launcherSubsystem = launcherSubsystem;
+        addRequirements(launcherSubsystem);
 
         this.operator = operator;
     }
@@ -43,19 +43,23 @@ public class TeleopIntake extends Command {
         // intakeTrigger.onTrue(new InstantCommand(() -> 
         //     transportSubsystem.setActive(!transportSubsystem.isActive())
         // ));
+
+        Trigger presetTrigger = new JoystickButton(operator, XboxController.Button.kY.value);
+        presetTrigger.onTrue(new InstantCommand(() -> {
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(60));
+            launcherSubsystem.launcherSpeed = 4000;
+        }));
+        
+        Trigger presetTrigger2 = new JoystickButton(operator, XboxController.Button.kA.value);
+        presetTrigger2.onTrue(new InstantCommand(() -> {
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(39));
+            launcherSubsystem.launcherSpeed = 4500;
+        }));
     }
 
     @Override
     public void execute() {
-        if(DriverStation.isAutonomous()) return;
-
-        // A button to enable the bottom rollers, which includes the intake and bottom transport roller.
-        double bottomRollersRunning = operator.getRawAxis(XboxController.Axis.kRightTrigger.value);
-        // The button to enable the top transport rollers, which will launch a note.
-        double topRollersRunning = operator.getRawAxis(XboxController.Axis.kLeftTrigger.value);
-        boolean reverseTransport = operator.getRawButton(XboxController.Button.kB.value);
-
-        transportSubsystem.setIntakeSpeed(bottomRollersRunning > 0.3 ? (reverseTransport ? -10.0 : 10.0) : 0);
-        transportSubsystem.setUpperTransportSpeed(topRollersRunning > 0.3 ? (reverseTransport ? -10.0 : 10.0) : 0);
+        boolean invertLauncher = operator.getRawButton(XboxController.Button.kBack.value);
+        launcherSubsystem.setLauncherInverted(invertLauncher);
     }
 }

@@ -1,119 +1,214 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.CANSparkMaxUtil;
+import frc.lib.util.CANSparkMaxUtil.Usage;
+import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
+    /**
+     * The states that the elevator can be in.
+     */
+    public enum ElevatorState {
+        /**
+         * The state where the elevator is contracted and angled downward (pointing toward the launcher).
+         */
+        Stowed,
+        /**
+         * The state where the elevator is contracted but angled upward (perpendicular to the robot base).
+         */
+        AngledUp, 
+        /**
+         * The state where the elevator is extended and angled upward.
+         */
+        Extended
+    }
 
-    // Elevator Motor to extend and retract the Elevator
-    private CANSparkMax elevatorExtRetMotor;
-    // Elevator Motor to swing up and down the Elevator
+    public ElevatorState currentState = ElevatorState.Stowed;
+
+    /**
+     * The elevator motor that extends and retracts the elevator
+     */
+    private CANSparkMax elevatorExtensionMotor;
+
+    /**
+     * The elevator motor that changes the angle of the elevator
+     */
     private CANSparkMax elevatorAngleMotor;
-    // Elevator MotorA to roll the node from Intake to Elevator
-    private CANSparkMax elevatorIntakeMotorA;
-    // Elevator MotorB to roll the node from Intake to Elevator
-    private CANSparkMax elevatorIntakeMotorB;
-    // Elevator Tip Roller Motor to score the node 
-    private CANSparkMax elevatorTipRollerMotorA;
-    // Elevator Tip Roller Motor to score the node 
-    private CANSparkMax elevatorTipRollerMotorB;
 
-    // Saves location og the Elevator in the vertical direction
-    private RelativeEncoder elevatorExtRetEncoder;
-    // Saves location of the Elevator angle (normally swing from straight up to the Launcher position)
+    private RelativeEncoder elevatorExtensionEncoder;
+
     private RelativeEncoder elevatorAngleEncoder;
 
     // Internal PID Controller for the Elevator extend-retract Motor
-    private SparkPIDController elevatorExtRetPID;
+    private SparkPIDController elevatorExtensionPIDController;
+
     // Internal PID Controller for the Elevator angular position
-    private SparkPIDController elevatorAnglePID;
+    private SparkPIDController elevatorAnglePIDController;
 
-    // Ideally these will be constants until PIDs parameters are tuned
-    public double m1_kP; 
-    public double m1_kI; 
-    public double m1_kD;
-    public double m1_kIz; 
-    public double m1_kFF;
-    public double kMaxOutput; 
-    public double kMinOutput; 
-    public double maxRPM;
+    /**
+     * The through-bore absolute encoder on the elevator axis.
+     */
+    private DutyCycleEncoder elevatorAngleAbsoluteEncoder;
 
-    public double kMaxVelocity;
-    public double kMaxAcceleration;
+    /**
+     * The through beam sensor for detecting if notes are in the intake.
+     */
+    private DigitalInput intakeSensor = new DigitalInput(Constants.Elevator.intakeSensorDIOPort);
+    /**
+     * The through beam sensor detecting if the note is in position.
+     */
+    private DigitalInput noteInPositionSensor = new DigitalInput(Constants.Elevator.noteInPositionSensorDIOPort);
+    /**
+     * The through beam sensor detecting if the note is transitioning to the resting position.
+     */
+    private DigitalInput noteInTransitionSensor = new DigitalInput(Constants.Elevator.noteInTransitionSensorDIOPort);
 
+    /**
+     * Gets if the through beam sensor for detecting if notes are in the intake is activated (meaning there's a note there).
+     * @return
+     */
+    public boolean getIntakeSensorActivated() {
+        return !intakeSensor.get();
+    }
+
+    /**
+     * Gets if the through beam sensor for detecting if the note is in position is activated (meaning there's a note there).
+     * @return
+     */
+    public boolean getNoteInPositionSensorActivated() {
+        return !noteInPositionSensor.get();
+    }
+
+    /**
+     * Gets if the through beam sensor for detecting if the note is transitioning to the resting position is activated
+     * (meaning there's a note there).
+     * @return
+     */
+    public boolean getNoteInTransitionSensorActivated() {
+        return !noteInTransitionSensor.get();
+    }
 
     public Elevator() {
-        //insert comments about naming scheme here
-        //Ext = exterior?
-        elevatorExtRetMotor = new CANSparkMax(10, MotorType.kBrushless);
-        elevatorExtRetMotor.setInverted(false);
-        elevatorAngleMotor = new CANSparkMax(11, MotorType.kBrushless);
+        elevatorExtensionMotor = new CANSparkMax(Constants.Elevator.positionMotorCANID, MotorType.kBrushless);
+        elevatorExtensionMotor.setInverted(false);
+        elevatorAngleMotor = new CANSparkMax(Constants.Elevator.angleMotorCANID, MotorType.kBrushless);
         elevatorAngleMotor.setInverted(false);
 
-        elevatorExtRetEncoder = elevatorExtRetMotor.getEncoder();
+        elevatorExtensionEncoder = elevatorExtensionMotor.getEncoder();
         elevatorAngleEncoder = elevatorAngleMotor.getEncoder();
 
-        elevatorExtRetMotor.restoreFactoryDefaults();
+        elevatorExtensionMotor.restoreFactoryDefaults();
         elevatorAngleMotor.restoreFactoryDefaults();
 
-        elevatorExtRetPID = elevatorExtRetMotor.getPIDController();
-        elevatorAnglePID = elevatorAngleMotor.getPIDController();
+        elevatorExtensionPIDController = elevatorExtensionMotor.getPIDController();
+        elevatorAnglePIDController = elevatorAngleMotor.getPIDController();
 
-        // PID coeffiecients
-        m1_kP = 6e-5; 
-        m1_kI = 0;
-        m1_kD = 0; 
-        m1_kIz = 0; 
-        m1_kFF = 0.000175;
+        elevatorAngleAbsoluteEncoder = new DutyCycleEncoder(Constants.Elevator.elevatorAbsoluteEncoderDIOPort);
 
-        kMaxOutput = 1; 
-        kMinOutput = -1;
-        maxRPM = 5700;
-
-        kMaxAcceleration = 868;
-        kMaxVelocity = 5000;
-
-
-        // set PID coefficients for Extend-Retract motor
-        elevatorExtRetPID.setP(m1_kP);
-        elevatorExtRetPID.setI(m1_kI);
-        elevatorExtRetPID.setD(m1_kD);
-        elevatorExtRetPID.setIZone(m1_kIz);
-        elevatorExtRetPID.setFF(m1_kFF);
-        elevatorExtRetPID.setOutputRange(kMinOutput, kMaxOutput);
-
-        // can set PID values with a gain & a slot ID
-        elevatorExtRetPID.setSmartMotionMaxAccel(kMaxAcceleration, 0);
-        elevatorExtRetPID.setSmartMotionMaxVelocity(kMaxVelocity, 0);
-
-        // set PID coefficients for Extend-Retract motor
-        elevatorAnglePID.setP(m1_kP);
-        elevatorAnglePID.setI(m1_kI);
-        elevatorAnglePID.setD(m1_kD);
-        elevatorAnglePID.setIZone(m1_kIz);
-        elevatorAnglePID.setFF(m1_kFF);
-        elevatorAnglePID.setOutputRange(kMinOutput, kMaxOutput);
-
-        elevatorAnglePID.setSmartMotionMaxAccel(kMaxAcceleration, 0);
-        elevatorAnglePID.setSmartMotionMaxVelocity(kMaxVelocity, 0);
+        configMotorControllers();
     }
-    
-    @Override
-    public void periodic() {
-        // Overrrides default code provided by SubsystemBase
-        
 
+    public void configMotorControllers() {
+        elevatorExtensionMotor.restoreFactoryDefaults();
+        CANSparkMaxUtil.setCANSparkMaxBusUsage(elevatorExtensionMotor, Usage.kPositionOnly);
+        elevatorExtensionMotor.setSmartCurrentLimit(Constants.Elevator.extRetCurrentLimit);
+        elevatorExtensionMotor.setIdleMode(Constants.Elevator.elevatorIdleMode);
+        elevatorExtensionPIDController.setP(Constants.Elevator.elevatorKP);
+        elevatorExtensionPIDController.setD(Constants.Elevator.elevatorKD);
+        elevatorExtensionPIDController.setI(Constants.Elevator.elevatorKI);
+        elevatorExtensionPIDController.setFF(Constants.Elevator.elevatorKFF);
+        elevatorExtensionMotor.enableVoltageCompensation(Constants.Elevator.voltageComp);
+        elevatorExtensionMotor.setInverted(Constants.Elevator.invertPosition);
+        elevatorExtensionMotor.burnFlash();
+           
+        elevatorAngleMotor.restoreFactoryDefaults();
+        CANSparkMaxUtil.setCANSparkMaxBusUsage(elevatorAngleMotor, Usage.kPositionOnly);
+        elevatorAngleMotor.setSmartCurrentLimit(Constants.Elevator.eAngleCurrentLimit);
+        elevatorAngleMotor.setIdleMode(Constants.Elevator.eAngleIdleMode);
+        elevatorAnglePIDController.setP(Constants.Elevator.eAngleKP);
+        elevatorAnglePIDController.setI(Constants.Elevator.eAngleKI);
+        elevatorAnglePIDController.setD(Constants.Elevator.eAngleKD);
+        elevatorAnglePIDController.setFF(Constants.Elevator.eAngleKFF);
+        elevatorAngleMotor.enableVoltageCompensation(Constants.Elevator.voltageComp);
+        elevatorAngleMotor.setInverted(Constants.Elevator.invertAngle);
+        elevatorAngleMotor.burnFlash();
     }
-    
-    
-    public void trapDeposit() {
-        // Intake motor
-    
-        // elevator
 
+    /**
+     * Resets the extension motor encoder.
+     */
+    public void resetExtensionEncoder() {
+        elevatorExtensionEncoder.setPosition(0);
+    }
+
+    /**
+     * Resets the elevator angle encoder.
+     */
+    public void resetAngleEncoder() {
+        elevatorAngleAbsoluteEncoder.reset();
+    }
+
+    /**
+     * Gets the extension height of the elevator, relative to when `resetExtensionEncoder` was last called.
+     * @return
+     */
+    public double getExtensionHeight() {
+        return elevatorExtensionEncoder.getPosition()
+            / Constants.Elevator.rotationsForFullExtension
+            * Constants.Elevator.totalElevatorExtensionHeight;
+    }
+
+    /**
+     * Sets the extension motor speed in RPM. Positive numbers move the elevator downward.  
+     * // TODO: We should probably use a PID based on position.
+     * @param speed The target speed, in RPM.
+     */
+    public void setExtensionSpeed(double speed) {
+        elevatorExtensionPIDController.setReference(speed, ControlType.kVelocity);
+    }
+
+    /**
+     * Sets the angle motor speed in RPM. Positive numbers rotate toward the intake side of the robot, which is the direction of the elevator pointing upward.
+     * @param speed
+     */
+    public void setAngleSpeed(double speed) {
+        elevatorAnglePIDController.setReference(speed, ControlType.kVelocity);
+    }
+
+    /**
+     * Checks if the extension motor is currently stalling.
+     * @return
+     */
+    public boolean extensionMotorIsStalling() {
+        // TODO: Figure out the real number.
+        return elevatorExtensionMotor.getOutputCurrent() > 10;
+    }
+
+    /**
+     * Checks if the angle motor is currently stalling.
+     * @return
+     */
+    public boolean angleMotorIsStalling() {
+        // TODO: Figure out the real number.
+        return elevatorAngleMotor.getOutputCurrent() > 10;
+    }
+
+    /**
+     * Gets the elevator angle in degrees, relative to the last time `resetAngleEncoder` was called.
+     * 0 degrees is parallel to the robot frame, and the angle increases as the elevator tilts upward (in the direction of the intake side of the robot).
+     * @return
+     */
+    public double getAngle() {
+        return (elevatorAngleAbsoluteEncoder.getAbsolutePosition() - elevatorAngleAbsoluteEncoder.getPositionOffset()) * 360;
     }
 }

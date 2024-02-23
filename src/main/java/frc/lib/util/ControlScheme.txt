@@ -1,0 +1,47 @@
+Driver:
+    LeftTrigger:
+    RightTrigger: Intake & Lower transport
+    LeftBumper: Robot-centric
+    RightBumper:
+
+    x-LeftJoystick: Swerve Strafe
+    y-LeftJoystick: Swerve Velocity
+    x-RightJoystick: Swerve Rotate
+    y-RightJoystick: 
+
+    up-POV:
+    down-POV:
+    left-POV:
+    right-POV:
+
+    Start:
+    Back:
+
+    Y: Zero gryo
+    B: Update odometry pose
+    A:
+    X:
+
+Operator:
+    LeftTrigger: Upper transport on
+    RightTrigger: Lower transport on
+    LeftBumper: Slow speed
+    RightBumper: Fast speed
+
+    x-LeftJoystick:
+    y-LeftJoystick:
+    x-RightJoystick:
+    y-RightJoystick:
+
+    up-POV: Launcher Angle Up
+    down-POV: Launcher Angle Down
+    left-POV: Launcher speed down
+    right-POV: Launcher speed up
+
+    Start:
+    Back: Invert launcher (to intake notes through the launcher)
+
+    Y: Subwoofer preset
+    B: Reverse transport actions
+    A: Podium shot preset
+    X:

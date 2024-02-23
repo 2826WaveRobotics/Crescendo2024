@@ -26,7 +26,6 @@ public class Climber extends SubsystemBase {
     
     leftClimberEncoder = leftClimberMotor.getEncoder();
     rightClimberEncoder = rightClimberMotor.getEncoder();
-
   }  
 
   @Override

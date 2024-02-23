@@ -7,14 +7,9 @@
 
 package frc.robot;
 
-import java.nio.channels.SelectableChannel;
-
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -23,10 +18,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
+import frc.robot.commands.NoteManagement;
 import frc.robot.commands.TeleopIntake;
+import frc.robot.commands.TeleopLauncher;
 import frc.robot.commands.TeleopSwerve;
+import frc.robot.commands.auto.LaunchCloseCommand;
+// import frc.robot.commands.auto.LaunchCloseCommand;
+// import frc.robot.commands.auto.LaunchStartCommand;
+import frc.robot.commands.auto.LaunchStartCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -40,8 +40,7 @@ public class RobotContainer {
 
   /* Controllers */
   private final Joystick driver = new Joystick(0);
-
-  private final XboxController operator = new XboxController(1);
+  private final Joystick operator = new Joystick(1);
 
   /* Drive Controls */
   private static final int translationAxis = XboxController.Axis.kLeftY.value;
@@ -53,18 +52,18 @@ public class RobotContainer {
       new JoystickButton(driver, XboxController.Button.kY.value);
   private final JoystickButton robotCentric =
       new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
-  // TESTING
   private final JoystickButton updateOdometryPose = 
       new JoystickButton(driver, XboxController.Button.kB.value);
 
-
   /* Operator Buttons */
-  private static final int intakeSpeedAxis = XboxController.Axis.kRightTrigger.value;
+  private final JoystickButton launchNote =
+      new JoystickButton(operator, XboxController.Button.kA.value);
 
   /* Subsystems */
   private final Swerve swerveSubsystem = new Swerve();
   private final Launcher launcherSubsystem = new Launcher(operator);
-  private final Intake intakeSubsystem = new Intake();
+  private final Transport transportSubsystem = new Transport();
+  private final Elevator elevatorSubsystem = new Elevator();
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
@@ -77,14 +76,38 @@ public class RobotContainer {
         () -> !robotCentric.getAsBoolean()
       ));
 
-    intakeSubsystem.setDefaultCommand(
+    transportSubsystem.setDefaultCommand(
       new TeleopIntake(
-        intakeSubsystem,
-        () -> operator.getRawAxis(intakeSpeedAxis)
+        transportSubsystem,
+        operator
       ));
 
+    elevatorSubsystem.setDefaultCommand(
+      new NoteManagement(
+        elevatorSubsystem,
+        transportSubsystem,
+        launchNote
+      )
+    );
+
+    launcherSubsystem.setDefaultCommand(
+      new TeleopLauncher(
+        launcherSubsystem,
+        operator
+      )
+    );
+    
     // Configure the button bindings
     configureButtonBindings();
+    NamedCommands.registerCommand("Launch close", new LaunchCloseCommand(launcherSubsystem, transportSubsystem));
+    NamedCommands.registerCommand("Launch start line", new LaunchStartCommand(launcherSubsystem, transportSubsystem));
+    NamedCommands.registerCommand("Enable intake", new InstantCommand(() -> transportSubsystem.setActive(true)));
+    NamedCommands.registerCommand("Slow constant launch", new InstantCommand(() -> {
+      launcherSubsystem.launchRollersSlow();
+      transportSubsystem.setUpperTransportSpeed(10.0);
+    }));
+    NamedCommands.registerCommand("Launch rollers fast", new InstantCommand(launcherSubsystem::launchRollersFast));
+    NamedCommands.registerCommand("Launch rollers slow", new InstantCommand(launcherSubsystem::launchRollersSlow));
 
     autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
     SmartDashboard.putData("Auto Mode", autoChooser);
@@ -103,21 +126,27 @@ public class RobotContainer {
     updateOdometryPose.onTrue(new InstantCommand(swerveSubsystem::updateOdometryPose));
 
     /* Operator Buttons */
+
+    /*
+     * Operator Button A to Launch the Note
+     */
     final JoystickButton buttonA = new JoystickButton(operator, XboxController.Button.kA.value);
     buttonA.onTrue(new InstantCommand(() -> {
-      System.out.println("Rollers fast");
       launcherSubsystem.launchRollersFast();
     }));
 
+    final JoystickButton leftBumper = new JoystickButton(operator, XboxController.Button.kLeftBumper.value);
+    leftBumper.onTrue(new InstantCommand(launcherSubsystem::launchRollersSlow));
+
     final JoystickButton rightBumper = new JoystickButton(operator, XboxController.Button.kRightBumper.value);
-    rightBumper.onTrue(new InstantCommand(launcherSubsystem::launchRollersSlow));  
+    rightBumper.onTrue(new InstantCommand(launcherSubsystem::launchRollersFast));  
   }
-  
-  public XboxController getOperator() {
+
+  public Joystick getOperator() {
     return operator;
   }
 
-  public Launcher getLauncher(){
+  public Launcher getLauncher() {
     return launcherSubsystem;
   }
   /**

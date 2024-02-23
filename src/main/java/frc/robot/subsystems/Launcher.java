@@ -4,9 +4,11 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.CANSparkMaxUtil;
@@ -34,14 +36,14 @@ public class Launcher extends SubsystemBase {
   private final SparkPIDController bottomLaunchRollerPIDController;
   private final SparkPIDController anglePIDController;
 
-  private final XboxController operatorController;
+  private final Joystick operatorController;
   private SlewRateLimiter launchVelocitySlewLimiter;
-  private double launchVelocityTarget = 0;
   
   double launcherAngle = 45;
-  double launcherSpeed = 1800;
+  public double launcherSpeed = 1200;
+  boolean intakingNote = false;
   
-  public Launcher(XboxController controller) {
+  public Launcher(Joystick controller) {
     // Instantiate member variables and necessary code
     topRollerMotor = new CANSparkMax(Constants.Launcher.topRollerCANID, CANSparkMax.MotorType.kBrushless);
     bottomRollerMotor = new CANSparkMax(Constants.Launcher.bottomRollerCANID, CANSparkMax.MotorType.kBrushless);
@@ -61,8 +63,6 @@ public class Launcher extends SubsystemBase {
 
     resetToAbsolute();
 
-    launchVelocitySlewLimiter = new SlewRateLimiter(Constants.Launcher.launchVelocityRateLimit);
-
     setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
     final Trigger launcherUp = new Trigger(() -> {
       return operatorController.getPOV() == 0;
@@ -70,18 +70,18 @@ public class Launcher extends SubsystemBase {
     final Trigger launcherDown = new Trigger(() -> {
       return operatorController.getPOV() == 180;
     });
-    launcherUp.onTrue(new InstantCommand(() -> {
-      launcherAngle += 0.25;
+    launcherUp.whileTrue(new RepeatCommand(new InstantCommand(() -> {
+      launcherAngle += 0.15;
       setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
       
       SmartDashboard.putNumber("LauncherAngle", launcherAngle);
-    }));
-    launcherDown.onTrue(new InstantCommand(() -> {
-      launcherAngle -= 0.25;
+    })));
+    launcherDown.whileTrue(new RepeatCommand(new InstantCommand(() -> {
+      launcherAngle -= 0.15;
       setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
 
       SmartDashboard.putNumber("LauncherAngle", launcherAngle);
-    }));
+    })));
 
     final Trigger speedUp = new Trigger(() -> {
       return operatorController.getPOV() == 90;
@@ -89,19 +89,16 @@ public class Launcher extends SubsystemBase {
     final Trigger speedDown = new Trigger(() -> {
       return operatorController.getPOV() == 270;
     });
-    speedUp.onTrue(new InstantCommand(() -> {
-      launcherSpeed += 50;
+    speedUp.whileTrue(new RepeatCommand(new InstantCommand(() -> {
+      launcherSpeed += 20;
       
       SmartDashboard.putNumber("LauncherSpeed", launcherSpeed);
-    }));
-    speedDown.onTrue(new InstantCommand(() -> {
-      launcherSpeed -= 50;
+    })));
+    speedDown.whileTrue(new RepeatCommand(new InstantCommand(() -> {
+      launcherSpeed -= 20;
 
       SmartDashboard.putNumber("LauncherSpeed", launcherSpeed);
-    }));
-  }
-
-  public void initLauncher() {
+    })));
   }
 
   public double getAbsoluteLauncherAngleDegrees() {
@@ -121,6 +118,7 @@ public class Launcher extends SubsystemBase {
     topRollerMotor.restoreFactoryDefaults();
     CANSparkMaxUtil.setCANSparkMaxBusUsage(topRollerMotor, Usage.kPositionOnly);
     topRollerMotor.setSmartCurrentLimit(Constants.Launcher.rollerCurrentLimit);
+    
     topRollerMotor.setIdleMode(Constants.Launcher.rollerIdleMode);
     topLaunchRollerPIDController.setP(Constants.Launcher.rollerKP);
     topLaunchRollerPIDController.setI(Constants.Launcher.rollerKI);
@@ -190,25 +188,36 @@ public class Launcher extends SubsystemBase {
    * Enables the launch rollers.
    */
   public void launchRollersFast() {
-    launchVelocityTarget = Constants.Launcher.maxRollerVelocity;
-    System.out.println("Launch rollers on");
+    launcherSpeed = Constants.Launcher.maxRollerVelocity;
   }
 
   /**
    * Disables the launch rollers.
    */
   public void launchRollersSlow() {
-    launchVelocityTarget = Constants.Launcher.launchRollerVelocity;
-    System.out.println("Launch rollers off");
+    launcherSpeed = Constants.Launcher.launchRollerVelocity;
+  }
+
+  /**
+   * 
+   */
+  public void setLauncherInverted(boolean inverted) {
+    intakingNote = inverted;
+  }
+
+  public void runLauncher() {
+    if (intakingNote) {
+      topLaunchRollerPIDController.setReference(-1500, CANSparkMax.ControlType.kVelocity);
+      bottomLaunchRollerPIDController.setReference(-1500, CANSparkMax.ControlType.kVelocity);    
+    } else {
+      topLaunchRollerPIDController.setReference(launcherSpeed, CANSparkMax.ControlType.kVelocity);
+      bottomLaunchRollerPIDController.setReference(launcherSpeed, CANSparkMax.ControlType.kVelocity);    
+    }
   }
 
   @Override
   public void periodic() {
-    // double launchVelocity = launchVelocitySlewLimiter.calculate(launchVelocityTarget);
-    double launchVelocity = launcherSpeed;
-
-    topLaunchRollerPIDController.setReference(launchVelocity, CANSparkMax.ControlType.kVelocity);
-    bottomLaunchRollerPIDController.setReference(launchVelocity, CANSparkMax.ControlType.kVelocity);    
+    runLauncher();
     
     SmartDashboard.putNumber("Launcher absolute encoder", getAbsoluteLauncherAngleDegrees());
     SmartDashboard.putNumber("Launcher relative encoder", getLauncherAngleDegrees());
