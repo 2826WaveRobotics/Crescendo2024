@@ -10,6 +10,10 @@ import edu.wpi.first.math.util.Units;
 import frc.lib.config.SwerveModuleConstants;
 
 public final class Constants {
+  /**
+   * The deadband used for controller triggers.
+   */
+  public static final double triggerDeadband = 0.03;
 
   public static final class Swerve {
     public static final double stickDeadband = 0.1;
@@ -247,11 +251,6 @@ public final class Constants {
      * the front and back intake rollers run quickly in reverse to eject the note.
      */
     public static final double ejectSpeedMetersPerSecond = 0.5;
-
-    /**
-     * The deadband on the intake trigger.
-     */
-    public static final double intakeDeadband = 0.03;
   }
 
   public static final class Elevator {

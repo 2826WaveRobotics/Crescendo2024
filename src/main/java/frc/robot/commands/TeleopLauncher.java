@@ -1,33 +1,45 @@
 package frc.robot.commands;
 
-import java.util.function.DoubleSupplier;
-
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
 import frc.robot.subsystems.Launcher;
 
 public class TeleopLauncher extends Command {
     private Launcher launcherSubsystem;
 
-    // Driver controller
-    private Joystick operator;
+    private Trigger preset1Trigger;
+    private Trigger preset2Trigger;
+    private Trigger invertLauncher;
+
+    private Trigger launcherUp;
+    private Trigger launcherDown;
+    private Trigger speedUp;
+    private Trigger speedDown;
 
     public TeleopLauncher(
-            Launcher launcherSubsystem,
-            Joystick operator) {
+        Launcher launcherSubsystem,
+        Trigger preset1Trigger,
+        Trigger preset2Trigger,
+        Trigger invertLauncher,
+        Trigger launcherUp,
+        Trigger launcherDown,
+        Trigger speedUp,
+        Trigger speedDown
+    ) {
         this.launcherSubsystem = launcherSubsystem;
         addRequirements(launcherSubsystem);
 
-        this.operator = operator;
+        this.preset1Trigger = preset1Trigger;
+        this.preset2Trigger = preset2Trigger;
+        this.invertLauncher = invertLauncher;
+
+        this.launcherUp = launcherUp;
+        this.launcherDown = launcherDown;
+        this.speedUp = speedUp;
+        this.speedDown = speedDown;
     }
 
     @Override
@@ -44,22 +56,35 @@ public class TeleopLauncher extends Command {
         //     transportSubsystem.setActive(!transportSubsystem.isActive())
         // ));
 
-        Trigger presetTrigger = new JoystickButton(operator, XboxController.Button.kY.value);
-        presetTrigger.onTrue(new InstantCommand(() -> {
+        preset1Trigger.onTrue(new InstantCommand(() -> {
             launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(60));
             launcherSubsystem.launcherSpeed = 4000;
         }));
-        
-        Trigger presetTrigger2 = new JoystickButton(operator, XboxController.Button.kA.value);
-        presetTrigger2.onTrue(new InstantCommand(() -> {
+        preset2Trigger.onTrue(new InstantCommand(() -> {
             launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(39));
             launcherSubsystem.launcherSpeed = 4500;
         }));
+
+        launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(45));
+        launcherUp.whileTrue(new RepeatCommand(new InstantCommand(() -> {
+            double launcherAngle = launcherSubsystem.getLauncherConchAngleDegrees() + 0.15;
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
+        })));
+        launcherDown.whileTrue(new RepeatCommand(new InstantCommand(() -> {
+            double launcherAngle = launcherSubsystem.getLauncherConchAngleDegrees() - 0.15;
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
+        })));
+
+        speedUp.whileTrue(new RepeatCommand(new InstantCommand(() ->
+            launcherSubsystem.changeLauncherSpeed(20)
+        )));
+        speedDown.whileTrue(new RepeatCommand(new InstantCommand(() ->
+            launcherSubsystem.changeLauncherSpeed(-20)
+        )));
     }
 
     @Override
     public void execute() {
-        boolean invertLauncher = operator.getRawButton(XboxController.Button.kBack.value);
-        launcherSubsystem.setLauncherInverted(invertLauncher);
+        launcherSubsystem.setLauncherInverted(invertLauncher.getAsBoolean());
     }
 }

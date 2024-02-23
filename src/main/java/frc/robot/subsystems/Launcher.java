@@ -35,21 +35,14 @@ public class Launcher extends SubsystemBase {
   private final SparkPIDController topLaunchRollerPIDController;
   private final SparkPIDController bottomLaunchRollerPIDController;
   private final SparkPIDController anglePIDController;
-
-  private final Joystick operatorController;
-  private SlewRateLimiter launchVelocitySlewLimiter;
   
-  double launcherAngle = 45;
-  public double launcherSpeed = 1200;
   boolean intakingNote = false;
   
-  public Launcher(Joystick controller) {
+  public Launcher() {
     // Instantiate member variables and necessary code
     topRollerMotor = new CANSparkMax(Constants.Launcher.topRollerCANID, CANSparkMax.MotorType.kBrushless);
     bottomRollerMotor = new CANSparkMax(Constants.Launcher.bottomRollerCANID, CANSparkMax.MotorType.kBrushless);
     angleLauncherMotor = new CANSparkMax(Constants.Launcher.angleMotorCANID, CANSparkMax.MotorType.kBrushless);
-
-    operatorController = controller;
 
     angleLauncherEncoder = angleLauncherMotor.getEncoder();
     absoluteAngleLauncherEncoder = new DutyCycleEncoder(0);
@@ -62,50 +55,13 @@ public class Launcher extends SubsystemBase {
     configMotorControllers();
 
     resetToAbsolute();
-
-    setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
-    final Trigger launcherUp = new Trigger(() -> {
-      return operatorController.getPOV() == 0;
-    });
-    final Trigger launcherDown = new Trigger(() -> {
-      return operatorController.getPOV() == 180;
-    });
-    launcherUp.whileTrue(new RepeatCommand(new InstantCommand(() -> {
-      launcherAngle += 0.15;
-      setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
-      
-      SmartDashboard.putNumber("LauncherAngle", launcherAngle);
-    })));
-    launcherDown.whileTrue(new RepeatCommand(new InstantCommand(() -> {
-      launcherAngle -= 0.15;
-      setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
-
-      SmartDashboard.putNumber("LauncherAngle", launcherAngle);
-    })));
-
-    final Trigger speedUp = new Trigger(() -> {
-      return operatorController.getPOV() == 90;
-    });
-    final Trigger speedDown = new Trigger(() -> {
-      return operatorController.getPOV() == 270;
-    });
-    speedUp.whileTrue(new RepeatCommand(new InstantCommand(() -> {
-      launcherSpeed += 20;
-      
-      SmartDashboard.putNumber("LauncherSpeed", launcherSpeed);
-    })));
-    speedDown.whileTrue(new RepeatCommand(new InstantCommand(() -> {
-      launcherSpeed -= 20;
-
-      SmartDashboard.putNumber("LauncherSpeed", launcherSpeed);
-    })));
   }
 
   public double getAbsoluteLauncherAngleDegrees() {
     return absoluteAngleLauncherEncoder.getAbsolutePosition() * 360;
   }
 
-  public double getLauncherAngleDegrees() {
+  public double getLauncherConchAngleDegrees() {
     return (angleLauncherEncoder.getPosition() / Constants.Launcher.angleMotorGearboxReduction * 360.) % 360.;
   }
 
@@ -154,10 +110,18 @@ public class Launcher extends SubsystemBase {
   }
 
   /**
+   * The current target launcher angle.
+   */
+  double launcherAngle = 45;
+  public double launcherSpeed = 1200;
+  /**
    * Calculates the required conch angle from the wanted launcher angle.
    * @param angle
    */
   public void setLauncherAngle(Rotation2d angle) {
+    launcherAngle = angle.getDegrees();
+    SmartDashboard.putNumber("LauncherAngle", launcherAngle);
+    
     // All length units here are in inches
     double conchToPivotDistance = 5.153673;
     double pivotToConchReactionBarDistance = 4.907;
@@ -183,6 +147,13 @@ public class Launcher extends SubsystemBase {
 
     anglePIDController.setReference(Rotation2d.fromRadians(conchAngleRadians).getRotations() * Constants.Launcher.angleMotorGearboxReduction, CANSparkMax.ControlType.kPosition);
   }
+  /**
+   * Gets the current target launcher angle.
+   * @return
+   */
+  public double getLauncherAngle() {
+    return launcherAngle;
+  }
 
   /**
    * Enables the launch rollers.
@@ -196,6 +167,14 @@ public class Launcher extends SubsystemBase {
    */
   public void launchRollersSlow() {
     launcherSpeed = Constants.Launcher.launchRollerVelocity;
+  }
+
+  /**
+   * Changes the current launcher speed by amount (launcher speed = launcher speed + amount).
+   * @param amount
+   */
+  public void changeLauncherSpeed(double amount) {
+    launcherSpeed += amount;
   }
 
   /**
@@ -220,6 +199,6 @@ public class Launcher extends SubsystemBase {
     runLauncher();
     
     SmartDashboard.putNumber("Launcher absolute encoder", getAbsoluteLauncherAngleDegrees());
-    SmartDashboard.putNumber("Launcher relative encoder", getLauncherAngleDegrees());
+    SmartDashboard.putNumber("Launcher relative encoder", getLauncherConchAngleDegrees());
   }
 }

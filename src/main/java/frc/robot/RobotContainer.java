@@ -17,7 +17,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
 import frc.robot.commands.NoteManagement;
 import frc.robot.commands.TeleopIntake;
@@ -39,29 +41,12 @@ public class RobotContainer {
   private final SendableChooser<Command> autoChooser;
 
   /* Controllers */
-  private final Joystick driver = new Joystick(0);
-  private final Joystick operator = new Joystick(1);
-
-  /* Drive Controls */
-  private static final int translationAxis = XboxController.Axis.kLeftY.value;
-  private static final int strafeAxis = XboxController.Axis.kLeftX.value;
-  private static final int rotationAxis = XboxController.Axis.kRightX.value;
-
-  /* Driver Buttons */
-  private final JoystickButton zeroGyro =
-      new JoystickButton(driver, XboxController.Button.kY.value);
-  private final JoystickButton robotCentric =
-      new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
-  private final JoystickButton updateOdometryPose = 
-      new JoystickButton(driver, XboxController.Button.kB.value);
-
-  /* Operator Buttons */
-  private final JoystickButton launchNote =
-      new JoystickButton(operator, XboxController.Button.kA.value);
+  private final CommandXboxController driver = new CommandXboxController(0);
+  private final CommandXboxController operator = new CommandXboxController(1);
 
   /* Subsystems */
   private final Swerve swerveSubsystem = new Swerve();
-  private final Launcher launcherSubsystem = new Launcher(operator);
+  private final Launcher launcherSubsystem = new Launcher();
   private final Transport transportSubsystem = new Transport();
   private final Elevator elevatorSubsystem = new Elevator();
 
@@ -70,30 +55,38 @@ public class RobotContainer {
     swerveSubsystem.setDefaultCommand(
       new TeleopSwerve(
         swerveSubsystem,
-        () -> -driver.getRawAxis(translationAxis),
-        () -> -driver.getRawAxis(strafeAxis),
-        () -> -driver.getRawAxis(rotationAxis),
-        () -> !robotCentric.getAsBoolean()
+        () -> -driver.getRawAxis(XboxController.Axis.kLeftY.value),
+        () -> -driver.getRawAxis(XboxController.Axis.kLeftX.value),
+        () -> -driver.getRawAxis(XboxController.Axis.kRightX.value),
+        () -> !driver.leftBumper().getAsBoolean()
       ));
-
+    
     transportSubsystem.setDefaultCommand(
       new TeleopIntake(
         transportSubsystem,
-        operator
+        () -> operator.getRightTriggerAxis() > Constants.triggerDeadband,
+        () -> operator.getLeftTriggerAxis() > Constants.triggerDeadband,
+        () -> operator.b().getAsBoolean()
       ));
 
     elevatorSubsystem.setDefaultCommand(
       new NoteManagement(
         elevatorSubsystem,
         transportSubsystem,
-        launchNote
+        new Trigger(() -> false)
       )
     );
 
     launcherSubsystem.setDefaultCommand(
       new TeleopLauncher(
         launcherSubsystem,
-        operator
+        operator.y(),
+        operator.a(),
+        operator.b(),
+        operator.povUp(),
+        operator.povDown(),
+        operator.povRight(),
+        operator.povLeft()
       )
     );
     
@@ -121,34 +114,15 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     /* Driver Buttons */
-    zeroGyro.onTrue(new InstantCommand(swerveSubsystem::zeroGyro));
-
-    updateOdometryPose.onTrue(new InstantCommand(swerveSubsystem::updateOdometryPose));
+    driver.y().onTrue(new InstantCommand(swerveSubsystem::zeroGyro));
+    driver.b().onTrue(new InstantCommand(swerveSubsystem::updateOdometryPose));
 
     /* Operator Buttons */
-
-    /*
-     * Operator Button A to Launch the Note
-     */
-    final JoystickButton buttonA = new JoystickButton(operator, XboxController.Button.kA.value);
-    buttonA.onTrue(new InstantCommand(() -> {
-      launcherSubsystem.launchRollersFast();
-    }));
-
-    final JoystickButton leftBumper = new JoystickButton(operator, XboxController.Button.kLeftBumper.value);
-    leftBumper.onTrue(new InstantCommand(launcherSubsystem::launchRollersSlow));
-
-    final JoystickButton rightBumper = new JoystickButton(operator, XboxController.Button.kRightBumper.value);
-    rightBumper.onTrue(new InstantCommand(launcherSubsystem::launchRollersFast));  
+    operator.a().onTrue(new InstantCommand(launcherSubsystem::launchRollersFast));
+    operator.leftBumper().onTrue(new InstantCommand(launcherSubsystem::launchRollersSlow));
+    operator.rightBumper().onTrue(new InstantCommand(launcherSubsystem::launchRollersFast));  
   }
 
-  public Joystick getOperator() {
-    return operator;
-  }
-
-  public Launcher getLauncher() {
-    return launcherSubsystem;
-  }
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
