@@ -65,8 +65,10 @@ public final class Constants {
     public static final double driveKA = 0.27;
 
     /* Drive Motor Conversion Factors */
+    /** A position conversion factor to convert revolutions to meters. */
     public static final double driveConversionPositionFactor =
         (wheelDiameter * Math.PI) / driveGearRatio;
+    /** A velocity conversion factor to convert revolutions per minute to meters per second. */
     public static final double driveConversionVelocityFactor = driveConversionPositionFactor / 60.0;
     public static final double angleConversionFactor = 360.0 / angleGearRatio;
 
