@@ -7,29 +7,26 @@
 
 package frc.robot;
 
-import java.nio.channels.SelectableChannel;
-
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
 import frc.robot.commands.NoteManagement;
 import frc.robot.commands.TeleopIntake;
+import frc.robot.commands.TeleopLauncher;
 import frc.robot.commands.TeleopSwerve;
-import frc.robot.commands.Auto.LaunchAndDrive;
+import frc.robot.commands.auto.LaunchCloseCommand;
+// import frc.robot.commands.auto.LaunchCloseCommand;
+// import frc.robot.commands.auto.LaunchStartCommand;
+import frc.robot.commands.auto.LaunchStartCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -82,7 +79,7 @@ public class RobotContainer {
     transportSubsystem.setDefaultCommand(
       new TeleopIntake(
         transportSubsystem,
-        driver
+        operator
       ));
 
     elevatorSubsystem.setDefaultCommand(
@@ -92,12 +89,27 @@ public class RobotContainer {
         launchNote
       )
     );
+
+    launcherSubsystem.setDefaultCommand(
+      new TeleopLauncher(
+        launcherSubsystem,
+        operator
+      )
+    );
     
     // Configure the button bindings
     configureButtonBindings();
+    NamedCommands.registerCommand("Launch close", new LaunchCloseCommand(launcherSubsystem, transportSubsystem));
+    NamedCommands.registerCommand("Launch start line", new LaunchStartCommand(launcherSubsystem, transportSubsystem));
+    NamedCommands.registerCommand("Enable intake", new InstantCommand(() -> transportSubsystem.setActive(true)));
+    NamedCommands.registerCommand("Slow constant launch", new InstantCommand(() -> {
+      launcherSubsystem.launchRollersSlow();
+      transportSubsystem.setUpperTransportSpeed(10.0);
+    }));
+    NamedCommands.registerCommand("Launch rollers fast", new InstantCommand(launcherSubsystem::launchRollersFast));
+    NamedCommands.registerCommand("Launch rollers slow", new InstantCommand(launcherSubsystem::launchRollersSlow));
 
     autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
-    autoChooser.addOption("Lunch and Drive", new LaunchAndDrive(swerveSubsystem, launcherSubsystem, 5.0));
     SmartDashboard.putData("Auto Mode", autoChooser);
   }
 
@@ -120,23 +132,14 @@ public class RobotContainer {
      */
     final JoystickButton buttonA = new JoystickButton(operator, XboxController.Button.kA.value);
     buttonA.onTrue(new InstantCommand(() -> {
-      System.out.println("Launching Rollers fast");
       launcherSubsystem.launchRollersFast();
     }));
 
-    /*
-     * Operator Y button would set the Launcer to intake the Note.
-     * This feature may be temporary to reverse the Launcer rollers.
-     */
-    final JoystickButton buttonY = new JoystickButton(operator, XboxController.Button.kY.value);
-    buttonY.onTrue(new InstantCommand(() -> {
-      launcherSubsystem.setLaunchNoteIn();
-      launcherSubsystem.launchRollersFast();
-      System.out.println("Intaking Note Rollers fast");
-    }));
+    final JoystickButton leftBumper = new JoystickButton(operator, XboxController.Button.kLeftBumper.value);
+    leftBumper.onTrue(new InstantCommand(launcherSubsystem::launchRollersSlow));
 
     final JoystickButton rightBumper = new JoystickButton(operator, XboxController.Button.kRightBumper.value);
-    rightBumper.onTrue(new InstantCommand(launcherSubsystem::launchRollersSlow));  
+    rightBumper.onTrue(new InstantCommand(launcherSubsystem::launchRollersFast));  
   }
 
   public Joystick getOperator() {

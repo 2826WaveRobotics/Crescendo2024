@@ -45,11 +45,11 @@ public final class Constants {
 
     /* Swerve Current Limiting */
     public static final int angleContinuousCurrentLimit = 20;
-    public static final int driveContinuousCurrentLimit = 80;
+    public static final int driveContinuousCurrentLimit = 40; 
 
     /* Angle Motor PID Values */
-    public static final double angleKP = 0.016;
-    public static final double angleKI = 0.0;
+    public static final double angleKP = 0.1;
+    public static final double angleKI = 5e-7;
     public static final double angleKD = 0.0;
     public static final double angleKFF = 0.0;
 
@@ -98,7 +98,7 @@ public final class Constants {
       public static final int angleMotorID = 12;
       public static final int canCoderID = 13;
       // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(187);
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(35);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(34.6);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -109,7 +109,7 @@ public final class Constants {
       public static final int angleMotorID = 22;
       public static final int canCoderID = 23;
       // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(303.5);
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(103.1);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(103.2);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -119,7 +119,7 @@ public final class Constants {
       public static final int driveMotorID = 31;
       public static final int angleMotorID = 32;
       public static final int canCoderID = 33;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(166.9);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(163.2);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -129,7 +129,7 @@ public final class Constants {
       public static final int driveMotorID = 41;
       public static final int angleMotorID = 42;
       public static final int canCoderID = 43;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(307.35);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(307.3);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -187,20 +187,14 @@ public final class Constants {
     /**
      * The idle launch roller velocity in revolutions per minute.
      */
-    public static final double launchRollerVelocity = 1500.0;
+    public static final double launchRollerVelocity = 0.; // 1500.0;
     /**
      * The launch roller velocity, when shooting, in revolutions per minute.
      */
-    // public static final double maxRollerVelocity = 4340.0;
-    public static final double maxRollerVelocity = 1700.0;
+    public static final double maxRollerVelocity = 3700.0;
 
     public static final Rotation2d softStopMarginLow = Rotation2d.fromDegrees(10);
     public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(45);
-
-    /**
-     * The maximum rate of change of the launch roller velocity, in RPM per second.
-     */
-    public static final double launchVelocityRateLimit = 50000.;
 
     public static final double angleMotorGearboxReduction = Math.pow(5.23, 3);
 
@@ -243,7 +237,7 @@ public final class Constants {
     /**
      * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at), in meters per second.
      */
-    public static final double intakeSpeed = 0.25;
+    public static final double intakeSpeed = 10.0;
 
     /**
      * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at)
@@ -273,7 +267,7 @@ public final class Constants {
     public static final int noteInTransitionSensorDIOPort = 6;
 
     public static final int positionMotorCANID = 10;
-    public static final int angleMotorCANID = 11;
+    public static final int angleMotorCANID = 98;
 
     public static final IdleMode elevatorIdleMode = CANSparkMax.IdleMode.kCoast;
     /**
@@ -362,7 +356,7 @@ public final class Constants {
     /**
      * The current limit for the launch rollers, in amps, per motor.
      */
-    public static final int transportCurrentLimit = 5;
+    public static final int transportCurrentLimit = 20;
     public static final double voltageComp = 12;
     
     /* launcher Roller motor PID Values */

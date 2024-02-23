@@ -82,7 +82,7 @@ public class NoteManagement extends Command {
         this.transportSubsystem = transportSubsystem;
         this.launchNoteTrigger = launchNoteTrigger;
 
-        addRequirements(transportSubsystem, elevatorSubsystem);
+        addRequirements(elevatorSubsystem);
     }
 
     /**
@@ -143,6 +143,6 @@ public class NoteManagement extends Command {
         } else if(ejectingNoteForTrap) {
             upperTransportSpeed = Constants.Transport.trapEjectSpeed;
         }
-        transportSubsystem.setUpperTransportSpeed(upperTransportSpeed);
+        // transportSubsystem.setUpperTransportSpeed(upperTransportSpeed);
     }
 }

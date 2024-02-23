@@ -23,10 +23,10 @@ Driver:
     X:
 
 Operator:
-    LeftTrigger:
-    RightTrigger: Upper transport on
-    LeftBumper:
-    RightBumper:
+    LeftTrigger: Upper transport on
+    RightTrigger: Lower transport on
+    LeftBumper: Slow speed
+    RightBumper: Fast speed
 
     x-LeftJoystick:
     y-LeftJoystick:
@@ -39,9 +39,9 @@ Operator:
     right-POV: Launcher speed up
 
     Start:
-    Back:
+    Back: Invert launcher (to intake notes through the launcher)
 
-    Y:
-    B:
-    A:
+    Y: Subwoofer preset
+    B: Reverse transport actions
+    A: Podium shot preset
     X:

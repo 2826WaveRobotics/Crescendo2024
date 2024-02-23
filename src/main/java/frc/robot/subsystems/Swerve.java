@@ -74,11 +74,13 @@ public class Swerve extends SubsystemBase {
       swerveModules[3].getPosition()
     };
 
+    Pose2d startPose = new Pose2d(new Translation2d(1.38, 5.45), new Rotation2d());
+
     swerveOdometry = new SwerveDrivePoseEstimator(
       Constants.Swerve.swerveKinematics,
       getYaw(),
       swerveModulePositions,
-      new Pose2d(),
+      startPose,
       stateStdDevs,
       visionMeasurementStdDevs
     );

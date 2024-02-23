@@ -131,7 +131,7 @@ public class Transport extends SubsystemBase {
    * @param speed The speed the the belt/edge of intake wheels will move at, in meters per second.
    * This is effectively the speed that the note moves.
    */
-  private void setIntakeSpeed(double speedInMetersPerSecond) {
+  public void setIntakeSpeed(double speedInMetersPerSecond) {
     desiredSpeedMetersPerSecond = speedInMetersPerSecond;
   }
 
@@ -158,9 +158,9 @@ public class Transport extends SubsystemBase {
    * This is effectively the speed that the note moves.
    * @return
    */
-  private double getIntakeMotorRPM(double speedMetersPerSecond) {
+  private double getIntakeMotorRPM(double speedMetersPerSecond, double gearRatio) {
     double beltPulleyCircumference = Constants.Intake.beltPulleyRadius * Math.PI * 2;
-    double revolutionsPerSecond = speedMetersPerSecond / beltPulleyCircumference;
+    double revolutionsPerSecond = speedMetersPerSecond / beltPulleyCircumference * gearRatio;
     return revolutionsPerSecond * 60;
   }
 
@@ -168,19 +168,20 @@ public class Transport extends SubsystemBase {
   public void periodic() {
     double speedMetersPerSecond = isEjectingNote ? -Constants.Intake.ejectSpeedMetersPerSecond : desiredSpeedMetersPerSecond;
     
-    double rpm = getIntakeMotorRPM(speedMetersPerSecond);
+    double frontRPM = getIntakeMotorRPM(speedMetersPerSecond, 25);
+    double beltRPM = getIntakeMotorRPM(speedMetersPerSecond, 15);
 
-    frontIntakePIDController.setReference(rpm, ControlType.kVelocity);
-    lowerTransportPIDController.setReference(-rpm, ControlType.kVelocity);
-    beltIntakePIDController.setReference(-rpm, ControlType.kVelocity);
+    frontIntakePIDController.setReference(frontRPM, ControlType.kVelocity);
+    lowerTransportPIDController.setReference(-beltRPM, ControlType.kVelocity);
+    beltIntakePIDController.setReference(beltRPM, ControlType.kVelocity);
 
     double upperTransportSpeed = 0;
-    if (rpm > 0) {
-      upperTransportSpeed = rpm;
-    } else {
-      upperTransportSpeed = getIntakeMotorRPM(upperTransportSpeedTarget);
-    }
+    // if (rpm > 0) {
+    //   upperTransportSpeed = rpm;
+    // } else {
+      upperTransportSpeed = getIntakeMotorRPM(upperTransportSpeedTarget, 25);
+    // }
 
-    upperTransportPIDController.setReference(upperTransportSpeed, ControlType.kVelocity);
+    upperTransportPIDController.setReference(-upperTransportSpeed, ControlType.kVelocity);
   }
 }
