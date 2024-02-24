@@ -115,33 +115,8 @@ public class Elevator extends SubsystemBase {
 
         elevatorAngleAbsoluteEncoder = new DutyCycleEncoder(Constants.Elevator.elevatorAbsoluteEncoderDIOPort);
 
-        configMotorControllers();
-    }
-
-    public void configMotorControllers() {
-        elevatorExtensionMotor.restoreFactoryDefaults();
-        CANSparkMaxUtil.setCANSparkMaxBusUsage(elevatorExtensionMotor, Usage.kPositionOnly);
-        elevatorExtensionMotor.setSmartCurrentLimit(Constants.Elevator.extRetCurrentLimit);
-        elevatorExtensionMotor.setIdleMode(Constants.Elevator.elevatorIdleMode);
-        elevatorExtensionPIDController.setP(Constants.Elevator.elevatorKP);
-        elevatorExtensionPIDController.setD(Constants.Elevator.elevatorKD);
-        elevatorExtensionPIDController.setI(Constants.Elevator.elevatorKI);
-        elevatorExtensionPIDController.setFF(Constants.Elevator.elevatorKFF);
-        elevatorExtensionMotor.enableVoltageCompensation(Constants.Elevator.voltageComp);
-        elevatorExtensionMotor.setInverted(Constants.Elevator.invertPosition);
-        elevatorExtensionMotor.burnFlash();
-           
-        elevatorAngleMotor.restoreFactoryDefaults();
-        CANSparkMaxUtil.setCANSparkMaxBusUsage(elevatorAngleMotor, Usage.kPositionOnly);
-        elevatorAngleMotor.setSmartCurrentLimit(Constants.Elevator.eAngleCurrentLimit);
-        elevatorAngleMotor.setIdleMode(Constants.Elevator.eAngleIdleMode);
-        elevatorAnglePIDController.setP(Constants.Elevator.eAngleKP);
-        elevatorAnglePIDController.setI(Constants.Elevator.eAngleKI);
-        elevatorAnglePIDController.setD(Constants.Elevator.eAngleKD);
-        elevatorAnglePIDController.setFF(Constants.Elevator.eAngleKFF);
-        elevatorAngleMotor.enableVoltageCompensation(Constants.Elevator.voltageComp);
-        elevatorAngleMotor.setInverted(Constants.Elevator.invertAngle);
-        elevatorAngleMotor.burnFlash();
+        Constants.Elevator.positionMotorConfig.configure(elevatorExtensionMotor, elevatorExtensionPIDController);
+        Constants.Elevator.angleMotorConfig.configure(elevatorAngleMotor, elevatorAnglePIDController);
     }
 
     /**

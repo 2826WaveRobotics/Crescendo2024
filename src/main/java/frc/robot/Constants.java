@@ -8,6 +8,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import frc.lib.config.SwerveModuleConstants;
+import frc.lib.util.CANSparkMaxConfig;
+import frc.lib.util.CANSparkMaxUtil;
+import frc.lib.util.CANSparkMaxUtil.Usage;
 
 public final class Constants {
   /**
@@ -28,9 +31,6 @@ public final class Constants {
     public static final double wheelDiameter = Units.inchesToMeters(4.0); //4
     public static final double wheelCircumference = wheelDiameter * Math.PI;
 
-    public static final double openLoopRamp = 0.25;
-    public static final double closedLoopRamp = 0.0;
-
     public static final double driveGearRatio = (6.75 / 1.0); // 6.75:1
     public static final double angleGearRatio = (12.8 / 1.0); // 12.8:1
 
@@ -43,25 +43,6 @@ public final class Constants {
             new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),    // fr
             new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0),   // bl
             new Translation2d(-wheelBase / 2.0, trackWidth / 2.0));   // br
-
-    /* Swerve Voltage Compensation */
-    public static final double voltageComp = 12.0;
-
-    /* Swerve Current Limiting */
-    public static final int angleContinuousCurrentLimit = 20;
-    public static final int driveContinuousCurrentLimit = 40; 
-
-    /* Angle Motor PID Values */
-    public static final double angleKP = 0.1;
-    public static final double angleKI = 5e-7;
-    public static final double angleKD = 0.0;
-    public static final double angleKFF = 0.0;
-
-    /* Drive Motor PID Values */
-    public static final double driveKP = 0.15;
-    public static final double driveKI = 0.0;
-    public static final double driveKD = 0.0;
-    public static final double driveKFF = 0.0;
 
     /* Drive Motor Characterization Values */
     public static final double driveKS = 0.667;
@@ -86,16 +67,36 @@ public final class Constants {
      */
     public static final double maxAngularVelocity = 11.5;
 
-    /* Neutral Modes */
-    public static final CANSparkMax.IdleMode angleNeutralMode = CANSparkMax.IdleMode.kBrake;
-    public static final CANSparkMax.IdleMode driveNeutralMode = CANSparkMax.IdleMode.kBrake;
-
     /* Motor Inverts */
     public static final boolean driveInvert = false;
     public static final boolean angleInvert = false;
 
     /* Angle Encoder Invert */
     public static final boolean canCoderInvert = false;
+
+    /**
+     * The spark max config for the drive motors.
+     */
+    public static final CANSparkMaxConfig driveConfig = new CANSparkMaxConfig(
+      CANSparkMax.IdleMode.kBrake,
+      40, 50,
+      100,
+      0.15, 0.0, 0.0, 0.0,
+      12.0,
+      Usage.kAll
+    );
+    
+    /**
+     * The spark max config for the angle motors.
+     */
+    public static final CANSparkMaxConfig angleConfig = new CANSparkMaxConfig(
+      CANSparkMax.IdleMode.kBrake,
+      20, 30,
+      100,
+      0.1, 5e-7, 0.0, 0.0,
+      12.0,
+      Usage.kPositionOnly
+    );
 
     /* Module Specific Constants */
     /* Front Left Module - Module 0 */
@@ -163,33 +164,26 @@ public final class Constants {
     public static final int angleMotorCANID = 27;
     public static final int angleMotorID = 0;
 
-    public static final IdleMode rollerIdleMode = CANSparkMax.IdleMode.kCoast;
-    /**
-     * The current limit for the launch rollers, in amps, per motor.
-     */
-    public static final int rollerCurrentLimit = 30;
-    
-    /* launcher Roller motor PID Values */
-    public static final double rollerKP = 6e-5;
-    public static final double rollerKI = 0.0;
-    public static final double rollerKD = 0.0;
-    public static final double rollerKFF = 0.000175; 
+    public static CANSparkMaxConfig rollerConfig = new CANSparkMaxConfig(
+      CANSparkMax.IdleMode.kCoast,
+      15,
+      20,
+      100,
+      6e-5, 0.0, 0.0, 0.000175,
+      12.0,
+      CANSparkMaxUtil.Usage.kPositionOnly
+    );
 
-    public static final IdleMode angleIdleMode = CANSparkMax.IdleMode.kBrake;
-    /**
-     * The current limit for the angle motor, in amps.
-     */
-    public static final int angleCurrentLimit = 10;
+    public static CANSparkMaxConfig angleConfig = new CANSparkMaxConfig(
+      CANSparkMax.IdleMode.kBrake,
+      10,
+      15,
+      100,
+      0.1, 0.0, 0.0, 0.000175,
+      12.0,
+      CANSparkMaxUtil.Usage.kPositionOnly
+    );
     
-    /* launcher ANGLE motor PID Values */
-    public static final double angleKP = 0.1;
-    public static final double angleKI = 0.0;
-    public static final double angleKD = 0.0;
-    public static final double angleKFF = 0.000175; 
-    
-    /* Launcher Voltage Compensation */
-    public static final double voltageComp = 12.0;
-
     /**
      * The idle launch roller velocity in revolutions per minute.
      */
@@ -219,22 +213,16 @@ public final class Constants {
     public static final int frontIntakeMotorCANID = 46;
     // public static final int backIntakeMotorCANID = 51; // FIXME - Only 2 motors
     public static final int beltIntakeMotorCANID = 4;
-      
-    public static final double voltageComp = 12.0;
 
-    /* Intake motors' PID Values */
-    public static final double intakeKP = 6e-5;
-    public static final double intakeKI = 0.0;
-    public static final double intakeKD = 0.0;
-    public static final double intakeKFF = 0.000175;
-
-    public static final IdleMode intakeIdleMode = IdleMode.kCoast;
-
-    /**
-     * The current limit for each intake motor.
-     */
-    public static final int intakeCurrentLimit = 20;
-
+    public static final CANSparkMaxConfig intakeMotorConfig = new CANSparkMaxConfig(
+      IdleMode.kCoast,
+      15, 20,
+      100,
+      6e-5, 0.0, 0.0, 0.000175,
+      12.0,
+      CANSparkMaxUtil.Usage.kPositionOnly
+    );
+    
     /**
      * The belt pulley radius, in meters.
      */
@@ -270,41 +258,23 @@ public final class Constants {
     public static final int positionMotorCANID = 10;
     public static final int angleMotorCANID = 98;
 
-    public static final IdleMode elevatorIdleMode = CANSparkMax.IdleMode.kCoast;
-    /**
-     * The current limit for the elevator position motor, in amps, per motor.
-     */
-    public static final int extRetCurrentLimit = 30;
-    
-    /* Elevator position motor PID Values */
-    public static final double elevatorKP = 6e-5;
-    public static final double elevatorKI = 0.0;
-    public static final double elevatorKD = 0.0;
-    public static final double elevatorKFF = 0.000175; 
+    public static final CANSparkMaxConfig positionMotorConfig = new CANSparkMaxConfig(
+      IdleMode.kCoast,
+      20, 30,
+      100,
+      6e-5, 0.0, 0.0, 0.000175,
+      12.0,
+      CANSparkMaxUtil.Usage.kPositionOnly
+    );
 
-    public static final IdleMode eAngleIdleMode = CANSparkMax.IdleMode.kBrake;
-    /**
-     * The current limit for the elevator angle motor, in amps.
-     */
-    public static final int eAngleCurrentLimit = 10;
-    
-    /* Elevator ANGLE motor PID Values */
-    public static final double eAngleKP = 0.1;
-    public static final double eAngleKI = 0.0;
-    public static final double eAngleKD = 0.0;
-    public static final double eAngleKFF = 0.000175; 
-    
-    /* Elevator Voltage Compensation */
-    public static final double voltageComp = 12.0;
-  
-    /**
-     * If we should invert the angle motor direction.
-     */
-    public static final boolean invertAngle = false;
-    /**
-     * If we should invert the position motor direction.
-     */
-    public static final boolean invertPosition = false;
+    public static final CANSparkMaxConfig angleMotorConfig = new CANSparkMaxConfig(
+      IdleMode.kBrake,
+      8, 10,
+      100,
+      0.1, 0.0, 0.0, 0.000175,
+      12.0,
+      CANSparkMaxUtil.Usage.kPositionOnly
+    );
 
     /**
      * The maximum velocity of the elevator, meters per second.
@@ -353,18 +323,14 @@ public final class Constants {
     public static final int upperTransportMotorCANID = 57;
     public static final int lowerTransportMotorCANID = 54;
 
-    public static final IdleMode transportIdleMode = CANSparkMax.IdleMode.kCoast;
-    /**
-     * The current limit for the launch rollers, in amps, per motor.
-     */
-    public static final int transportCurrentLimit = 20;
-    public static final double voltageComp = 12;
-    
-    /* launcher Roller motor PID Values */
-    public static final double transportKP = 6e-5;
-    public static final double transportKI = 0.0;
-    public static final double transportKD = 0.0;
-    public static final double transportKFF = 0.000175;
+    public static final CANSparkMaxConfig transportMotorConfig = new CANSparkMaxConfig(
+      IdleMode.kCoast,
+      15, 20,
+      100,
+      6e-5, 0.0, 0.0, 0.000175,
+      12.0,
+      CANSparkMaxUtil.Usage.kPositionOnly
+    );
 
     /**
      * The speed that notes are moved into the launcher to shoot, in meters per second.
