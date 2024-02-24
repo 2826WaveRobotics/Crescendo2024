@@ -52,7 +52,12 @@ public class Launcher extends SubsystemBase {
 
     anglePIDController = angleLauncherMotor.getPIDController();
 
-    configMotorControllers();
+    Constants.Launcher.rollerConfig.configure(topRollerMotor, topLaunchRollerPIDController);
+    Constants.Launcher.rollerConfig.configure(bottomRollerMotor, bottomLaunchRollerPIDController);
+    Constants.Launcher.angleConfig.configure(angleLauncherMotor, anglePIDController);
+    angleLauncherMotor.setInverted(Constants.Launcher.invertAngle);
+    // TODO: Angle motor soft limits in the SPARK
+    launchRollersSlow();
 
     resetToAbsolute();
   }
@@ -68,45 +73,6 @@ public class Launcher extends SubsystemBase {
   public void resetToAbsolute() {
     double absolutePositionDegrees = (getAbsoluteLauncherAngleDegrees() - Constants.Launcher.angleOffset) % 360.;
     angleLauncherEncoder.setPosition(absolutePositionDegrees / 360. * Constants.Launcher.angleMotorGearboxReduction);
-  }
-
-  public void configMotorControllers() {
-    topRollerMotor.restoreFactoryDefaults();
-    CANSparkMaxUtil.setCANSparkMaxBusUsage(topRollerMotor, Usage.kPositionOnly);
-    topRollerMotor.setSmartCurrentLimit(Constants.Launcher.rollerCurrentLimit);
-    
-    topRollerMotor.setIdleMode(Constants.Launcher.rollerIdleMode);
-    topLaunchRollerPIDController.setP(Constants.Launcher.rollerKP);
-    topLaunchRollerPIDController.setI(Constants.Launcher.rollerKI);
-    topLaunchRollerPIDController.setD(Constants.Launcher.rollerKD);
-    topLaunchRollerPIDController.setFF(Constants.Launcher.rollerKFF);
-    topRollerMotor.enableVoltageCompensation(Constants.Launcher.voltageComp);
-    topRollerMotor.burnFlash();
-    
-    bottomRollerMotor.restoreFactoryDefaults();
-    CANSparkMaxUtil.setCANSparkMaxBusUsage(bottomRollerMotor, Usage.kPositionOnly);
-    bottomRollerMotor.setSmartCurrentLimit(Constants.Launcher.rollerCurrentLimit);
-    bottomRollerMotor.setIdleMode(Constants.Launcher.rollerIdleMode);
-    bottomLaunchRollerPIDController.setP(Constants.Launcher.rollerKP);
-    bottomLaunchRollerPIDController.setI(Constants.Launcher.rollerKI);
-    bottomLaunchRollerPIDController.setD(Constants.Launcher.rollerKD);
-    bottomLaunchRollerPIDController.setFF(Constants.Launcher.rollerKFF);
-    bottomRollerMotor.enableVoltageCompensation(Constants.Launcher.voltageComp);
-    bottomRollerMotor.burnFlash();
-
-    angleLauncherMotor.restoreFactoryDefaults();
-    CANSparkMaxUtil.setCANSparkMaxBusUsage(angleLauncherMotor, Usage.kPositionOnly);
-    angleLauncherMotor.setSmartCurrentLimit(Constants.Launcher.angleCurrentLimit);
-    angleLauncherMotor.setIdleMode(Constants.Launcher.angleIdleMode);
-    anglePIDController.setP(Constants.Launcher.angleKP);
-    anglePIDController.setI(Constants.Launcher.angleKI);
-    anglePIDController.setD(Constants.Launcher.angleKD);
-    anglePIDController.setFF(Constants.Launcher.angleKFF);
-    angleLauncherMotor.enableVoltageCompensation(Constants.Launcher.voltageComp);
-    angleLauncherMotor.setInverted(Constants.Launcher.invertAngle);
-    angleLauncherMotor.burnFlash();
-
-    this.launchRollersSlow();
   }
 
   /**

@@ -37,53 +37,11 @@ public class Transport extends SubsystemBase {
     beltIntakePIDController = beltIntakeMotor.getPIDController();
     upperTransportPIDController = upperTransportMotor.getPIDController();
     
-    configMotorControllers();
-  }
+    Constants.Intake.intakeMotorConfig.configure(beltIntakeMotor, beltIntakePIDController);
+    Constants.Intake.intakeMotorConfig.configure(frontIntakeMotor, frontIntakePIDController);
 
-  
-  public void configMotorControllers() {
-    frontIntakeMotor.restoreFactoryDefaults();
-    CANSparkMaxUtil.setCANSparkMaxBusUsage(frontIntakeMotor, Usage.kPositionOnly);
-    frontIntakeMotor.setSmartCurrentLimit(Constants.Intake.intakeCurrentLimit);
-    frontIntakeMotor.setIdleMode(Constants.Intake.intakeIdleMode);
-    frontIntakePIDController.setP(Constants.Intake.intakeKP);
-    frontIntakePIDController.setI(Constants.Intake.intakeKI);
-    frontIntakePIDController.setD(Constants.Intake.intakeKD);
-    frontIntakePIDController.setFF(Constants.Intake.intakeKFF);
-    frontIntakeMotor.enableVoltageCompensation(Constants.Intake.voltageComp);
-    frontIntakeMotor.burnFlash();
-    
-    lowerTransportMotor.restoreFactoryDefaults();
-    CANSparkMaxUtil.setCANSparkMaxBusUsage(lowerTransportMotor, Usage.kPositionOnly);
-    lowerTransportMotor.setSmartCurrentLimit(Constants.Transport.transportCurrentLimit);
-    lowerTransportMotor.setIdleMode(Constants.Transport.transportIdleMode);
-    lowerTransportPIDController.setP(Constants.Transport.transportKP);
-    lowerTransportPIDController.setI(Constants.Transport.transportKI);
-    lowerTransportPIDController.setD(Constants.Transport.transportKD);
-    lowerTransportPIDController.setFF(Constants.Transport.transportKFF);
-    lowerTransportMotor.enableVoltageCompensation(Constants.Transport.voltageComp);
-    lowerTransportMotor.burnFlash();
-    
-    beltIntakeMotor.restoreFactoryDefaults();
-    CANSparkMaxUtil.setCANSparkMaxBusUsage(beltIntakeMotor, Usage.kPositionOnly);
-    beltIntakeMotor.setSmartCurrentLimit(Constants.Intake.intakeCurrentLimit);
-    beltIntakeMotor.setIdleMode(Constants.Intake.intakeIdleMode);
-    beltIntakePIDController.setP(Constants.Intake.intakeKP);
-    beltIntakePIDController.setI(Constants.Intake.intakeKI);
-    beltIntakePIDController.setD(Constants.Intake.intakeKD);
-    beltIntakePIDController.setFF(Constants.Intake.intakeKFF);
-    beltIntakeMotor.enableVoltageCompensation(Constants.Intake.voltageComp);
-    beltIntakeMotor.burnFlash();
-
-    upperTransportMotor.restoreFactoryDefaults();
-    upperTransportMotor.setSmartCurrentLimit(Constants.Transport.transportCurrentLimit);
-    upperTransportMotor.enableVoltageCompensation(Constants.Transport.voltageComp);
-    upperTransportMotor.setIdleMode(Constants.Transport.transportIdleMode);
-    upperTransportPIDController.setP(Constants.Transport.transportKP);
-    upperTransportPIDController.setI(Constants.Transport.transportKI);
-    upperTransportPIDController.setD(Constants.Transport.transportKD);
-    upperTransportPIDController.setFF(Constants.Transport.transportKFF);
-    upperTransportMotor.burnFlash();
+    Constants.Transport.transportMotorConfig.configure(lowerTransportMotor, lowerTransportPIDController);
+    Constants.Transport.transportMotorConfig.configure(upperTransportMotor, upperTransportPIDController);
   }
 
   double desiredSpeedMetersPerSecond = 0;
