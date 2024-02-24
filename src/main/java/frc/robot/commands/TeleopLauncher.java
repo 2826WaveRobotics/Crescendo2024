@@ -65,13 +65,13 @@ public class TeleopLauncher extends Command {
             launcherSubsystem.launcherSpeed = 4500;
         }));
 
-        launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(45));
+        // launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(45));
         launcherUp.whileTrue(new RepeatCommand(new InstantCommand(() -> {
-            double launcherAngle = launcherSubsystem.getLauncherConchAngleDegrees() + 0.15;
+            double launcherAngle = launcherSubsystem.launcherAngle + 0.15;
             launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
         })));
         launcherDown.whileTrue(new RepeatCommand(new InstantCommand(() -> {
-            double launcherAngle = launcherSubsystem.getLauncherConchAngleDegrees() - 0.15;
+            double launcherAngle = launcherSubsystem.launcherAngle - 0.15;
             launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
         })));
 

@@ -93,7 +93,7 @@ public final class Constants {
       CANSparkMax.IdleMode.kBrake,
       20, 30,
       100,
-      0.1, 5e-7, 0.0, 0.0,
+      0.02, 5e-7, 0.0, 0.0,
       12.0,
       Usage.kPositionOnly
     );

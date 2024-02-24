@@ -18,6 +18,8 @@ import frc.robot.Constants;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkBase.SoftLimitDirection;
 
 // List class features here, including any motors, sensors, and functionality:
 // 2 Launcher motors to score notes
@@ -54,12 +56,25 @@ public class Launcher extends SubsystemBase {
 
     Constants.Launcher.rollerConfig.configure(topRollerMotor, topLaunchRollerPIDController);
     Constants.Launcher.rollerConfig.configure(bottomRollerMotor, bottomLaunchRollerPIDController);
-    Constants.Launcher.angleConfig.configure(angleLauncherMotor, anglePIDController);
+    // Constants.Launcher.angleConfig.configure(angleLauncherMotor, anglePIDController);
+    // angleLauncherMotor.setSoftLimit(SoftLimitDirection.kReverse, (float)Constants.Launcher.softStopMarginLow.getRotations());
+    // angleLauncherMotor.setSoftLimit(SoftLimitDirection.kForward, (float)(1 - Constants.Launcher.softStopMarginHigh.getRotations()));
+    // angleLauncherMotor.setInverted(Constants.Launcher.invertAngle);
+    
+    angleLauncherMotor.restoreFactoryDefaults();
+    CANSparkMaxUtil.setCANSparkMaxBusUsage(angleLauncherMotor, Usage.kPositionOnly);
+    angleLauncherMotor.setSmartCurrentLimit(15);
+    angleLauncherMotor.setIdleMode(IdleMode.kBrake);
+    anglePIDController.setP(0.1);
+    anglePIDController.setI(0.0);
+    anglePIDController.setD(0.0);
+    anglePIDController.setFF(0.000175);
+    angleLauncherMotor.enableVoltageCompensation(12.0);
     angleLauncherMotor.setInverted(Constants.Launcher.invertAngle);
-    // TODO: Angle motor soft limits in the SPARK
-    launchRollersSlow();
-
+    angleLauncherMotor.burnFlash();
     resetToAbsolute();
+
+    launchRollersSlow();
   }
 
   public double getAbsoluteLauncherAngleDegrees() {
@@ -78,7 +93,7 @@ public class Launcher extends SubsystemBase {
   /**
    * The current target launcher angle.
    */
-  double launcherAngle = 45;
+  public double launcherAngle = 45;
   public double launcherSpeed = 1200;
   /**
    * Calculates the required conch angle from the wanted launcher angle.
@@ -90,8 +105,8 @@ public class Launcher extends SubsystemBase {
     
     // All length units here are in inches
     double conchToPivotDistance = 5.153673;
-    double pivotToConchReactionBarDistance = 4.907;
-    double angleOffsetRadians = Units.degreesToRadians(30.826);
+    double pivotToConchReactionBarDistance = 4.507;
+    double angleOffsetRadians = Units.degreesToRadians(23.53);
     // Law of cosines
     double requiredRadius = Math.sqrt(
       conchToPivotDistance * conchToPivotDistance + pivotToConchReactionBarDistance * pivotToConchReactionBarDistance

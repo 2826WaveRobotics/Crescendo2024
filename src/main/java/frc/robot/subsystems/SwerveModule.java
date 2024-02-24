@@ -7,6 +7,7 @@ import com.ctre.phoenix6.signals.MagnetHealthValue;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -54,12 +55,15 @@ public class SwerveModule {
     integratedAngleEncoder = angleMotor.getEncoder();
     angleController = angleMotor.getPIDController();
     Constants.Swerve.angleConfig.configure(angleMotor, angleController);
+    integratedAngleEncoder.setPositionConversionFactor(Constants.Swerve.angleConversionFactor);
 
     /* Drive Motor Config */
     driveMotor = new CANSparkMax(moduleConstants.driveMotorID, CANSparkMax.MotorType.kBrushless);
     driveEncoder = driveMotor.getEncoder();
     driveController = driveMotor.getPIDController();
     Constants.Swerve.driveConfig.configure(driveMotor, driveController);
+    driveEncoder.setVelocityConversionFactor(Constants.Swerve.driveConversionVelocityFactor);
+    driveEncoder.setPositionConversionFactor(Constants.Swerve.driveConversionPositionFactor);
     
     driveMotor.setInverted(Constants.Swerve.driveInvert);
     driveEncoder.setVelocityConversionFactor(Constants.Swerve.driveConversionVelocityFactor);
@@ -67,7 +71,6 @@ public class SwerveModule {
     driveEncoder.setPosition(0.0);
     
     integratedAngleEncoder.setPositionConversionFactor(Constants.Swerve.angleConversionFactor);
-    resetToAbsolute();
 
     lastAngle = getState().angle;
 
