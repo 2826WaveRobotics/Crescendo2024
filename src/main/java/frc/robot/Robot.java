@@ -5,15 +5,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.config.CTREConfigs;
-import frc.robot.Constants.Launcher;
-
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
+import frc.robot.commands.NoteManagement.NoteState;
 
 
 /**
@@ -35,10 +30,6 @@ public class Robot extends TimedRobot {
    */
   private RobotContainer robotContainer;
 
-  private Launcher testLauncher;
-
-  // private boolean buttonPressed;
-
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -49,6 +40,12 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
+
+    addPeriodic(() -> {
+      double robotSpeed = robotContainer.getRobotSpeed();
+      NoteState noteManagementState = robotContainer.getNoteState();
+      robotContainer.lighting.periodic(robotSpeed, noteManagementState);
+    }, 0.1);
   }
 
   /**

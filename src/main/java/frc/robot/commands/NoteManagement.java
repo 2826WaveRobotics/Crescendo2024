@@ -13,7 +13,7 @@ public class NoteManagement extends Command {
     /**
      * The current state of the note in the robot.
      */
-    private enum NoteState {
+    public enum NoteState {
         /**
          * Active when there's no note in the robot.
          */
@@ -41,6 +41,14 @@ public class NoteManagement extends Command {
      * The current state of the note in the robot.
      */
     private NoteState currentState = NoteState.NoNote;
+
+    /**
+     * Gets the current state of the note in the robot.
+     * @return
+     */
+    public NoteState getNoteState() {
+        return currentState;
+    }
 
     /**
      * A map from the sensor states combined as a binary value to the note state.

@@ -7,27 +7,29 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
 import frc.robot.commands.NoteManagement;
 import frc.robot.commands.TeleopIntake;
 import frc.robot.commands.TeleopLauncher;
 import frc.robot.commands.TeleopSwerve;
+import frc.robot.commands.NoteManagement.NoteState;
 import frc.robot.commands.auto.LaunchCloseCommand;
-// import frc.robot.commands.auto.LaunchCloseCommand;
-// import frc.robot.commands.auto.LaunchStartCommand;
 import frc.robot.commands.auto.LaunchStartCommand;
 
 /**
@@ -37,7 +39,6 @@ import frc.robot.commands.auto.LaunchStartCommand;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-
   private final SendableChooser<Command> autoChooser;
 
   /* Controllers */
@@ -49,6 +50,26 @@ public class RobotContainer {
   private final Launcher launcherSubsystem = new Launcher();
   private final Transport transportSubsystem = new Transport();
   private final Elevator elevatorSubsystem = new Elevator();
+
+  public final Lighting lighting = new Lighting();
+
+  private final NoteManagement noteManagementCommand = new NoteManagement(
+    elevatorSubsystem,
+    transportSubsystem,
+    new Trigger(() -> false)
+  );
+
+  public NoteState getNoteState() {
+    return noteManagementCommand.getNoteState();
+  }
+
+  /**
+   * Gets the current robot speed in meters per second.
+   * @return
+   */
+  public double getRobotSpeed() {
+    return swerveSubsystem.getRobotSpeed();
+  }
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
@@ -69,13 +90,7 @@ public class RobotContainer {
         () -> operator.b().getAsBoolean()
       ));
 
-    elevatorSubsystem.setDefaultCommand(
-      new NoteManagement(
-        elevatorSubsystem,
-        transportSubsystem,
-        new Trigger(() -> false)
-      )
-    );
+    elevatorSubsystem.setDefaultCommand(noteManagementCommand);
 
     launcherSubsystem.setDefaultCommand(
       new TeleopLauncher(
@@ -102,7 +117,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("Launch rollers fast", new InstantCommand(launcherSubsystem::launchRollersFast));
     NamedCommands.registerCommand("Launch rollers slow", new InstantCommand(launcherSubsystem::launchRollersSlow));
 
-    autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
+    autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Mode", autoChooser);
   }
 

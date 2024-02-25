@@ -16,6 +16,7 @@ enum LightState {
   teleopNoteIntookState,
   teleopTransportState,
   teleopNoteReadyState,
+  teleopEjectingNoteState,
   teleopStaticState,
 
   lightStateCount
@@ -29,7 +30,7 @@ enum Alliance {
 };
 
 LightState state = teleopStaticState;
-Alliance alliance = redAlliance;
+Alliance alliance = blueAlliance;
 uint8_t robotSpeed = 0;
 
 int delayTime = 20;
@@ -110,6 +111,11 @@ void loop() {
     case teleopNoteReadyState: {
       teleopNoteReadyPattern();
       shiftColors(1 * shiftColorMultiplier);
+      break;
+    }
+    case teleopEjectingNoteState: {
+      teleopEjectingNotePattern();
+      shiftColors(15 * shiftColorMultiplier);
       break;
     }
     case teleopTransportState: {
@@ -202,14 +208,6 @@ void shiftColors(int speedMultiplier) {
   shiftAmount = (shiftAmount + speedMultiplier) % NUM_LEDS;
 
   rightRotate(leds, shiftAmount, NUM_LEDS);
-  // CRGB newleds[NUM_LEDS];
-  // for(int i = 0; i < (NUM_LEDS); i++) {
-  //   newleds[i] = leds[(i + shiftAmount) % NUM_LEDS];
-  // }
-
-  // for(int i = 0; i < (NUM_LEDS); i++) {
-  //   leds[i] = newleds[i];
-  // }
 }
 
 // A slightly dark version of the red or blue color, depending on which alliance we're on.
@@ -265,6 +263,17 @@ void teleopTransportPattern() {
 // Alternating stripes with WAVE blue and green
 void teleopNoteReadyPattern() {
   chase(CRGB(0, 160, 195), 8, CRGB(115, 255, 38), 8, 5);
+}
+
+// When note is being ejected in teleop:
+// Rainbow flashing
+void teleopEjectingNotePattern() {
+  int fade = getPulseFade();
+  int value = 255 - fade / 2;
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CHSV((int)((float)i / NUM_LEDS * 2000) % 360, 128, value); 
+  }
 }
 
 // While doing nothing during teleop:

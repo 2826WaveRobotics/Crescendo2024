@@ -74,7 +74,7 @@ public class Swerve extends SubsystemBase {
       swerveModules[3].getPosition()
     };
 
-    Pose2d startPose = new Pose2d(new Translation2d(1.38, 5.45), new Rotation2d());
+    Pose2d startPose = new Pose2d(new Translation2d(0.0, 0.0), new Rotation2d());
 
     swerveOdometry = new SwerveDrivePoseEstimator(
       Constants.Swerve.swerveKinematics,
@@ -118,6 +118,15 @@ public class Swerve extends SubsystemBase {
 
     // Set up custom logging to add the current path to a field 2d widget
     PathPlannerLogging.setLogActivePathCallback((poses) -> field.getObject("path").setPoses(poses));
+  }
+
+  /**
+   * Gets the absolute speed of the robot in meters per second.
+   * @return
+   */
+  public double getRobotSpeed() {
+    ChassisSpeeds chassisSpeeds = getRobotRelativeSpeeds();
+    return Math.sqrt(chassisSpeeds.vxMetersPerSecond + chassisSpeeds.vyMetersPerSecond);
   }
 
   public ChassisSpeeds getRobotRelativeSpeeds() {

@@ -61,7 +61,7 @@ public final class Constants {
     /**
      * The maximum robot movement speed in meters per second.
      */
-    public static final double maxSpeed = 4.5;
+    public static final double maxSpeed = 4.0;
     /**
      * The maximum robot angular velocity in radians per second.
      */
