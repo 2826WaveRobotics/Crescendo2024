@@ -132,6 +132,8 @@ public class RobotContainer {
     driver.y().onTrue(new InstantCommand(swerveSubsystem::zeroGyro));
     driver.b().onTrue(new InstantCommand(swerveSubsystem::updateOdometryPose));
 
+    driver.x().onTrue(new InstantCommand(swerveSubsystem::resetToAbsolute));
+
     /* Operator Buttons */
     operator.a().onTrue(new InstantCommand(launcherSubsystem::launchRollersFast));
     operator.leftBumper().onTrue(new InstantCommand(launcherSubsystem::launchRollersSlow));

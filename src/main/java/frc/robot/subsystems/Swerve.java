@@ -244,6 +244,15 @@ public class Swerve extends SubsystemBase {
   }
 
   /**
+   * Resets all swerve modules to an absolute position.
+   */
+  public void resetToAbsolute() {
+    for (SwerveModule mod : swerveModules) {
+      mod.resetToAbsolute();
+    }
+  }
+
+  /**
    * Gets the current yaw of the gyro, relative to when we last zeroed it.  
    * Positive Z/yaw is left.
    * @return

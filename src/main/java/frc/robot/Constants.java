@@ -34,15 +34,15 @@ public final class Constants {
     public static final double driveGearRatio = (6.75 / 1.0); // 6.75:1
     public static final double angleGearRatio = (12.8 / 1.0); // 12.8:1
 
-    public static String[] moduleNames ={"FRONT_LEFT","FRONT_RIGHT","BACK_LEFT","BACK_RIGHT"};
+    public static String[] moduleNames ={"FRONT_RIGHT","FRONT_LEFT","BACK_LEFT","BACK_RIGHT"};
 
     // swerve drive kinematics object created based on module location
     public static final SwerveDriveKinematics swerveKinematics =
         new SwerveDriveKinematics(
-            new Translation2d(wheelBase / 2.0, trackWidth / 2.0),     // fl
-            new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),    // fr
-            new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0),   // bl
-            new Translation2d(-wheelBase / 2.0, trackWidth / 2.0));   // br
+            new Translation2d(wheelBase / 2.0,   trackWidth / 2.0),  // fr
+            new Translation2d(wheelBase / 2.0,  -trackWidth / 2.0),  // fl
+            new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0),  // bl
+            new Translation2d(-wheelBase / 2.0,  trackWidth / 2.0)); // br
 
     /* Drive Motor Characterization Values */
     public static final double driveKS = 0.667;
@@ -81,7 +81,7 @@ public final class Constants {
       CANSparkMax.IdleMode.kBrake,
       40, 50,
       100,
-      0.15, 0.0, 0.0, 0.0,
+      0.1, 0.0, 0.0, 0.0,
       12.0,
       Usage.kAll
     );
@@ -104,8 +104,7 @@ public final class Constants {
       public static final int driveMotorID = 11;
       public static final int angleMotorID = 12;
       public static final int canCoderID = 13;
-      // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(187);
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(33.574);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(348.134);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -115,8 +114,7 @@ public final class Constants {
       public static final int driveMotorID = 21;
       public static final int angleMotorID = 22;
       public static final int canCoderID = 23;
-      // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(303.5);
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(102.832);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(103.88);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -126,7 +124,7 @@ public final class Constants {
       public static final int driveMotorID = 31;
       public static final int angleMotorID = 32;
       public static final int canCoderID = 33;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(163.7402);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(66.533);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -136,7 +134,7 @@ public final class Constants {
       public static final int driveMotorID = 41;
       public static final int angleMotorID = 42;
       public static final int canCoderID = 43;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(307.441);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(306.738);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -256,7 +254,7 @@ public final class Constants {
     public static final int noteInTransitionSensorDIOPort = 6;
 
     public static final int positionMotorCANID = 10;
-    public static final int angleMotorCANID = 98;
+    public static final int angleMotorCANID = 45;
 
     public static final CANSparkMaxConfig positionMotorConfig = new CANSparkMaxConfig(
       IdleMode.kCoast,

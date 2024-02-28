@@ -13,7 +13,7 @@ public class ShuffleboardContent {
         int moduleNumber = module.moduleNumber;
         String[] modulePosition = { "FL", "FR", "BL", "BR" };
         String modulePositionAbbreviation = modulePosition[moduleNumber];
-        String swerveModuleHeader = module.getModuleName(moduleNumber) + " Module";
+        String swerveModuleHeader = module.getModuleName(moduleNumber) + " Module (ID " + moduleNumber + ")";
 
         ShuffleboardLayout swerveModuleLayout = Shuffleboard.getTab("Swerve Module Data")
                 .getLayout(swerveModuleHeader, BuiltInLayouts.kList).withPosition(moduleNumber * 2, 0)
