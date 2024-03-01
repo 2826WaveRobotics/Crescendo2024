@@ -33,10 +33,16 @@ import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 
 public class Swerve extends SubsystemBase {
+  private static Swerve instance = null;
+  public static Swerve getInstance() {
+      if (instance == null) {
+          instance = new Swerve();
+      }
+      return instance;
+  }
+
   private final Pigeon2 gyro;
 
-  // TESTING
-  // previously swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getYaw(), swerveModulePositions);
   private SwerveDrivePoseEstimator swerveOdometry;
   private SwerveModule[] swerveModules;
 
@@ -54,7 +60,7 @@ public class Swerve extends SubsystemBase {
    */
   private static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(5));
 
-  public Swerve() {
+  private Swerve() {
     gyro = new Pigeon2(Constants.Swerve.pigeonID);
     gyro.getConfigurator().apply(new Pigeon2Configuration());
     zeroGyro();

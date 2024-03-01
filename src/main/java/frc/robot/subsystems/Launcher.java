@@ -1,16 +1,10 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.CANSparkMaxUtil;
 import frc.lib.util.CANSparkMaxUtil.Usage;
 import frc.robot.Constants;
@@ -19,13 +13,20 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkBase.SoftLimitDirection;
 
 // List class features here, including any motors, sensors, and functionality:
 // 2 Launcher motors to score notes
 // 1 motor to aim (~30-60 degree window)
 // 1 CAN Coder for getting the absolute angle
 public class Launcher extends SubsystemBase {
+  private static Launcher instance = null;
+  public static Launcher getInstance() {
+      if (instance == null) {
+          instance = new Launcher();
+      }
+      return instance;
+  }
+
   // Declare member variables here
   private CANSparkMax topRollerMotor;
   private CANSparkMax bottomRollerMotor;
@@ -40,7 +41,7 @@ public class Launcher extends SubsystemBase {
   
   boolean intakingNote = false;
   
-  public Launcher() {
+  private Launcher() {
     // Instantiate member variables and necessary code
     topRollerMotor = new CANSparkMax(Constants.Launcher.topRollerCANID, CANSparkMax.MotorType.kBrushless);
     bottomRollerMotor = new CANSparkMax(Constants.Launcher.bottomRollerCANID, CANSparkMax.MotorType.kBrushless);

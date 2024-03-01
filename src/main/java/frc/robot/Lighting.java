@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.I2C.Port;
 import frc.robot.commands.NoteManagement.NoteState;
 
+// TODO: Change to a subsystem
+
 public class Lighting {
     /**
      * The possible lighting states.  

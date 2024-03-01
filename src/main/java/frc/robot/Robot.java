@@ -4,7 +4,15 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.TimedRobot;
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.config.CTREConfigs;
@@ -17,7 +25,7 @@ import frc.robot.commands.NoteManagement.NoteState;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
   public static CTREConfigs ctreConfigs;
   /**
    * The command instance for the robot's autonomous command state.
@@ -36,16 +44,36 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    ctreConfigs = new CTREConfigs();
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
-    robotContainer = new RobotContainer();
+    Logger.recordMetadata("ProjectName", "Crescendo2024"); // Set a metadata value
+    Logger.recordMetadata("GitInformation", 
+      "Hash " +
+      BuildConstants.GIT_SHA +
+      " on " + 
+      BuildConstants.GIT_BRANCH +
+      (BuildConstants.DIRTY == 1 ? "*" : "") // Add a "*" if the build is dirty. TODO: Fix warnings here since DIRTY is recognized as readonly even though it shouldn't be.
+    );
+    Logger.recordMetadata("BuiltOn", BuildConstants.BUILD_DATE); // Set a metadata value
 
-    addPeriodic(() -> {
-      double robotSpeed = robotContainer.getRobotSpeed();
-      NoteState noteManagementState = robotContainer.getNoteState();
-      robotContainer.lighting.periodic(robotSpeed, noteManagementState);
-    }, 0.1);
+    if(isReal()) {
+      Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+      Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables for use with AdvantageScope
+      @SuppressWarnings({"unused", "resource"}) // This is a dummy object to enable power distribution logging
+      PowerDistribution powerDistributionBoard = new PowerDistribution(1, ModuleType.kRev); // Enables power distribution logging
+    } else {
+      setUseTiming(false); // Run as fast as possible
+      String logPath = LogFileUtil.findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
+      Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
+      Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
+    }
+
+    // Logger.disableDeterministicTimestamps() // See "Deterministic Timestamps" in the "Understanding Data Flow" page
+    Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
+
+
+    ctreConfigs = new CTREConfigs();
+    // Instantiate our RobotContainer.  This will perform all our button bindings, put our
+    // autonomous chooser on the dashboard, and do anything else required for initialization.
+    robotContainer = new RobotContainer();
   }
 
   /**
@@ -62,6 +90,10 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    
+    double robotSpeed = robotContainer.getRobotSpeed();
+    NoteState noteManagementState = robotContainer.getNoteState();
+    robotContainer.lighting.periodic(robotSpeed, noteManagementState);
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

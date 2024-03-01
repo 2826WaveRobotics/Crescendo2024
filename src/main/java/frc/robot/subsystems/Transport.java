@@ -5,8 +5,6 @@ import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.util.CANSparkMaxUtil;
-import frc.lib.util.CANSparkMaxUtil.Usage;
 import frc.robot.Constants;
 
 // List class features here, including any motors, sensors, and functionality:
@@ -14,6 +12,14 @@ import frc.robot.Constants;
 // Primary motor has first contact with the Note.  Secondary controls the rollers behind the primary motor.
 // This is the intake subsystem where the intake is fully internal in the robot
 public class Transport extends SubsystemBase {
+  private static Transport instance = null;
+  public static Transport getInstance() {
+      if (instance == null) {
+          instance = new Transport();
+      }
+      return instance;
+  }
+
   // Declare member variables here
   private CANSparkMax frontIntakeMotor;
   private CANSparkMax lowerTransportMotor;
@@ -25,7 +31,7 @@ public class Transport extends SubsystemBase {
   private SparkPIDController lowerTransportPIDController;
   private SparkPIDController beltIntakePIDController;
 
-  public Transport() {
+  private Transport() {
     // Instantiate member variables and necessary code
     frontIntakeMotor = new CANSparkMax(Constants.Intake.frontIntakeMotorCANID, CANSparkMax.MotorType.kBrushless);
     lowerTransportMotor = new CANSparkMax(Constants.Transport.lowerTransportMotorCANID, CANSparkMax.MotorType.kBrushless);

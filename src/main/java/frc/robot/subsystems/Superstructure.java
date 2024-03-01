@@ -1,15 +1,23 @@
-package frc.robot.commands;
+package frc.robot.subsystems;
 
 import java.util.HashMap;
-import edu.wpi.first.wpilibj2.command.Command;
+
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.Transport;
 
-public class NoteManagement extends Command {
+public class Superstructure extends SubsystemBase {
+    private static Superstructure instance = null;
+    public static Superstructure getInstance() {
+        if (instance == null) {
+            instance = new Superstructure();
+        }
+        return instance;
+    }
+
+    
     /**
      * The current state of the note in the robot.
      */
@@ -71,6 +79,7 @@ public class NoteManagement extends Command {
      * Updates the current state based on the sensor values.
      */
     private void updateNoteState() {
+        // TODO: Change to a NoteSensors subsystem
         currentState = sensorStateMap.get(
             (elevatorSubsystem.getIntakeSensorActivated() ? 1 : 0) +
             ((elevatorSubsystem.getNoteInTransitionSensorActivated() ? 1 : 0) << 1) +
@@ -80,17 +89,19 @@ public class NoteManagement extends Command {
 
     private Elevator elevatorSubsystem;
     private Transport transportSubsystem;
-    private Trigger launchNoteTrigger;
 
-    public NoteManagement(
-            Elevator elevatorSubsystem,
-            Transport transportSubsystem,
-            Trigger launchNoteTrigger) {
-        this.elevatorSubsystem = elevatorSubsystem;
-        this.transportSubsystem = transportSubsystem;
-        this.launchNoteTrigger = launchNoteTrigger;
+    private Superstructure() {
+        this.elevatorSubsystem = Elevator.getInstance();
+        this.transportSubsystem = Transport.getInstance();
+        
+        Trigger ejecting = new Trigger(() -> {
+            return currentState == NoteState.EjectingNote;
+        });
+        ejecting.onTrue(new InstantCommand(() -> transportSubsystem.ejectNote()));
+        ejecting.onFalse(new WaitCommand(0.5).andThen(new InstantCommand(() -> transportSubsystem.stopEjectingNote())));
 
-        addRequirements(elevatorSubsystem);
+        Trigger readyToLaunch = new Trigger(() -> currentState == NoteState.ReadyToLaunch);
+        readyToLaunch.onTrue(new InstantCommand(() -> transportSubsystem.setActive(false)));
     }
 
     /**
@@ -128,21 +139,7 @@ public class NoteManagement extends Command {
     }
 
     @Override
-    public void initialize() {
-        Trigger ejecting = new Trigger(() -> {
-            return currentState == NoteState.EjectingNote;
-        });
-        ejecting.onTrue(new InstantCommand(() -> transportSubsystem.ejectNote()));
-        ejecting.onFalse(new WaitCommand(0.5).andThen(new InstantCommand(() -> transportSubsystem.stopEjectingNote())));
-
-        Trigger readyToLaunch = new Trigger(() -> currentState == NoteState.ReadyToLaunch);
-        readyToLaunch.onTrue(new InstantCommand(() -> transportSubsystem.setActive(false)));
-
-        launchNoteTrigger.onTrue(new InstantCommand(this::launchNote));
-    }
-
-    @Override
-    public void execute() {
+    public void periodic() {
         updateNoteState();
         
         double upperTransportSpeed = 0;

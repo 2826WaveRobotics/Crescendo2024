@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -10,11 +9,17 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.util.CANSparkMaxUtil;
-import frc.lib.util.CANSparkMaxUtil.Usage;
 import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
+    private static Elevator instance = null;
+    public static Elevator getInstance() {
+        if (instance == null) {
+            instance = new Elevator();
+        }
+        return instance;
+    }
+
     /**
      * The states that the elevator can be in.
      */
@@ -98,7 +103,7 @@ public class Elevator extends SubsystemBase {
         return !noteInTransitionSensor.get();
     }
 
-    public Elevator() {
+    private Elevator() {
         elevatorExtensionMotor = new CANSparkMax(Constants.Elevator.positionMotorCANID, MotorType.kBrushless);
         elevatorExtensionMotor.setInverted(false);
         elevatorAngleMotor = new CANSparkMax(Constants.Elevator.angleMotorCANID, MotorType.kBrushless);
