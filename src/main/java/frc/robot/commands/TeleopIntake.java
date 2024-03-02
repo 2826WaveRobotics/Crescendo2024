@@ -32,7 +32,7 @@ public class TeleopIntake extends Command {
         //  * A trigger for the intake toggle button, from 0 to 1. Gets the value from
         //  * the intake speed axis.
         //  */
-        // Trigger intakeTrigger  = new Trigger (() -> {
+        // Trigger intakeTrigger = new Trigger(() -> {
         //     return driver.getRawAxis(XboxController.Axis.kRightTrigger.value) > Constants.Intake.intakeDeadband;
         // });
 
@@ -45,7 +45,8 @@ public class TeleopIntake extends Command {
     public void execute() {
         if(DriverStation.isAutonomous()) return;
 
-        transportSubsystem.setIntakeSpeed(bottomRollersRunning.getAsBoolean() ? (reverseTransport.getAsBoolean() ? -10.0 : 10.0) : 0);
-        transportSubsystem.setUpperTransportSpeed(topRollersRunning.getAsBoolean() ? (reverseTransport.getAsBoolean() ? -10.0 : 10.0) : 0);
+        double transportSpeed = (reverseTransport.getAsBoolean() ? -10.0 : 10.0);
+        transportSubsystem.setIntakeSpeed(bottomRollersRunning.getAsBoolean() ? transportSpeed : 0);
+        transportSubsystem.setUpperTransportSpeed(topRollersRunning.getAsBoolean() ? transportSpeed : 0);
     }
 }

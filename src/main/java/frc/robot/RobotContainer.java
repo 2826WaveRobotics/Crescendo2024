@@ -7,29 +7,16 @@
 
 package frc.robot;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.drive.Swerve;
-import frc.robot.commands.NoteManagement;
-import frc.robot.commands.TeleopIntake;
-import frc.robot.commands.TeleopLauncher;
-import frc.robot.commands.TeleopSwerve;
-import frc.robot.commands.NoteManagement.NoteState;
 import frc.robot.commands.auto.LaunchCloseCommand;
 import frc.robot.commands.auto.LaunchStartCommand;
 
@@ -40,74 +27,32 @@ import frc.robot.commands.auto.LaunchStartCommand;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-  private final SendableChooser<Command> autoChooser;
-
-  /* Controllers */
-  private final CommandXboxController driver = new CommandXboxController(0);
-  private final CommandXboxController operator = new CommandXboxController(1);
-
-  /* Subsystems */
-  private final Swerve swerveSubsystem = new Swerve();
-  private final Launcher launcherSubsystem = new Launcher();
-  private final Transport transportSubsystem = new Transport();
-  private final Elevator elevatorSubsystem = new Elevator();
-
-  public final Lighting lighting = new Lighting();
-
-  private final NoteManagement noteManagementCommand = new NoteManagement(
-    elevatorSubsystem,
-    transportSubsystem,
-    new Trigger(() -> false)
-  );
-
-  public NoteState getNoteState() {
-    return noteManagementCommand.getNoteState();
-  }
-
-  /**
-   * Gets the current robot speed in meters per second.
-   * @return
-   */
-  public double getRobotSpeed() {
-    return swerveSubsystem.getRobotSpeed();
-  }
+  private final LoggedDashboardChooser<Command> autoChooser;
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
-    swerveSubsystem.setDefaultCommand(
-      new TeleopSwerve(
-        swerveSubsystem,
-        () -> -driver.getRawAxis(XboxController.Axis.kLeftY.value),
-        () -> -driver.getRawAxis(XboxController.Axis.kLeftX.value),
-        () -> -driver.getRawAxis(XboxController.Axis.kRightX.value),
-        () -> !driver.leftBumper().getAsBoolean()
-      ));
+    Swerve swerveSubsystem = Swerve.getInstance();
     
-    transportSubsystem.setDefaultCommand(
-      new TeleopIntake(
-        transportSubsystem,
-        () -> operator.getRightTriggerAxis() > Constants.triggerDeadband,
-        () -> operator.getLeftTriggerAxis() > Constants.triggerDeadband,
-        () -> operator.b().getAsBoolean()
-      ));
+    registerAutoCommands();
 
-    elevatorSubsystem.setDefaultCommand(noteManagementCommand);
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    launcherSubsystem.setDefaultCommand(
-      new TeleopLauncher(
-        launcherSubsystem,
-        operator.y(),
-        operator.a(),
-        operator.b(),
-        operator.povUp(),
-        operator.povDown(),
-        operator.povRight(),
-        operator.povLeft()
-      )
-    );
-    
-    // Configure the button bindings
-    configureButtonBindings();
+    // Set up SysId routines
+    autoChooser.addOption("Drive SysId (Quasistatic Forward)", swerveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption("Drive SysId (Quasistatic Reverse)", swerveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption("Drive SysId (Dynamic Forward)",     swerveSubsystem.sysIdDynamic    (SysIdRoutine.Direction.kForward));
+    autoChooser.addOption("Drive SysId (Dynamic Reverse)",     swerveSubsystem.sysIdDynamic    (SysIdRoutine.Direction.kReverse));
+
+    Controls.getInstance().configureControls();
+  }
+
+  /**
+   * Registers the NamedCommands used for PathPlanner auto commands.
+   */
+  private void registerAutoCommands() {
+    Launcher launcherSubsystem = Launcher.getInstance();
+    Transport transportSubsystem = Transport.getInstance();
+
     NamedCommands.registerCommand("Launch close", new LaunchCloseCommand(launcherSubsystem, transportSubsystem));
     NamedCommands.registerCommand("Launch start line", new LaunchStartCommand(launcherSubsystem, transportSubsystem));
     NamedCommands.registerCommand("Enable intake", new InstantCommand(() -> transportSubsystem.setActive(true)));
@@ -117,26 +62,6 @@ public class RobotContainer {
     }));
     NamedCommands.registerCommand("Launch rollers fast", new InstantCommand(launcherSubsystem::launchRollersFast));
     NamedCommands.registerCommand("Launch rollers slow", new InstantCommand(launcherSubsystem::launchRollersSlow));
-
-    autoChooser = AutoBuilder.buildAutoChooser();
-    SmartDashboard.putData("Auto Mode", autoChooser);
-  }
-
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
-  private void configureButtonBindings() {
-    /* Driver Buttons */
-    driver.y().onTrue(new InstantCommand(swerveSubsystem::zeroGyro));
-    driver.b().onTrue(new InstantCommand(swerveSubsystem::updateOdometryPose));
-
-    /* Operator Buttons */
-    operator.a().onTrue(new InstantCommand(launcherSubsystem::launchRollersFast));
-    operator.leftBumper().onTrue(new InstantCommand(launcherSubsystem::launchRollersSlow));
-    operator.rightBumper().onTrue(new InstantCommand(launcherSubsystem::launchRollersFast));  
   }
 
   /**
@@ -145,6 +70,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+    return autoChooser.get();
   }
 }

@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.subsystems.noteSensors.NoteSensors;
 
 public class Superstructure extends SubsystemBase {
     private static Superstructure instance = null;
@@ -17,7 +18,6 @@ public class Superstructure extends SubsystemBase {
         return instance;
     }
 
-    
     /**
      * The current state of the note in the robot.
      */
@@ -79,26 +79,22 @@ public class Superstructure extends SubsystemBase {
      * Updates the current state based on the sensor values.
      */
     private void updateNoteState() {
-        // TODO: Change to a NoteSensors subsystem
+        NoteSensors noteSensorsSubsystem = NoteSensors.getInstance();
         currentState = sensorStateMap.get(
-            (elevatorSubsystem.getIntakeSensorActivated() ? 1 : 0) +
-            ((elevatorSubsystem.getNoteInTransitionSensorActivated() ? 1 : 0) << 1) +
-            ((elevatorSubsystem.getNoteInPositionSensorActivated() ? 1 : 0) << 2)
+            (noteSensorsSubsystem.getIntakeSensorActivated() ? 1 : 0) +
+            ((noteSensorsSubsystem.getNoteInTransitionSensorActivated() ? 1 : 0) << 1) +
+            ((noteSensorsSubsystem.getNoteInPositionSensorActivated() ? 1 : 0) << 2)
         );
     }
 
-    private Elevator elevatorSubsystem;
-    private Transport transportSubsystem;
-
     private Superstructure() {
-        this.elevatorSubsystem = Elevator.getInstance();
-        this.transportSubsystem = Transport.getInstance();
-        
+        Transport transportSubsystem = Transport.getInstance();
+
         Trigger ejecting = new Trigger(() -> {
             return currentState == NoteState.EjectingNote;
         });
-        ejecting.onTrue(new InstantCommand(() -> transportSubsystem.ejectNote()));
-        ejecting.onFalse(new WaitCommand(0.5).andThen(new InstantCommand(() -> transportSubsystem.stopEjectingNote())));
+        ejecting.onTrue(new InstantCommand(transportSubsystem::ejectNote));
+        ejecting.onFalse(new WaitCommand(0.5).andThen(new InstantCommand(transportSubsystem::stopEjectingNote)));
 
         Trigger readyToLaunch = new Trigger(() -> currentState == NoteState.ReadyToLaunch);
         readyToLaunch.onTrue(new InstantCommand(() -> transportSubsystem.setActive(false)));

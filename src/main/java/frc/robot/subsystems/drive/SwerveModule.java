@@ -1,173 +1,179 @@
 package frc.robot.subsystems.drive;
 
-import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.signals.MagnetHealthValue;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
+import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import frc.lib.config.SwerveModuleConstants;
-import frc.lib.math.OnboardModuleState;
-import frc.lib.util.CANCoderUtil;
-import frc.lib.util.ShuffleboardContent;
-import frc.lib.util.CANCoderUtil.CCUsage;
 import frc.robot.Constants;
-import frc.robot.Robot;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 
 public class SwerveModule {
-  public int moduleNumber;
-  private Rotation2d lastAngle;
-  private Rotation2d angleOffset;
+  /**
+   * The number of times per second we read odometry data.
+   */
+  static final double ODOMETRY_FREQUENCY = 250.0;
 
-  private CANSparkMax angleMotor;
-  private CANSparkMax driveMotor;
+  private final SwerveModuleIO io;
+  private final SwerveModuleIOInputsAutoLogged inputs = new SwerveModuleIOInputsAutoLogged();
+  public int moduleIndex;
 
-  private RelativeEncoder driveEncoder;
-  private RelativeEncoder integratedAngleEncoder;
-  private CANcoder absoluteAngleEncoder;
-
-  private final SparkPIDController driveController;
-  private final SparkPIDController angleController;
-
-  private final SimpleMotorFeedforward feedforward =
-      new SimpleMotorFeedforward(
-          Constants.Swerve.driveKS, Constants.Swerve.driveKV, Constants.Swerve.driveKA);
+  private final SimpleMotorFeedforward driveFeedforward;
+  private final PIDController driveFeedback;
+  private final PIDController turnFeedback;
+  private Rotation2d angleSetpoint = null; // Setpoint for closed loop control, null for open loop
+  private Double speedSetpoint = null; // Setpoint for closed loop control, null for open loop
+  private Rotation2d turnRelativeOffset = null; // Relative + Offset = Absolute
+  private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
   
-  public SwerveModule(int moduleNumber, SwerveModuleConstants moduleConstants) {
-    this.moduleNumber = moduleNumber;
-    angleOffset = moduleConstants.angleOffset;
+  public SwerveModule(int index, SwerveModuleIO io) {
+    this.io = io;
+    moduleIndex = index;
 
-    /* Angle Encoder Config */
-    absoluteAngleEncoder = new CANcoder(moduleConstants.cancoderID);
-    configAngleEncoder();
-
-    /* Angle Motor Config */
-    angleMotor = new CANSparkMax(moduleConstants.angleMotorID, CANSparkMax.MotorType.kBrushless);
-    integratedAngleEncoder = angleMotor.getEncoder();
-    angleController = angleMotor.getPIDController();
-    Constants.Swerve.angleConfig.configure(angleMotor, angleController);
-    integratedAngleEncoder.setPositionConversionFactor(Constants.Swerve.angleConversionFactor);
-    resetToAbsolute();
-
-    /* Drive Motor Config */
-    driveMotor = new CANSparkMax(moduleConstants.driveMotorID, CANSparkMax.MotorType.kBrushless);
-    driveEncoder = driveMotor.getEncoder();
-    driveController = driveMotor.getPIDController();
-    Constants.Swerve.driveConfig.configure(driveMotor, driveController);
-    driveEncoder.setVelocityConversionFactor(Constants.Swerve.driveConversionVelocityFactor);
-    driveEncoder.setPositionConversionFactor(Constants.Swerve.driveConversionPositionFactor);
+    // NOTE: Maybe we should have different PID values for simulations?
+    driveFeedforward = new SimpleMotorFeedforward(Constants.Swerve.driveKS, Constants.Swerve.driveKV, Constants.Swerve.driveKA);
+    driveFeedback = new PIDController(Constants.Swerve.driveConfig.PIDp, Constants.Swerve.driveConfig.PIDi, Constants.Swerve.driveConfig.PIDd);
+    turnFeedback = new PIDController(Constants.Swerve.angleConfig.PIDp, Constants.Swerve.angleConfig.PIDi, Constants.Swerve.angleConfig.PIDd);
     
-    driveMotor.setInverted(Constants.Swerve.driveInvert);
-    driveEncoder.setVelocityConversionFactor(Constants.Swerve.driveConversionVelocityFactor);
-    driveEncoder.setPositionConversionFactor(Constants.Swerve.driveConversionPositionFactor);
-    driveEncoder.setPosition(0.0);
+    turnFeedback.enableContinuousInput(-Math.PI, Math.PI);
 
-    lastAngle = getState().angle;
-
-    /* Shuffleboard Content for each swerve module */ 
-    ShuffleboardContent.initSwerveModuleShuffleboard(this);
-
+    setBrakeMode(true);
   }
 
-  public void setDesiredState(SwerveModuleState desiredState, boolean isOpenLoop) {
-    // Custom optimize command, since default WPILib optimize assumes continuous controller which
-    // REV and CTRE are not
-    desiredState = OnboardModuleState.optimize(desiredState, getState().angle);
-
-    setAngle(desiredState);
-    setSpeed(desiredState, isOpenLoop);
+  /**
+   * Update inputs without running the rest of the periodic logic. This is useful since these
+   * updates need to be properly thread-locked.
+   */
+  public void updateInputs() {
+    io.updateInputs(inputs);
   }
+  
+  public void periodic() {
+    Logger.processInputs("Drive/Module" + getModuleName(), inputs);
 
-  private void resetToAbsolute() {
-    double absolutePositionDegrees = getAbsoluteModuleAngleDegrees() - angleOffset.getDegrees();
-    integratedAngleEncoder.setPosition(absolutePositionDegrees);
-  }
+    // On first cycle, reset relative turn encoder
+    // Wait until absolute angle is nonzero in case it wasn't initialized yet
+    if (turnRelativeOffset == null && inputs.turnAbsolutePosition.getRadians() != 0.0) {
+      turnRelativeOffset = inputs.turnAbsolutePosition.minus(inputs.turnPosition);
+    }
 
-  private void configAngleEncoder() {
-    absoluteAngleEncoder.getConfigurator().apply(new CANcoderConfiguration());
-    CANCoderUtil.setCANCoderBusUsage(absoluteAngleEncoder, CCUsage.kMinimal);
-    absoluteAngleEncoder.getConfigurator().apply(Robot.ctreConfigs.swerveCanCoderConfig);
-  }
+    // Run closed loop turn control
+    if (angleSetpoint != null) {
+      io.setTurnVoltage(turnFeedback.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
 
-  private void setSpeed(SwerveModuleState desiredState, boolean isOpenLoop) {
-    if (isOpenLoop) {
-      double percentOutput = desiredState.speedMetersPerSecond / Constants.Swerve.maxSpeed;
-      driveMotor.set(percentOutput);
-    } else {
-      driveController.setReference(
-          desiredState.speedMetersPerSecond,
-          CANSparkMax.ControlType.kVelocity,
-          0,
-          feedforward.calculate(desiredState.speedMetersPerSecond));
+      // Run closed loop drive control
+      // Only allowed if closed loop turn control is running
+      if (speedSetpoint != null) {
+        // Scale velocity based on turn error
+        //
+        // When the error is 90°, the velocity setpoint should be 0. As the wheel turns
+        // towards the setpoint, its velocity should increase. This is achieved by
+        // taking the component of the velocity in the direction of the setpoint.
+        double adjustSpeedSetpoint = speedSetpoint * Math.cos(turnFeedback.getPositionError());
+
+        // Run drive controller
+        double velocityRadPerSec = adjustSpeedSetpoint / (Constants.Swerve.wheelDiameter / 2.0);
+
+        // TODO: Use velocity instead of voltage?
+        io.setDriveVoltage(driveFeedforward.calculate(velocityRadPerSec) + driveFeedback.calculate(inputs.driveVelocityRadPerSec, velocityRadPerSec));
+      }
+    }
+
+    // Calculate positions for odometry
+    int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
+    odometryPositions = new SwerveModulePosition[sampleCount];
+    for (int i = 0; i < sampleCount; i++) {
+      double positionMeters = inputs.odometryDrivePositionsRad[i] * Constants.Swerve.wheelDiameter / 2.0;
+      Rotation2d angle = inputs.odometryTurnPositions[i].plus(turnRelativeOffset != null ? turnRelativeOffset : new Rotation2d());
+      odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
     }
   }
 
-  private void setAngle(SwerveModuleState desiredState) {
-    // Prevent rotating module if speed is less then 1%. Prevents jittering.
-    Rotation2d angle =
-        (Math.abs(desiredState.speedMetersPerSecond) <= (Constants.Swerve.maxSpeed * 0.01))
-            ? lastAngle
-            : desiredState.angle;
+  /** Runs the module with the specified setpoint state. Returns the optimized state. */
+  public SwerveModuleState runSetpoint(SwerveModuleState state) {
+    // Optimize state based on current angle
+    // Controllers run in "periodic" when the setpoint is not null
+    var optimizedState = SwerveModuleState.optimize(state, getAngle());
 
-    angleController.setReference(angle.getDegrees(), CANSparkMax.ControlType.kPosition);
-    lastAngle = angle;
+    // Update setpoints, controllers run in "periodic"
+    angleSetpoint = optimizedState.angle;
+    speedSetpoint = optimizedState.speedMetersPerSecond;
+
+    return optimizedState;
   }
 
-  public double getRelativeAngle() {
-    return integratedAngleEncoder.getPosition();
+  /** Runs the module with the specified voltage while controlling to zero degrees. */
+  public void runCharacterization(double volts) {
+    // Closed loop turn control
+    angleSetpoint = new Rotation2d();
+
+    // Open loop drive control
+    io.setDriveVoltage(volts);
+    speedSetpoint = null;
   }
 
-  public double getAbsoluteModuleAngleDegrees() {
-    return absoluteAngleEncoder.getAbsolutePosition().getValueAsDouble() * 360.;
+  /** Disables all outputs to motors. */
+  public void stop() {
+    io.setTurnVoltage(0.0);
+    io.setDriveVoltage(0.0);
+
+    // Disable closed loop control for turn and drive
+    angleSetpoint = null;
+    speedSetpoint = null;
   }
 
-  public double getVelocity() {
-    return driveEncoder.getVelocity();
+  /** Sets whether brake mode is enabled. */
+  public void setBrakeMode(boolean enabled) {
+    io.setDriveBrakeMode(enabled);
+    io.setTurnBrakeMode(enabled);
   }
 
-  private Rotation2d getAngle() {
-    return Rotation2d.fromDegrees(integratedAngleEncoder.getPosition());
+  /** Returns the current turn angle of the module. */
+  public Rotation2d getAngle() {
+    if (turnRelativeOffset == null) {
+      return new Rotation2d();
+    } else {
+      return inputs.turnPosition.plus(turnRelativeOffset);
+    }
   }
 
-  public Rotation2d getCANcoderAbsoluteAngle() {
-    return Rotation2d.fromDegrees(getAbsoluteModuleAngleDegrees());
+  /** Returns the current drive position of the module in meters. */
+  public double getPositionMeters() {
+    return inputs.drivePositionRad * Constants.Swerve.wheelDiameter / 2.0;
   }
 
-  public SwerveModuleState getState() {
-    return new SwerveModuleState(driveEncoder.getVelocity(), getAngle());
+  /** Returns the current drive velocity of the module in meters per second. */
+  public double getVelocityMetersPerSec() {
+    return inputs.driveVelocityRadPerSec * Constants.Swerve.wheelDiameter / 2.0;
   }
 
-  // returns the current position as SwerveModulePosition
+  /** Returns the module position (turn angle and drive position). */
   public SwerveModulePosition getPosition() {
-    return new SwerveModulePosition(
-      driveEncoder.getPosition(), Rotation2d.fromDegrees(integratedAngleEncoder.getPosition())
-    );
+    return new SwerveModulePosition(getPositionMeters(), getAngle());
   }
 
-  public String getModuleName(int id) {
-    return Constants.Swerve.moduleNames[id];
+  /** Returns the module state (turn angle and drive velocity). */
+  public SwerveModuleState getState() {
+    return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
   }
 
-  public double getDriveMotorCurrent() {
-    return driveMotor.getOutputCurrent();
+  /** Returns the module positions received this cycle. */
+  public SwerveModulePosition[] getOdometryPositions() {
+    return odometryPositions;
   }
 
-  public double getTurnMotorCurrent() {
-    return angleMotor.getOutputCurrent();
+  /** Returns the timestamps of the samples received this cycle. */
+  public double[] getOdometryTimestamps() {
+    return inputs.odometryTimestamps;
   }
 
-  public double getOffset() {
-    return angleOffset.getDegrees();
+  /** Returns the drive velocity in radians/sec. */
+  public double getDriveVelocity() {
+    return inputs.driveVelocityRadPerSec;
   }
 
-  public StatusSignal<MagnetHealthValue> getMagnetFieldStrength() {
-    return absoluteAngleEncoder.getMagnetHealth();
+  public String getModuleName() {
+    return Constants.Swerve.moduleNames[moduleIndex];
   }
-
 }

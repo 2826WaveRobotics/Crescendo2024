@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.config.CTREConfigs;
-import frc.robot.commands.NoteManagement.NoteState;
 
 
 /**
@@ -26,7 +25,6 @@ import frc.robot.commands.NoteManagement.NoteState;
  * project.
  */
 public class Robot extends LoggedRobot {
-  public static CTREConfigs ctreConfigs;
   /**
    * The command instance for the robot's autonomous command state.
    */
@@ -45,6 +43,9 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotInit() {
     Logger.recordMetadata("ProjectName", "Crescendo2024"); // Set a metadata value
+
+    // NOTE: If there's an error with "BuildConstants cannot be resolved", build the program.
+    // The BuildConstants file is generated on build and not checked into version control since it can be invalid, cause merge conflicts, etc.
     Logger.recordMetadata("GitInformation", 
       "Hash " +
       BuildConstants.GIT_SHA +
@@ -55,7 +56,7 @@ public class Robot extends LoggedRobot {
     Logger.recordMetadata("BuiltOn", BuildConstants.BUILD_DATE); // Set a metadata value
 
     if(isReal()) {
-      Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+      Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick or the RoboRIO if none are connected (at "/U/logs")
       Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables for use with AdvantageScope
       @SuppressWarnings({"unused", "resource"}) // This is a dummy object to enable power distribution logging
       PowerDistribution powerDistributionBoard = new PowerDistribution(1, ModuleType.kRev); // Enables power distribution logging
@@ -69,8 +70,6 @@ public class Robot extends LoggedRobot {
     // Logger.disableDeterministicTimestamps() // See "Deterministic Timestamps" in the "Understanding Data Flow" page
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
 
-
-    ctreConfigs = new CTREConfigs();
     // Instantiate our RobotContainer.  This will perform all our button bindings, put our
     // autonomous chooser on the dashboard, and do anything else required for initialization.
     robotContainer = new RobotContainer();
@@ -90,10 +89,6 @@ public class Robot extends LoggedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    
-    double robotSpeed = robotContainer.getRobotSpeed();
-    NoteState noteManagementState = robotContainer.getNoteState();
-    robotContainer.lighting.periodic(robotSpeed, noteManagementState);
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

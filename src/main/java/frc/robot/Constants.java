@@ -14,6 +14,22 @@ import frc.lib.util.CANSparkMaxUtil.Usage;
 
 public final class Constants {
   /**
+   * The current mode of the robot.  
+   * This _must_ be changed before running simulations or on the real robot.  
+   * There may be a better way to do this, but we need to differentiate between replays and normal simulations which doesn't seem possible.
+   */
+  public static final Mode currentMode = Mode.REAL;
+  /** A situation that the robot is currently running in: real, simulation, or replay. */
+  public enum Mode {
+    /** Running on a real robot. */
+    REAL,
+    /** Running a physics simulator. */
+    SIM,
+    /** Replaying from a log file. */
+    REPLAY
+  }
+
+  /**
    * The deadband used for controller triggers.
    */
   public static final double triggerDeadband = 0.03;
@@ -28,13 +44,14 @@ public final class Constants {
     public static final double trackWidth = Units.inchesToMeters(20);
     // distance between centers of right and left wheels on robot
     public static final double wheelBase = Units.inchesToMeters(21);
+
+    /** The swerve drive wheel diameters, in meters. */
     public static final double wheelDiameter = Units.inchesToMeters(4.0); //4
-    public static final double wheelCircumference = wheelDiameter * Math.PI;
 
     public static final double driveGearRatio = (6.75 / 1.0); // 6.75:1
     public static final double angleGearRatio = (12.8 / 1.0); // 12.8:1
 
-    public static String[] moduleNames ={"FRONT_LEFT","FRONT_RIGHT","BACK_LEFT","BACK_RIGHT"};
+    public static String[] moduleNames = {"frontLeft", "frontRight", "backLeft", "backRight"};
 
     // The locations of the modules on the robot, in meters.
     public static final Translation2d[] modulePositions = {
@@ -49,30 +66,15 @@ public final class Constants {
     public static final double driveKV = 2.44;
     public static final double driveKA = 0.27;
 
-    /* Drive Motor Conversion Factors */
-    /** A position conversion factor to convert revolutions to meters. */
-    public static final double driveConversionPositionFactor =
-        (wheelDiameter * Math.PI) / driveGearRatio;
-    /** A velocity conversion factor to convert revolutions per minute to meters per second. */
-    public static final double driveConversionVelocityFactor = driveConversionPositionFactor / 60.0;
-    public static final double angleConversionFactor = 360.0 / angleGearRatio;
-
     /* Swerve Profiling Values */
     /**
      * The maximum robot movement speed in meters per second.
      */
-    public static final double maxSpeed = 4.0;
+    public static final double maxSpeed = 4.3;
     /**
      * The maximum robot angular velocity in radians per second.
      */
     public static final double maxAngularVelocity = 11.5;
-
-    /* Motor Inverts */
-    public static final boolean driveInvert = false;
-    public static final boolean angleInvert = false;
-
-    /* Angle Encoder Invert */
-    public static final boolean canCoderInvert = false;
 
     /**
      * The spark max config for the drive motors.
@@ -104,7 +106,6 @@ public final class Constants {
       public static final int driveMotorID = 11;
       public static final int angleMotorID = 12;
       public static final int canCoderID = 13;
-      // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(187);
       public static final Rotation2d angleOffset = Rotation2d.fromDegrees(33.574);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
@@ -115,7 +116,6 @@ public final class Constants {
       public static final int driveMotorID = 21;
       public static final int angleMotorID = 22;
       public static final int canCoderID = 23;
-      // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(303.5);
       public static final Rotation2d angleOffset = Rotation2d.fromDegrees(102.832);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
