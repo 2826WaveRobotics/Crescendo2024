@@ -129,9 +129,9 @@ public class Transport extends SubsystemBase {
     double frontRPM = getIntakeMotorRPM(speedMetersPerSecond, 25);
     double beltRPM = getIntakeMotorRPM(speedMetersPerSecond, 15);
 
-    frontIntakePIDController.setReference(frontRPM, ControlType.kVelocity);
-    lowerTransportPIDController.setReference(-beltRPM, ControlType.kVelocity);
-    beltIntakePIDController.setReference(beltRPM, ControlType.kVelocity);
+    frontIntakePIDController.setReference(-frontRPM, ControlType.kVelocity);
+    lowerTransportPIDController.setReference(beltRPM, ControlType.kVelocity);
+    beltIntakePIDController.setReference(-beltRPM, ControlType.kVelocity);
 
     double upperTransportSpeed = 0;
     // if (rpm > 0) {

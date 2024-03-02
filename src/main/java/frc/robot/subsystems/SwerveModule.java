@@ -55,17 +55,19 @@ public class SwerveModule {
     angleMotor = new CANSparkMax(moduleConstants.angleMotorID, CANSparkMax.MotorType.kBrushless);
     integratedAngleEncoder = angleMotor.getEncoder();
     angleController = angleMotor.getPIDController();
-    Constants.Swerve.angleConfig.configure(angleMotor, angleController);
+    Constants.Swerve.angleConfig.configure(angleMotor, angleController, false);
     integratedAngleEncoder.setPositionConversionFactor(Constants.Swerve.angleConversionFactor);
     resetToAbsolute();
+    angleMotor.burnFlash();
 
     /* Drive Motor Config */
     driveMotor = new CANSparkMax(moduleConstants.driveMotorID, CANSparkMax.MotorType.kBrushless);
     driveEncoder = driveMotor.getEncoder();
     driveController = driveMotor.getPIDController();
-    Constants.Swerve.driveConfig.configure(driveMotor, driveController);
+    Constants.Swerve.driveConfig.configure(driveMotor, driveController, false);
     driveEncoder.setVelocityConversionFactor(Constants.Swerve.driveConversionVelocityFactor);
     driveEncoder.setPositionConversionFactor(Constants.Swerve.driveConversionPositionFactor);
+    angleMotor.burnFlash();
     
     driveMotor.setInverted(Constants.Swerve.driveInvert);
     driveEncoder.setPosition(0.0);

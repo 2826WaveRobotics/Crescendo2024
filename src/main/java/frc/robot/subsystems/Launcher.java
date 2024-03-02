@@ -56,11 +56,9 @@ public class Launcher extends SubsystemBase {
 
     Constants.Launcher.rollerConfig.configure(topRollerMotor, topLaunchRollerPIDController);
     Constants.Launcher.rollerConfig.configure(bottomRollerMotor, bottomLaunchRollerPIDController);
+
     // Constants.Launcher.angleConfig.configure(angleLauncherMotor, anglePIDController);
-    // angleLauncherMotor.setSoftLimit(SoftLimitDirection.kReverse, (float)Constants.Launcher.softStopMarginLow.getRotations());
-    // angleLauncherMotor.setSoftLimit(SoftLimitDirection.kForward, (float)(1 - Constants.Launcher.softStopMarginHigh.getRotations()));
-    // angleLauncherMotor.setInverted(Constants.Launcher.invertAngle);
-    
+    // Doesn't work. TODO: use the configure method instead of manually doing it here?
     angleLauncherMotor.restoreFactoryDefaults();
     CANSparkMaxUtil.setCANSparkMaxBusUsage(angleLauncherMotor, Usage.kPositionOnly);
     angleLauncherMotor.setSmartCurrentLimit(15);
@@ -71,6 +69,8 @@ public class Launcher extends SubsystemBase {
     anglePIDController.setFF(0.000175);
     angleLauncherMotor.enableVoltageCompensation(12.0);
     angleLauncherMotor.setInverted(Constants.Launcher.invertAngle);
+    angleLauncherMotor.setSoftLimit(SoftLimitDirection.kReverse, (float)Constants.Launcher.softStopMarginLow.getRotations());
+    angleLauncherMotor.setSoftLimit(SoftLimitDirection.kForward, (float)(1 - Constants.Launcher.softStopMarginHigh.getRotations()));
     angleLauncherMotor.burnFlash();
     resetToAbsolute();
 

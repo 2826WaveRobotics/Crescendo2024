@@ -86,17 +86,29 @@ public class CANSparkMaxConfig {
         this.usage = usage;
     }
 
+    
     /**
-     * Configures the given Spark Max and Spark PID controller from this configuration.
+     * Configures the given Spark Max and Spark PID controller from this configuration and burns the settings to flash.
      * @param spark
      * @param pidController
      */
     public void configure(CANSparkMax spark, SparkPIDController pidController) {
+        configure(spark, pidController, true);
+    }
+
+    /**
+     * Configures the given Spark Max and Spark PID controller from this configuration.
+     * @param spark
+     * @param pidController
+     * @param burnFlash If we should burn the settings to the controller flash.
+     * Set to false if configuring other values then run spark.brunFlash() manually.
+     */
+    public void configure(CANSparkMax spark, SparkPIDController pidController, boolean burnFlash) {
         spark.restoreFactoryDefaults();
         CANSparkMaxUtil.setCANSparkMaxBusUsage(spark, usage);
         spark.setSmartCurrentLimit(smartCurrentLimit);
         spark.setSecondaryCurrentLimit(secondaryCurrentLimit);
-        spark.setClosedLoopRampRate(closedLoopRampRate);
+        // spark.setClosedLoopRampRate(closedLoopRampRate);
 
         spark.setIdleMode(idleMode);
         pidController.setP(PIDp);
@@ -104,6 +116,7 @@ public class CANSparkMaxConfig {
         pidController.setD(PIDd);
         pidController.setFF(PIDff);
         spark.enableVoltageCompensation(voltageCompensation);
-        spark.burnFlash();
+        
+        if(burnFlash) spark.burnFlash();
     }
 }

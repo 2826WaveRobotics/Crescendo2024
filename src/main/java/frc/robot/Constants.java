@@ -81,7 +81,7 @@ public final class Constants {
       CANSparkMax.IdleMode.kBrake,
       40, 50,
       100,
-      0.1, 0.0, 0.0, 0.0,
+      0.02, 0.0, 0.0, 1./6000.,
       12.0,
       Usage.kAll
     );
@@ -93,7 +93,7 @@ public final class Constants {
       CANSparkMax.IdleMode.kBrake,
       20, 30,
       100,
-      0.01, 5e-7, 0.0, 0.0,
+      0.03, 5e-7, 0.0, 0.0,
       12.0,
       Usage.kPositionOnly
     );
@@ -114,7 +114,7 @@ public final class Constants {
       public static final int driveMotorID = 21;
       public static final int angleMotorID = 22;
       public static final int canCoderID = 23;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(103.88);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(119.882);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
