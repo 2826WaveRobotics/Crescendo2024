@@ -36,13 +36,13 @@ public final class Constants {
 
     public static String[] moduleNames ={"FRONT_LEFT","FRONT_RIGHT","BACK_LEFT","BACK_RIGHT"};
 
-    // swerve drive kinematics object created based on module location
-    public static final SwerveDriveKinematics swerveKinematics =
-        new SwerveDriveKinematics(
-            new Translation2d(wheelBase / 2.0, trackWidth / 2.0),     // fl
-            new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),    // fr
-            new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0),   // bl
-            new Translation2d(-wheelBase / 2.0, trackWidth / 2.0));   // br
+    // The locations of the modules on the robot, in meters.
+    public static final Translation2d[] modulePositions = {
+      new Translation2d(wheelBase / 2.0, trackWidth / 2.0),   // fl
+      new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),  // fr
+      new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0), // bl
+      new Translation2d(-wheelBase / 2.0, trackWidth / 2.0)   // br
+    };
 
     /* Drive Motor Characterization Values */
     public static final double driveKS = 0.667;

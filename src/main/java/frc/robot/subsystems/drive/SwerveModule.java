@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -14,10 +14,10 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.lib.config.SwerveModuleConstants;
 import frc.lib.math.OnboardModuleState;
 import frc.lib.util.CANCoderUtil;
+import frc.lib.util.ShuffleboardContent;
 import frc.lib.util.CANCoderUtil.CCUsage;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.oi.ShuffleboardContent;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 
 public class SwerveModule {

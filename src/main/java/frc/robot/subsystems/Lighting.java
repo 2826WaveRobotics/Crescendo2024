@@ -1,24 +1,31 @@
-package frc.robot;
-
-import java.sql.Driver;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.I2C.Port;
-import frc.robot.commands.NoteManagement.NoteState;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.Superstructure.NoteState;
+import frc.robot.subsystems.drive.Swerve;
 
-// TODO: Change to a subsystem
+public class Lighting extends SubsystemBase {
+    private static Lighting instance = null;
+    public static Lighting getInstance() {
+        if (instance == null) {
+            instance = new Lighting();
+        }
+        return instance;
+    }
 
-public class Lighting {
+    private Lighting() {
+        // This is a singleton class.
+    }
+
     /**
      * The possible lighting states.  
      * This enum MUST match the Arduino's enum definitions for the light states.
      */
-    private static enum LightState {
+    private enum LightState {
         preStartState,
         autoState,
         teleopNoteIntookState,
@@ -37,7 +44,7 @@ public class Lighting {
      * Gets the current lighting state.
      * @return
      */
-    LightState getLightingState(NoteState noteManagementState) {
+    private LightState getLightingState(NoteState noteManagementState) {
         if(DriverStation.isDisabled()) return LightState.preStartState;
         if(DriverStation.isAutonomous()) return LightState.autoState;
 
@@ -58,7 +65,7 @@ public class Lighting {
      * 
      * @param robotSpeed The robot speed in meters per second.
      */
-    byte[] getUpdate(double robotSpeed, NoteState noteManagementState) {
+    private byte[] getUpdate(double robotSpeed, NoteState noteManagementState) {
         byte[] data = new byte[3];
         data[0] = (byte)getLightingState(noteManagementState).ordinal();
 
@@ -73,10 +80,12 @@ public class Lighting {
     /**
      * Updates the arduino with the state it requires.
      * This is run periodically, no matter if the robot is enabled, by the scheduler.
-     * 
-     * @param robotSpeed The robot speed in meters per second.
      */
-    void periodic(double robotSpeed, NoteState noteManagementState) {
-        i2cLightingArduino.writeBulk(getUpdate(robotSpeed, noteManagementState));
+    @Override
+    public void periodic() {
+        i2cLightingArduino.writeBulk(getUpdate(
+            Swerve.getInstance().getRobotSpeed(),
+            Superstructure.getInstance().getNoteState()
+        ));
     }
 }
