@@ -48,10 +48,10 @@ public class Controls {
         swerveSubsystem.setDefaultCommand(
             DriveCommands.joystickDrive(
                 swerveSubsystem,
-                () -> -driver.getLeftX(),
+                () ->  driver.getLeftX(),
                 () -> -driver.getLeftY(),
                 () -> -driver.getRightX(),
-                () -> driver.leftBumper().getAsBoolean()
+                () -> !driver.leftBumper().getAsBoolean()
             )
         );
 

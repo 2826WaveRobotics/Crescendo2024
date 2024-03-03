@@ -6,12 +6,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix6.configs.Pigeon2Configuration;
-import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 
@@ -50,26 +47,35 @@ public class Swerve extends SubsystemBase {
       switch (Constants.currentMode) {
         case REAL:
           // Real robot, instantiate hardware IO implementations
-          return new Swerve(
+          instance = new Swerve(
             new GyroIOPigeon2(),
             new SwerveModuleIO[] {
               new SwerveModuleIOSparkMax(Constants.Swerve.Mod0.constants),
               new SwerveModuleIOSparkMax(Constants.Swerve.Mod1.constants),
               new SwerveModuleIOSparkMax(Constants.Swerve.Mod2.constants),
               new SwerveModuleIOSparkMax(Constants.Swerve.Mod3.constants)
-            });
+            }
+          );
+          return instance;
         case SIM:
           // Sim robot, instantiate physics sim IO implementations
-          return new Swerve(
+          instance = new Swerve(
             new GyroIO() {},
-            new SwerveModuleIO[] { new SwerveModuleIOSim(), new SwerveModuleIOSim(), new SwerveModuleIOSim(), new SwerveModuleIOSim() }
+            new SwerveModuleIO[] {
+            new SwerveModuleIOSim(Constants.Swerve.Mod0.constants),
+              new SwerveModuleIOSim(Constants.Swerve.Mod1.constants),
+              new SwerveModuleIOSim(Constants.Swerve.Mod2.constants),
+              new SwerveModuleIOSim(Constants.Swerve.Mod3.constants)
+            }
           );
+          return instance;
         default:
           // Replayed robot, disable IO implementations
-          return new Swerve(
+          instance = new Swerve(
             new GyroIO() {},
             new SwerveModuleIO[] { new SwerveModuleIO() {}, new SwerveModuleIO() {}, new SwerveModuleIO() {}, new SwerveModuleIO() {} }
           );
+          return instance;
       }
     }
     return instance;

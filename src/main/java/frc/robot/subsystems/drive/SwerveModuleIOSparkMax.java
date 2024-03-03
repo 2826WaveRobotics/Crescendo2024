@@ -1,21 +1,22 @@
 package frc.robot.subsystems.drive;
 
-import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkPIDController;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.config.CTREConfigs;
 import frc.lib.config.SwerveModuleConstants;
-import frc.lib.util.ShuffleboardContent;
 import frc.robot.Constants;
 
 import java.util.OptionalDouble;
@@ -33,8 +34,11 @@ import java.util.Queue;
 public class SwerveModuleIOSparkMax implements SwerveModuleIO {
   private static final CTREConfigs ctreConfigs = new CTREConfigs();
 
-  private final CANSparkMax driveSparkMax;
-  private final CANSparkMax turnSparkMax;
+  protected final CANSparkMax driveSparkMax;
+  protected final CANSparkMax turnSparkMax;
+
+  private final SparkPIDController drivePIDController;
+  private final SparkPIDController turnPIDController;
   
   private final CANcoder cancoder;
   private final StatusSignal<Double> turnAbsolutePosition;
@@ -45,7 +49,6 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
   private final Queue<Double> drivePositionQueue;
   private final Queue<Double> turnPositionQueue;
 
-  private final boolean isTurnMotorInverted = true;
   private final Rotation2d absoluteEncoderOffset;
 
   public SwerveModuleIOSparkMax(SwerveModuleConstants moduleConstants) {
@@ -53,39 +56,44 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     turnSparkMax = new CANSparkMax(moduleConstants.angleMotorID, MotorType.kBrushless);
     cancoder = new CANcoder(moduleConstants.cancoderID);
     cancoder.getConfigurator().apply(ctreConfigs.swerveCanCoderConfig);
+    cancoder.optimizeBusUtilization();
     turnAbsolutePosition = cancoder.getAbsolutePosition();
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, turnAbsolutePosition);
+    turnAbsolutePosition.setUpdateFrequency(50.0);
 
     absoluteEncoderOffset = moduleConstants.angleOffset;
-
-    driveSparkMax.restoreFactoryDefaults();
-    turnSparkMax.restoreFactoryDefaults();
-
-    driveSparkMax.setCANTimeout(250);
-    turnSparkMax.setCANTimeout(250);
 
     driveEncoder = driveSparkMax.getEncoder();
     turnRelativeEncoder = turnSparkMax.getEncoder();
 
-    turnSparkMax.setInverted(isTurnMotorInverted);
-    driveSparkMax.setSmartCurrentLimit(40);
-    turnSparkMax.setSmartCurrentLimit(30);
-    driveSparkMax.enableVoltageCompensation(12.0);
-    turnSparkMax.enableVoltageCompensation(12.0);
+    drivePIDController = driveSparkMax.getPIDController();
+    turnPIDController = turnSparkMax.getPIDController();
+
+    Constants.Swerve.driveConfig.configure(driveSparkMax, drivePIDController, false);
+    Constants.Swerve.angleConfig.configure(turnSparkMax, turnPIDController, false);
+
+    turnPIDController.setPositionPIDWrappingEnabled(true);
+    turnPIDController.setPositionPIDWrappingMinInput(0.0);
+    turnPIDController.setPositionPIDWrappingMaxInput(Constants.Swerve.angleGearRatio);
 
     driveEncoder.setPosition(0.0);
     driveEncoder.setMeasurementPeriod(10);
     driveEncoder.setAverageDepth(2);
 
-    turnRelativeEncoder.setPosition(0.0);
+    turnRelativeEncoder.setPosition(
+      (turnAbsolutePosition.getValueAsDouble() - absoluteEncoderOffset.getRotations()) * Constants.Swerve.angleGearRatio
+    );
+    SmartDashboard.putNumber("Absolute start offset", (turnAbsolutePosition.getValueAsDouble() - absoluteEncoderOffset.getRotations()) * Constants.Swerve.angleGearRatio);
     turnRelativeEncoder.setMeasurementPeriod(10);
     turnRelativeEncoder.setAverageDepth(2);
 
-    driveSparkMax.setCANTimeout(0);
-    turnSparkMax.setCANTimeout(0);
+    driveSparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, (int)(1000.0 / SwerveModule.ODOMETRY_FREQUENCY));
+    turnSparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, (int)(1000.0 / SwerveModule.ODOMETRY_FREQUENCY));
 
-    driveSparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, (int) (1000.0 / SwerveModule.ODOMETRY_FREQUENCY));
-    turnSparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, (int) (1000.0 / SwerveModule.ODOMETRY_FREQUENCY));
+    driveSparkMax.burnFlash();
+    turnSparkMax.burnFlash();
+
+    // Odometry update logic initialization
+    
     timestampQueue = SparkMaxOdometryThread.getInstance().makeTimestampQueue();
 
     drivePositionQueue = SparkMaxOdometryThread.getInstance().registerSignal(
@@ -108,30 +116,22 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
         }
       }
     );
-
-    driveSparkMax.burnFlash();
-    turnSparkMax.burnFlash();
-  }
-
-  /**
-   * Initializes the Shuffleboard data view for this module.
-   */
-  public void initShuffleboard(SwerveModule module) {
-    ShuffleboardContent.initSwerveModuleShuffleboard(module, this);
   }
 
   @Override
   public void updateInputs(SwerveModuleIOInputs inputs) {
+    turnAbsolutePosition.refresh();
+    
     inputs.drivePositionRad = Units.rotationsToRadians(driveEncoder.getPosition()) / Constants.Swerve.driveGearRatio;
     inputs.driveVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(driveEncoder.getVelocity()) / Constants.Swerve.driveGearRatio;
-    inputs.driveAppliedVolts = driveSparkMax.getAppliedOutput() * driveSparkMax.getBusVoltage();
-    inputs.driveCurrentAmps = new double[] {driveSparkMax.getOutputCurrent()};
+    inputs.driveCurrentAmps = driveSparkMax.getOutputCurrent();
 
-    inputs.turnAbsolutePosition = Rotation2d.fromRotations(turnAbsolutePosition.getValueAsDouble()).minus(absoluteEncoderOffset);
+    inputs.turnReportedAbsolutePosition = Rotation2d.fromRotations(turnAbsolutePosition.getValueAsDouble());
+    inputs.turnAbsolutePosition = inputs.turnReportedAbsolutePosition.minus(absoluteEncoderOffset);
+    
     inputs.turnPosition = Rotation2d.fromRotations(turnRelativeEncoder.getPosition() / Constants.Swerve.angleGearRatio);
     inputs.turnVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(turnRelativeEncoder.getVelocity()) / Constants.Swerve.angleGearRatio;
-    inputs.turnAppliedVolts = turnSparkMax.getAppliedOutput() * turnSparkMax.getBusVoltage();
-    inputs.turnCurrentAmps = new double[] {turnSparkMax.getOutputCurrent()};
+    inputs.turnCurrentAmps = turnSparkMax.getOutputCurrent();
 
     inputs.odometryTimestamps = timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
     inputs.odometryDrivePositionsRad = drivePositionQueue.stream()
@@ -147,13 +147,13 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
   }
 
   @Override
-  public void setDriveVoltage(double volts) {
-    driveSparkMax.setVoltage(volts);
+  public void setDriveVelocity(double rpm) {
+    drivePIDController.setReference(rpm * Constants.Swerve.driveGearRatio, ControlType.kVelocity);
   }
 
   @Override
-  public void setTurnVoltage(double volts) {
-    turnSparkMax.setVoltage(volts);
+  public void setTurnAngle(Rotation2d angle) {
+    turnPIDController.setReference(angle.getRotations() * Constants.Swerve.angleGearRatio, ControlType.kPosition);
   }
 
   @Override
@@ -166,16 +166,8 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     turnSparkMax.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
   }
 
-  public double getCANcoderPositionDegrees() {
-    // Position is 0 to 1, so multiply by 360 to get degrees
-    return cancoder.getPosition().getValueAsDouble() * 360.0;
-  }
-
-  public double getDriveMotorCurrent() {
-    return driveSparkMax.getOutputCurrent();
-  }
-
-  public double getTurnMotorCurrent() {
-    return turnSparkMax.getOutputCurrent();
+  @Override
+  public void setCharacterizationDriveVoltage(double voltage) {
+    driveSparkMax.setVoltage(voltage);
   }
 }

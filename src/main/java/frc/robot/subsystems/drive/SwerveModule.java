@@ -2,10 +2,17 @@ package frc.robot.subsystems.drive;
 
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import com.fasterxml.jackson.databind.JsonSerializable.Base;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Unit;
+import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.lib.util.ShuffleboardContent;
 import frc.robot.Constants;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 
@@ -19,26 +26,17 @@ public class SwerveModule {
   private final SwerveModuleIOInputsAutoLogged inputs = new SwerveModuleIOInputsAutoLogged();
   public int moduleIndex;
 
-  private final SimpleMotorFeedforward driveFeedforward;
-  private final PIDController driveFeedback;
-  private final PIDController turnFeedback;
   private Rotation2d angleSetpoint = null; // Setpoint for closed loop control, null for open loop
-  private Double speedSetpoint = null; // Setpoint for closed loop control, null for open loop
-  private Rotation2d turnRelativeOffset = null; // Relative + Offset = Absolute
+  private Measure<Velocity<Distance>> speedSetpoint = null; // Setpoint for closed loop control, null for open loop
   private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
   
   public SwerveModule(int index, SwerveModuleIO io) {
     this.io = io;
     moduleIndex = index;
 
-    // NOTE: Maybe we should have different PID values for simulations?
-    driveFeedforward = new SimpleMotorFeedforward(Constants.Swerve.driveKS, Constants.Swerve.driveKV, Constants.Swerve.driveKA);
-    driveFeedback = new PIDController(Constants.Swerve.driveConfig.PIDp, Constants.Swerve.driveConfig.PIDi, Constants.Swerve.driveConfig.PIDd);
-    turnFeedback = new PIDController(Constants.Swerve.angleConfig.PIDp, Constants.Swerve.angleConfig.PIDi, Constants.Swerve.angleConfig.PIDd);
-    
-    turnFeedback.enableContinuousInput(-Math.PI, Math.PI);
-
     setBrakeMode(true);
+
+    ShuffleboardContent.initSwerveModuleShuffleboard(this);
   }
 
   /**
@@ -52,15 +50,9 @@ public class SwerveModule {
   public void periodic() {
     Logger.processInputs("Drive/Module" + getModuleName(), inputs);
 
-    // On first cycle, reset relative turn encoder
-    // Wait until absolute angle is nonzero in case it wasn't initialized yet
-    if (turnRelativeOffset == null && inputs.turnAbsolutePosition.getRadians() != 0.0) {
-      turnRelativeOffset = inputs.turnAbsolutePosition.minus(inputs.turnPosition);
-    }
-
     // Run closed loop turn control
     if (angleSetpoint != null) {
-      io.setTurnVoltage(turnFeedback.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
+      io.setTurnAngle(angleSetpoint);
 
       // Run closed loop drive control
       // Only allowed if closed loop turn control is running
@@ -70,13 +62,17 @@ public class SwerveModule {
         // When the error is 90°, the velocity setpoint should be 0. As the wheel turns
         // towards the setpoint, its velocity should increase. This is achieved by
         // taking the component of the velocity in the direction of the setpoint.
-        double adjustSpeedSetpoint = speedSetpoint * Math.cos(turnFeedback.getPositionError());
+        var adjustedSpeedSetpoint = speedSetpoint.times(
+          Math.cos(getAngle().getRadians() - angleSetpoint.getRadians())
+        );
 
         // Run drive controller
-        double velocityRadPerSec = adjustSpeedSetpoint / (Constants.Swerve.wheelDiameter / 2.0);
+        double velocityRPM = 
+          adjustedSpeedSetpoint.in(Units.MetersPerSecond) / // Meters per second
+          (Constants.Swerve.wheelDiameter * Math.PI) * // Rotations pesr second
+          60.; // Rotations per minute
 
-        // TODO: Use velocity instead of voltage?
-        io.setDriveVoltage(driveFeedforward.calculate(velocityRadPerSec) + driveFeedback.calculate(inputs.driveVelocityRadPerSec, velocityRadPerSec));
+        io.setDriveVelocity(velocityRPM);
       }
     }
 
@@ -85,7 +81,7 @@ public class SwerveModule {
     odometryPositions = new SwerveModulePosition[sampleCount];
     for (int i = 0; i < sampleCount; i++) {
       double positionMeters = inputs.odometryDrivePositionsRad[i] * Constants.Swerve.wheelDiameter / 2.0;
-      Rotation2d angle = inputs.odometryTurnPositions[i].plus(turnRelativeOffset != null ? turnRelativeOffset : new Rotation2d());
+      Rotation2d angle = inputs.odometryTurnPositions[i];
       odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
     }
   }
@@ -94,11 +90,12 @@ public class SwerveModule {
   public SwerveModuleState runSetpoint(SwerveModuleState state) {
     // Optimize state based on current angle
     // Controllers run in "periodic" when the setpoint is not null
+
     var optimizedState = SwerveModuleState.optimize(state, getAngle());
 
     // Update setpoints, controllers run in "periodic"
     angleSetpoint = optimizedState.angle;
-    speedSetpoint = optimizedState.speedMetersPerSecond;
+    speedSetpoint = Units.MetersPerSecond.of(optimizedState.speedMetersPerSecond);
 
     return optimizedState;
   }
@@ -109,14 +106,14 @@ public class SwerveModule {
     angleSetpoint = new Rotation2d();
 
     // Open loop drive control
-    io.setDriveVoltage(volts);
+    io.setCharacterizationDriveVoltage(volts);
     speedSetpoint = null;
   }
 
   /** Disables all outputs to motors. */
   public void stop() {
-    io.setTurnVoltage(0.0);
-    io.setDriveVoltage(0.0);
+    io.setDriveVelocity(0.0);
+    io.setTurnAngle(new Rotation2d());
 
     // Disable closed loop control for turn and drive
     angleSetpoint = null;
@@ -131,11 +128,7 @@ public class SwerveModule {
 
   /** Returns the current turn angle of the module. */
   public Rotation2d getAngle() {
-    if (turnRelativeOffset == null) {
-      return new Rotation2d();
-    } else {
-      return inputs.turnPosition.plus(turnRelativeOffset);
-    }
+    return inputs.turnPosition;
   }
 
   /** Returns the current drive position of the module in meters. */
@@ -175,5 +168,29 @@ public class SwerveModule {
 
   public String getModuleName() {
     return Constants.Swerve.moduleNames[moduleIndex];
+  }
+
+  public double getReportedAbsoluteAngleDegrees() {
+    return inputs.turnReportedAbsolutePosition.getDegrees();
+  }
+
+  public double getAbsoluteAngleDegrees() {
+    return inputs.turnAbsolutePosition.getDegrees();
+  }
+
+  public double getAppliedDriveCurrent() {
+    return inputs.driveCurrentAmps;
+  }
+  
+  public double getAppliedAngleCurrent() {
+    return inputs.turnCurrentAmps;
+  }
+
+  public double getTurnVelocityRadPerSec() {
+    return inputs.turnVelocityRadPerSec;
+  }
+
+  public double getDriveMotorVelocityRPM() {
+    return edu.wpi.first.math.util.Units.radiansPerSecondToRotationsPerMinute(inputs.driveVelocityRadPerSec) * Constants.Swerve.driveGearRatio;
   }
 }

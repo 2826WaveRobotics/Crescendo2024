@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -19,6 +20,10 @@ import java.util.function.DoubleSupplier;
 public class DriveCommands {
   private DriveCommands() {}
 
+  private static SlewRateLimiter xVelocityRateLimiter = new SlewRateLimiter(3.0);
+  private static SlewRateLimiter yVelocityRateLimiter = new SlewRateLimiter(3.0);
+  private static SlewRateLimiter omegaRateLimiter = new SlewRateLimiter(5.0);
+
   /**
    * Field relative drive command using two joysticks (controlling linear and angular velocities).
    */
@@ -33,17 +38,24 @@ public class DriveCommands {
         // We convert the joystick inputs to linear and angular velocities so we can separately square the magnitude and angle.
         // This allows for finer-grained control of the robot's motion.
 
+        double xValue = xVelocityRateLimiter.calculate(xSupplier.getAsDouble());
+        double yValue = yVelocityRateLimiter.calculate(ySupplier.getAsDouble());
+        double omegaValue = omegaRateLimiter.calculate(omegaSupplier.getAsDouble());
+
         // Apply deadband
-        double linearMagnitude = MathUtil.applyDeadband(Math.hypot(xSupplier.getAsDouble(), ySupplier.getAsDouble()), Constants.Swerve.stickDeadband);
+        double linearMagnitude = MathUtil.applyDeadband(Math.hypot(xValue, yValue), Constants.Swerve.stickDeadband);
         Rotation2d linearDirection = new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-        double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), Constants.Swerve.stickDeadband);
+        double omega = MathUtil.applyDeadband(omegaValue, Constants.Swerve.stickDeadband);
 
         // Square values while preserving sign on omega
         linearMagnitude = linearMagnitude * linearMagnitude;
         omega = Math.copySign(omega * omega, omega);
 
         // Calcaulate new linear velocity
-        Translation2d linearVelocity = new Pose2d(new Translation2d(), linearDirection).transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d())).getTranslation();
+        Translation2d linearVelocity = new Pose2d(
+          new Translation2d(),
+          linearDirection.minus(Rotation2d.fromDegrees(90))
+        ).transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d())).getTranslation();
 
         if(fieldRelativeSupplier.getAsBoolean()) {
           // Drive relative to the field
