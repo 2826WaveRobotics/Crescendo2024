@@ -83,10 +83,9 @@ public final class Constants {
       CANSparkMax.IdleMode.kBrake,
       40, 50,
       100,
-      1e-4, 0.0, 0.0, 1. / 6784 /* Free speed of a NEO Vortex */,
       12.0,
       Usage.kAll
-    );
+    ).configurePIDSlot(0, 1e-4, 0.0, 0.0, 1. / 6784 /* Free speed of a NEO Vortex */);
     
     /**
      * The spark max config for the angle motors.
@@ -95,10 +94,9 @@ public final class Constants {
       CANSparkMax.IdleMode.kBrake,
       20, 30,
       100,
-      0.5, 5e-7, 0.0, 1. / 5700 /* Free speed of a NEO 1650 */,
       12.0,
       Usage.kPositionOnly
-    );
+    ).configurePIDSlot(0, 0.5, 5e-7, 0.0, 1. / 5700 /* Free speed of a NEO 1650 */);
 
     /* Module Specific Constants */
     /* Front Left Module - Module 0 */
@@ -169,20 +167,18 @@ public final class Constants {
       15,
       20,
       100,
-      6e-5, 0.0, 0.0, 0.000175,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    );
+    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 0.000175);
 
     public static CANSparkMaxConfig angleConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,
       10,
       15,
       100,
-      0.1, 0.0, 0.0, 0.000175,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    );
+    ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0);
     
     /**
      * The idle launch roller velocity in revolutions per minute.
@@ -201,7 +197,7 @@ public final class Constants {
     /**
      * The conch angle offset, in degrees. 0 degrees should be where the axle sits at the lowest point.
      */
-    public static final double angleOffset = 108;
+    public static final Rotation2d angleOffset = Rotation2d.fromDegrees(108);
 
     /**
      * If we should invert the angle motor direction.
@@ -218,10 +214,9 @@ public final class Constants {
       IdleMode.kCoast,
       15, 20,
       100,
-      6e-5, 0.0, 0.0, 0.000175,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    );
+    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 0.000175);
     
     /**
      * The belt pulley radius, in meters.
@@ -262,24 +257,19 @@ public final class Constants {
       IdleMode.kCoast,
       20, 30,
       100,
-      6e-5, 0.0, 0.0, 0.000175,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    );
+    ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)        // Position controller
+     .configurePIDSlot(1, 1e-6, 0.0, 0.0, 0.000175); // Velocity controller
 
     public static final CANSparkMaxConfig angleMotorConfig = new CANSparkMaxConfig(
       IdleMode.kBrake,
       8, 10,
       100,
-      0.1, 0.0, 0.0, 0.000175,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    );
-
-    /**
-     * The maximum velocity of the elevator, meters per second.
-     */
-    public static final double elevatorVelocity = 10;
+    ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)        // Position controller
+     .configurePIDSlot(1, 1e-6, 0.0, 0.0, 0.000175); // Velocity controller
     
     /**
      * The number of rotations on the elevator extension motor required to fully extend the elevator. 
@@ -291,19 +281,14 @@ public final class Constants {
     public static final double totalElevatorExtensionHeight = 1.016;
 
     /**
-     * The target height of the elevator when it's fully extended.
+     * The target height of the elevator when it's fully extended, in meters.
      */
     public static final double elevatorExtendedHeight = 0.9;
 
     /**
      * The angle of the elevator when it's tilted upward.
      */
-    public static final double elevatorUpAngle = 90;
-
-    /**
-     * The speed that the elevator angle motor should run at when changing angles.
-     */
-    public static final double angleSpeed = 10;
+    public static final Rotation2d elevatorUpAngle = Rotation2d.fromDegrees(90);
 
     /**
      * The DIO port of the elevator angle through-bore absolute encoder.
@@ -327,18 +312,34 @@ public final class Constants {
       IdleMode.kCoast,
       15, 20,
       100,
-      6e-5, 0.0, 0.0, 0.000175,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    );
+    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 0.000175);
 
     /**
      * The speed that notes are moved into the launcher to shoot, in meters per second.
      */
-    public static final double launchNoteTransportSpeed = 5;
+    public static final double launchNoteTransportSpeed = 2;
     /**
      * The speed that notes are moved out of the transport for putting them into the trap, in meters per second.
      */
-    public static final double trapEjectSpeed = 1;
+    public static final double trapEjectSpeed = 0.5;
+  }
+
+  public static final class Climber {
+    public static final int leftClimberMotorCANID = 81;
+    public static final int rightClimberMotorCANID = 82;
+
+    public static final CANSparkMaxConfig leftMotorConfig = new CANSparkMaxConfig(
+      IdleMode.kBrake,
+      10, 15,
+      100,
+      12.0,
+      Usage.kAll
+    ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)        // Position controller
+     .configurePIDSlot(1, 1e-6, 0.0, 0.0, 0.000175); // Velocity controller
+
+    // TODO: Find real value
+    public static final double fullUpRotations = 10;
   }
 }

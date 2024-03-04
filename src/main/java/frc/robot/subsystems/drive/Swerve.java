@@ -29,6 +29,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -218,6 +219,8 @@ public class Swerve extends SubsystemBase {
   }
 
   public void updateOdometryPose() {
+    if(RobotBase.isSimulation()) return; // TODO: Change Limelight to work in replay!co
+
     boolean hasTargets = LimelightHelpers.getTV("limelight");
     if(!hasTargets) return;
 

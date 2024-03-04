@@ -7,8 +7,8 @@ package frc.robot.commands.auto;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import frc.robot.subsystems.Launcher;
-import frc.robot.subsystems.Transport;
+import frc.robot.subsystems.launcher.Launcher;
+import frc.robot.subsystems.transport.Transport;
 
 /**
  * A command used for launching when the robot is aligned to the speaker and directly in front of the start line.

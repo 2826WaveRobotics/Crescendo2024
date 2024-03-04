@@ -8,8 +8,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import frc.robot.subsystems.Launcher;
-import frc.robot.subsystems.Transport;
+import frc.robot.subsystems.launcher.Launcher;
+import frc.robot.subsystems.transport.Transport;
 
 /**
  * A command that runs the launcher and upper launch roller for half a second.

@@ -2,12 +2,28 @@ package frc.robot.subsystems;
 
 import java.util.HashMap;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.commands.climber.ClimberFullyDown;
+import frc.robot.commands.climber.ClimberFullyUp;
+import frc.robot.commands.climber.RunClimberSideDistance;
+import frc.robot.commands.climber.RunClimberSideUntilStall;
+import frc.robot.commands.elevator.AngleElevatorDown;
+import frc.robot.commands.elevator.AngleElevatorUp;
+import frc.robot.commands.elevator.ExtendElevator;
+import frc.robot.commands.elevator.RetractElevator;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.Elevator.ElevatorState;
 import frc.robot.subsystems.noteSensors.NoteSensors;
+import frc.robot.subsystems.transport.Transport;
 
 public class Superstructure extends SubsystemBase {
     private static Superstructure instance = null;
@@ -64,13 +80,14 @@ public class Superstructure extends SubsystemBase {
     private HashMap<Integer, NoteState> sensorStateMap = createSensorStateHashmap();
     private HashMap<Integer, NoteState> createSensorStateHashmap() {
         HashMap<Integer, NoteState> hashmap = new HashMap<>(8);
+        // TODO: Fix for new sensor positions
         hashmap.put(0b000, NoteState.NoNote);
         hashmap.put(0b001, NoteState.IntakingNote);
         hashmap.put(0b010, NoteState.MovingNote);
         hashmap.put(0b011, NoteState.EjectingNote);
-        hashmap.put(0b100, NoteState.ReadyToLaunch);
+        hashmap.put(0b100, NoteState.MovingNote);
         hashmap.put(0b101, NoteState.EjectingNote);
-        hashmap.put(0b110, NoteState.MovingNote);
+        hashmap.put(0b110, NoteState.ReadyToLaunch);
         hashmap.put(0b111, NoteState.EjectingNote);
         return hashmap;
     }
@@ -126,24 +143,102 @@ public class Superstructure extends SubsystemBase {
      * Ejects the current note for the trap.
      */
     public void ejectNoteForTrap() {
-        // TODO: This should only work when the elevator is tilted up. We don't store that state yet, though.
+        if(Elevator.getInstance().currentState != ElevatorState.Extended) return;
 
         ejectingNoteForTrap = true;
-        new WaitCommand(0.5).andThen(new InstantCommand(() -> {
-            ejectingNoteForTrap = false;
-        })).schedule();
+        new WaitCommand(0.5).andThen(new InstantCommand(() ->
+            ejectingNoteForTrap = false
+        )).schedule();
+    }
+
+    Command scheduledClimbCommand = null;
+
+    public void resetSubsystems() {
+        if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
+
+        scheduledClimbCommand = new ParallelCommandGroup(
+            new SequentialCommandGroup(
+                new RetractElevator(),
+                new AngleElevatorDown()
+            ),
+            new ClimberFullyDown()
+        );
+        scheduledClimbCommand.schedule();
+    }
+
+    public void setupClimb() {
+        if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
+
+        scheduledClimbCommand = new SequentialCommandGroup(
+            new WaitUntilCommand(() -> getNoteState() != NoteState.IntakingNote),
+            new ParallelCommandGroup(
+                new AngleElevatorUp(),
+                new ClimberFullyUp()
+            )
+        );
+        scheduledClimbCommand.schedule();
+    }
+    public void climb() {
+        if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
+
+        if(getNoteState() == NoteState.MovingNote || getNoteState() == NoteState.ReadyToLaunch) {
+            // Trap sequence
+            scheduledClimbCommand = new SequentialCommandGroup(
+                new ParallelCommandGroup(
+                    new ExtendElevator(),
+                    new ClimberFullyDown()
+                ),
+                new InstantCommand(this::ejectNoteForTrap)
+            );
+        } else {
+            // Non-trap sequence
+            Climber climber = Climber.getInstance();
+            scheduledClimbCommand = new SequentialCommandGroup(
+                new ParallelCommandGroup(
+                    new RunClimberSideUntilStall(climber::setLeftSpeed, climber::getLeftMotorStalling),
+                    new RunClimberSideUntilStall(climber::setRightSpeed, climber::getRightMotorStalling)
+                ),
+                new ParallelCommandGroup(
+                    new RunClimberSideDistance(climber::setLeftPosition, climber::getLeftPosition, -15),
+                    new RunClimberSideDistance(climber::setRightPosition, climber::getRightPosition, -15)
+                )
+            );
+        }
+        scheduledClimbCommand.schedule();
+    }
+
+    public void unclimbStart() {
+        if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
+        
+        scheduledClimbCommand = new SequentialCommandGroup(
+            new ParallelCommandGroup(
+                new RetractElevator(),
+                new ClimberFullyUp()
+            ),
+            new AngleElevatorDown()
+        );
+        scheduledClimbCommand.schedule();
+    }
+    public void unclimbEnd() {
+        if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
+        
+        scheduledClimbCommand = new ClimberFullyDown();
+        scheduledClimbCommand.schedule();
     }
 
     @Override
     public void periodic() {
         updateNoteState();
         
+        Transport transportSubsystem = Transport.getInstance();
+
         double upperTransportSpeed = 0;
         if(launchingNote) {
             upperTransportSpeed = Constants.Transport.launchNoteTransportSpeed;
         } else if(ejectingNoteForTrap) {
             upperTransportSpeed = Constants.Transport.trapEjectSpeed;
         }
-        // transportSubsystem.setUpperTransportSpeed(upperTransportSpeed);
+
+        transportSubsystem.setUpperTransportSpeed(upperTransportSpeed);
     }
 }

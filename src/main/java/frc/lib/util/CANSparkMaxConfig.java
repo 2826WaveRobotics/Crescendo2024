@@ -1,11 +1,29 @@
 package frc.lib.util;
 
+import java.util.ArrayList;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkPIDController;
 
 import frc.lib.util.CANSparkMaxUtil.Usage;
 
 public class CANSparkMaxConfig {
+    private class PIDValues {
+        public int slot;
+        public double p;
+        public double i;
+        public double d;
+        public double f;
+
+        public PIDValues(int slot, double p, double i, double d, double f) {
+            this.slot = slot;
+            this.p = p;
+            this.i = i;
+            this.d = d;
+            this.f = f;
+        }
+    }
+
     /**
      * The idle mode of the motor.
      */
@@ -39,23 +57,6 @@ public class CANSparkMaxConfig {
     public double closedLoopRampRate;
 
     /**
-     * The P value for the PID controller.
-     */
-    public double PIDp;
-    /**
-     * The I value for the PID controller.
-     */
-    public double PIDi;
-    /**
-     * The D value for the PID controller.
-     */
-    public double PIDd;
-    /**
-     * The feed forward value for the PID controller.
-     */
-    public double PIDff;
-
-    /**
      * The voltage that this motor will run at so we can compensate.
      */
     public double voltageCompensation;
@@ -65,12 +66,13 @@ public class CANSparkMaxConfig {
      */
     public Usage usage;
 
+    public ArrayList<PIDValues> pidConfigurations = new ArrayList<PIDValues>();
+
     public CANSparkMaxConfig(
         CANSparkMax.IdleMode idleMode,
         int smartCurrentLimit,
         double secondaryCurrentLimit,
         double closedLoopRampRate,
-        double PIDp, double PIDi, double PIDd, double PIDff,
         double voltageCompensation,
         Usage usage
     ) {
@@ -78,12 +80,21 @@ public class CANSparkMaxConfig {
         this.smartCurrentLimit = smartCurrentLimit;
         this.secondaryCurrentLimit = secondaryCurrentLimit;
         this.closedLoopRampRate = closedLoopRampRate;
-        this.PIDp = PIDp;
-        this.PIDi = PIDi;
-        this.PIDd = PIDd;
-        this.PIDff = PIDff;
         this.voltageCompensation = voltageCompensation;
         this.usage = usage;
+    }
+
+    /**
+     * Adds a PID slot to this Spark Max's configuration.
+     * @param slot
+     * @param p
+     * @param i
+     * @param d
+     * @param f
+     */
+    public CANSparkMaxConfig configurePIDSlot(int slot, double p, double i, double d, double f) {
+        pidConfigurations.add(new PIDValues(slot, p, i, d, f));
+        return this;
     }
 
     /**
@@ -109,10 +120,14 @@ public class CANSparkMaxConfig {
         spark.setClosedLoopRampRate(closedLoopRampRate);
 
         spark.setIdleMode(idleMode);
-        pidController.setP(PIDp);
-        pidController.setI(PIDi);
-        pidController.setD(PIDd);
-        pidController.setFF(PIDff);
+
+        for(PIDValues values : pidConfigurations) {
+            pidController.setP(values.p, values.slot);
+            pidController.setI(values.i, values.slot);
+            pidController.setD(values.d, values.slot);
+            pidController.setFF(values.f, values.slot);
+        }
+
         spark.enableVoltageCompensation(voltageCompensation);
         
         if(burnFlash) spark.burnFlash();

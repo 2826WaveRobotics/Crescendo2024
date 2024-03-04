@@ -1,52 +1,29 @@
 package frc.robot.commands;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Transport;
+import frc.robot.subsystems.transport.Transport;
 
 public class TeleopIntake extends Command {
-    private Transport transportSubsystem;
+    private DoubleSupplier intakeOverride;
 
-    // Driver controller
-    private BooleanSupplier bottomRollersRunning;
-    private BooleanSupplier topRollersRunning;
-    private BooleanSupplier reverseTransport;
-
-    public TeleopIntake(
-            Transport transportSubsystem,
-            BooleanSupplier bottomRollersRunning,
-            BooleanSupplier topRollersRunning,
-            BooleanSupplier reverseTransport) {
-        this.transportSubsystem = transportSubsystem;
-        addRequirements(transportSubsystem);
-
-        this.bottomRollersRunning = bottomRollersRunning;
-        this.topRollersRunning = topRollersRunning;
-        this.reverseTransport = reverseTransport;
-    }
-
-    @Override
-    public void initialize() {
-        // /**
-        //  * A trigger for the intake toggle button, from 0 to 1. Gets the value from
-        //  * the intake speed axis.
-        //  */
-        // Trigger intakeTrigger = new Trigger(() -> {
-        //     return driver.getRawAxis(XboxController.Axis.kRightTrigger.value) > Constants.Intake.intakeDeadband;
-        // });
-
-        // intakeTrigger.onTrue(new InstantCommand(() -> 
-        //     transportSubsystem.setActive(!transportSubsystem.isActive())
-        // ));
+    public TeleopIntake(DoubleSupplier intakeOverride) {
+        this.intakeOverride = intakeOverride;
     }
 
     @Override
     public void execute() {
         if(DriverStation.isAutonomous()) return;
 
-        double transportSpeed = (reverseTransport.getAsBoolean() ? -10.0 : 10.0);
-        transportSubsystem.setIntakeSpeed(bottomRollersRunning.getAsBoolean() ? transportSpeed : 0);
-        transportSubsystem.setUpperTransportSpeed(topRollersRunning.getAsBoolean() ? transportSpeed : 0);
+        double intakeSpeed = MathUtil.applyDeadband(intakeOverride.getAsDouble(), 0.25);
+
+        if(intakeSpeed != 0) {
+            Transport.getInstance().setIntakeSpeed(intakeSpeed);
+            Transport.getInstance().setUpperTransportSpeed(intakeSpeed);
+        }
     }
 }
