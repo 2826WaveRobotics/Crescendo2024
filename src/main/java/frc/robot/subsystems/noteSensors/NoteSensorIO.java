@@ -1,9 +1,5 @@
 package frc.robot.subsystems.noteSensors;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DigitalInput;
-import frc.robot.Constants;
-
 import org.littletonrobotics.junction.AutoLog;
 
 public interface NoteSensorIO {

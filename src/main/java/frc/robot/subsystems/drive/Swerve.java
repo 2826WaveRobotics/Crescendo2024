@@ -37,9 +37,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.lib.LimelightHelpers;
 import frc.lib.util.LocalADStarAK;
 import frc.robot.Constants;
+import frc.robot.subsystems.vision.Limelight;
 
 public class Swerve extends SubsystemBase {
   private static Swerve instance = null;
@@ -94,18 +94,6 @@ public class Swerve extends SubsystemBase {
   private Field2d field;
 
   /**
-   * Standard deviations of model states. Increase these numbers to trust your model's state estimates less. This
-   * matrix is in the form [x, y, theta]ᵀ, with units in meters and radians, then meters.
-   */
-  private static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5));
-
-  /**
-   * Standard deviations of the vision measurements. Increase these numbers to trust global measurements from vision
-   * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and radians.
-   */
-  private static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(5));
-  
-  /**
    * The system identification routine used to tune the swerve modules.
    */
   private final SysIdRoutine sysIdRoutine;
@@ -145,8 +133,8 @@ public class Swerve extends SubsystemBase {
       getYaw(),
       swerveModulePositions,
       startPose,
-      stateStdDevs,
-      visionMeasurementStdDevs
+      Limelight.stateStdDevs,
+      Limelight.visionMeasurementStdDevs
     );
     
     resetRotation();
@@ -218,48 +206,11 @@ public class Swerve extends SubsystemBase {
     return kinematics.toChassisSpeeds(getStates());
   }
 
-  public void updateOdometryPose() {
-    if(RobotBase.isSimulation()) return; // TODO: Change Limelight to work in replay!co
-
-    boolean hasTargets = LimelightHelpers.getTV("limelight");
-    if(!hasTargets) return;
-
-    Pose2d pose = LimelightHelpers.getBotPose2d("limelight");
-    Translation2d poseTranslation = pose.getTranslation();
-
-    // Get the position of the primary tag. If it's further than 5 meters away, discard the data.
-    double distance = LimelightHelpers.getTargetPose3d_CameraSpace("limelight").getTranslation().getDistance(new Translation3d());
-    if(distance > 5) return;
-
-    // Offset the pose to the center of the field because the limelight returns (0, 0)
-    // as the center instead of (16.45, 8.09). This should probably be fixed in
-    // LimelightHelpers instead, but this is easiest for now.
-    Pose2d fixedPose = new Pose2d(new Translation2d(
-      16.4592 / 2 + poseTranslation.getX(),
-      8.09625 / 2 + poseTranslation.getY()
-    ), pose.getRotation());
-
-    double[] botpose = LimelightHelpers.getBotPose("limelight");
-    if(botpose.length == 0) return;
-
-    // Scale the vision measurement expected standard deviation exponentially by the distance 
-    double standardDeviationScalar = Math.max(0, 0.2 * Math.pow(2.2, distance) - 0.03);
-
-    // SmartDashboard.putNumber("Limelight closest tag distance", distance);
-    // SmartDashboard.putNumber("Limelight standard deviation scalar", standardDeviationScalar);
-    // SmartDashboard.putString("Vision measurement predicted standard deviation", 
-    //   "(" + Math.round(visionMeasurementStdDevs.get(0, 0) * standardDeviationScalar * 1000) / 1000. + ", " +
-    //   Math.round(visionMeasurementStdDevs.get(1, 0) * standardDeviationScalar * 1000) / 1000. + ", " +
-    //   Math.round(visionMeasurementStdDevs.get(2, 0) * standardDeviationScalar * 1000) / 1000. + ")");
-
-    addVisionMeasurement(fixedPose, botpose[6], standardDeviationScalar);
-  }
-
   public void addVisionMeasurement(Pose2d pose, double pipelineLatency, double standardDeviationScalar) {
     swerveOdometry.addVisionMeasurement(
       pose,
       Timer.getFPGATimestamp() - (pipelineLatency / 1000.0),
-      visionMeasurementStdDevs.times(standardDeviationScalar)
+      Limelight.visionMeasurementStdDevs.times(standardDeviationScalar)
     );
   }
 
@@ -446,7 +397,5 @@ public class Swerve extends SubsystemBase {
     }
 
     field.setRobotPose(getPose());
-
-    updateOdometryPose();
   }
 }
