@@ -207,7 +207,6 @@ public final class Constants {
 
   public static final class Intake {
     public static final int frontIntakeMotorCANID = 46;
-    // public static final int backIntakeMotorCANID = 51; // FIXME - Only 2 motors
     public static final int beltIntakeMotorCANID = 4;
 
     public static final CANSparkMaxConfig intakeMotorConfig = new CANSparkMaxConfig(
@@ -251,7 +250,7 @@ public final class Constants {
     public static final int noteInTransitionSensorDIOPort = 6;
 
     public static final int positionMotorCANID = 10;
-    public static final int angleMotorCANID = 98;
+    public static final int angleMotorCANID = 44;
 
     public static final CANSparkMaxConfig positionMotorConfig = new CANSparkMaxConfig(
       IdleMode.kCoast,
@@ -327,8 +326,8 @@ public final class Constants {
   }
 
   public static final class Climber {
-    public static final int leftClimberMotorCANID = 81;
-    public static final int rightClimberMotorCANID = 82;
+    public static final int leftClimberMotorCANID = 55;
+    public static final int rightClimberMotorCANID = 56;
 
     public static final CANSparkMaxConfig leftMotorConfig = new CANSparkMaxConfig(
       IdleMode.kBrake,
