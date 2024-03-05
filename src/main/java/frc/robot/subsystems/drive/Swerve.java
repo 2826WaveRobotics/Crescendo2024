@@ -206,10 +206,10 @@ public class Swerve extends SubsystemBase {
     return kinematics.toChassisSpeeds(getStates());
   }
 
-  public void addVisionMeasurement(Pose2d pose, double pipelineLatency, double standardDeviationScalar) {
+  public void addVisionMeasurement(Pose2d pose, double timestampSeconds, double standardDeviationScalar) {
     swerveOdometry.addVisionMeasurement(
       pose,
-      Timer.getFPGATimestamp() - (pipelineLatency / 1000.0),
+      timestampSeconds,
       Limelight.visionMeasurementStdDevs.times(standardDeviationScalar)
     );
   }

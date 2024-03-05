@@ -22,7 +22,7 @@ public class DriveCommands {
 
   private static SlewRateLimiter xVelocityRateLimiter = new SlewRateLimiter(3.0);
   private static SlewRateLimiter yVelocityRateLimiter = new SlewRateLimiter(3.0);
-  private static SlewRateLimiter omegaRateLimiter = new SlewRateLimiter(5.0);
+  private static SlewRateLimiter omegaRateLimiter = new SlewRateLimiter(3.0);
 
   /**
    * Field relative drive command using two joysticks (controlling linear and angular velocities).

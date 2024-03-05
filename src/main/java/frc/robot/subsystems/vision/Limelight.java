@@ -31,15 +31,17 @@ public class Limelight extends SubsystemBase {
 
   /**
    * Standard deviations of model states. Increase these numbers to trust your model's state estimates less. This
-   * matrix is in the form [x, y, theta]ᵀ, with units in meters and radians, then meters.
+   * matrix is in the form [x, y, theta]ᵀ, with units in meters and radians, then meters.  
+   * We use an extremely low standard deviation for the heading state because we trust our gyro more than our vision for heading measurements.
    */
-  public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5));
+  public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.03, 0.03, Units.degreesToRadians(1));
 
   /**
    * Standard deviations of the vision measurements. Increase these numbers to trust global measurements from vision
    * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and radians.
+   * We use an extremely high standard deviation for the heading measurement because we trust our gyro more than our vision for heading measurements.
    */
-  public static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(5));
+  public static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(180));
   
   private LimelightIO limelightIO;
   private LimelightIOInputsAutoLogged inputs = new LimelightIOInputsAutoLogged();
@@ -56,7 +58,7 @@ public class Limelight extends SubsystemBase {
     if(poseEstimateData.avgTagDist > 5) return;
 
     // Scale the vision measurement expected standard deviation exponentially by the distance 
-    double standardDeviationScalar = Math.max(0.01, 0.2 * Math.pow(1.5, poseEstimateData.avgTagDist) - 0.03);
+    double standardDeviationScalar = Math.max(0.01, 0.2 * Math.pow(1.5, poseEstimateData.avgTagDist) - 0.03) / (poseEstimateData.tagCount - 1);
 
     Pose2d pose = poseEstimateData.pose;
 
@@ -66,7 +68,7 @@ public class Limelight extends SubsystemBase {
       return;
     }
 
-    swerve.addVisionMeasurement(pose, poseEstimateData.latency, standardDeviationScalar);
+    swerve.addVisionMeasurement(pose, poseEstimateData.timestampSeconds, standardDeviationScalar);
   }
 
   @Override
