@@ -1,6 +1,4 @@
 package frc.robot.commands;
-
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
@@ -12,6 +10,8 @@ public class TeleopIntake extends Command {
     private DoubleSupplier intakeOverride;
 
     public TeleopIntake(DoubleSupplier intakeOverride) {
+        addRequirements(Transport.getInstance());
+
         this.intakeOverride = intakeOverride;
     }
 

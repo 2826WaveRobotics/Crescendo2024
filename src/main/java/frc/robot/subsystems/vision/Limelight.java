@@ -9,6 +9,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Swerve;
+import frc.robot.subsystems.vision.LimelightIO.LimelightIOInputsLogged;
 import frc.lib.LimelightHelpers;
 
 public class Limelight extends SubsystemBase {
@@ -44,7 +45,7 @@ public class Limelight extends SubsystemBase {
   public static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(180));
   
   private LimelightIO limelightIO;
-  private LimelightIOInputsAutoLogged inputs = new LimelightIOInputsAutoLogged();
+  private LimelightIOInputsLogged inputs = new LimelightIOInputsLogged();
 
   private Limelight(LimelightIO limelightIO) {
     this.limelightIO = limelightIO;

@@ -3,6 +3,11 @@
 
 src/main/java/frc/robot/BuildConstants.java
 
+# Files used in simulation. Maybe we should think about which of these should be committed further.
+networktables.json
+simgui-ds.json
+simgui.json
+
 ### C++ ###
 # Prerequisites
 *.d
