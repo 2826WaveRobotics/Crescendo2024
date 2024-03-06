@@ -90,17 +90,19 @@ public class Launcher extends SubsystemBase {
   }
 
   /**
-   * Changes the current launcher speed by amount (launcher speed = launcher speed + amount).
-   * @param amount
+   * Sets the launch roller speed.
+   * @param speed
    */
-  public void changeLauncherSpeed(double amount) {
-    launcherSpeed += amount;
+  public void setLauncherSpeed(double speed) {
+    launcherSpeed = speed;
   }
 
   @Override
   public void periodic() {
     launcherIO.updateInputs(inputs);
     launcherIO.runRollers(launcherSpeed);
+    
+    SmartDashboard.putNumber("LauncherSpeed", launcherSpeed);
     
     SmartDashboard.putNumber("Launcher absolute encoder", inputs.absoluteLauncherAngle.getDegrees());
     SmartDashboard.putNumber("Launcher relative encoder", inputs.launcherRelativeConchAngle.getDegrees());

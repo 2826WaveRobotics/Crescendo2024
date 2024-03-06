@@ -61,13 +61,13 @@ public class TransportIOReal implements TransportIO {
     double beltRPM = getIntakeMotorRPM(intakeSpeedMetersPerSecond, 15);
 
     frontIntakePIDController.setReference(frontRPM, ControlType.kVelocity);
-    lowerTransportPIDController.setReference(-beltRPM, ControlType.kVelocity);
+    // lowerTransportPIDController.setReference(-beltRPM, ControlType.kVelocity);
     beltIntakePIDController.setReference(beltRPM, ControlType.kVelocity);
 
     double upperTransportSpeed = getIntakeMotorRPM(
       Math.max(transportSpeedMetersPerSecond, intakeSpeedMetersPerSecond),
       25
-    );
+    ) / 3.;
 
     upperTransportPIDController.setReference(-upperTransportSpeed, ControlType.kVelocity);
   }

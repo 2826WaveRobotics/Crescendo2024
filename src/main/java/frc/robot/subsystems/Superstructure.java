@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import java.util.HashMap;
 
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -80,7 +82,7 @@ public class Superstructure extends SubsystemBase {
     private HashMap<Integer, NoteState> sensorStateMap = createSensorStateHashmap();
     private HashMap<Integer, NoteState> createSensorStateHashmap() {
         HashMap<Integer, NoteState> hashmap = new HashMap<>(8);
-        // TODO: Fix for new sensor positions
+        // [position, transition, intake] sensor order
         hashmap.put(0b000, NoteState.NoNote);
         hashmap.put(0b001, NoteState.IntakingNote);
         hashmap.put(0b010, NoteState.MovingNote);
@@ -115,6 +117,8 @@ public class Superstructure extends SubsystemBase {
 
         Trigger readyToLaunch = new Trigger(() -> currentState == NoteState.ReadyToLaunch);
         readyToLaunch.onTrue(new InstantCommand(() -> transportSubsystem.setActive(false)));
+
+        Shuffleboard.getTab("Note sensors").addString("Superstructure note state", () -> currentState.toString());
     }
 
     /**

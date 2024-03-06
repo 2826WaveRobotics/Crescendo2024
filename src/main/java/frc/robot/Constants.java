@@ -183,7 +183,7 @@ public final class Constants {
     /**
      * The idle launch roller velocity in revolutions per minute.
      */
-    public static final double launchRollerVelocity = 0.; // 1500.0;
+    public static final double launchRollerVelocity = 120.; // 1500.0;
     /**
      * The launch roller velocity, when shooting, in revolutions per minute.
      */
@@ -235,20 +235,22 @@ public final class Constants {
     public static final double ejectSpeedMetersPerSecond = 0.5;
   }
 
-  public static final class Elevator {
+  public static final class NoteSensors {
     /**
      * The DIO port of the through beam sensor detecting if notes are in the intake.
      */
-    public static final int intakeSensorDIOPort = 2;
+    public static final int intakeSensorDIOPort = 4;
     /**
      * The DIO port of the through beam sensor detecting if the note is in position.
      */
-    public static final int noteInPositionSensorDIOPort = 4;
+    public static final int noteInPositionSensorDIOPort = 6;
     /**
      * The DIO port of the through beam sensor detecting if the note is transitioning to the resting position.
      */
-    public static final int noteInTransitionSensorDIOPort = 6;
+    public static final int noteInTransitionSensorDIOPort = 2;
+  }
 
+  public static final class Elevator {
     public static final int positionMotorCANID = 10;
     public static final int angleMotorCANID = 44;
 
@@ -318,7 +320,7 @@ public final class Constants {
     /**
      * The speed that notes are moved into the launcher to shoot, in meters per second.
      */
-    public static final double launchNoteTransportSpeed = 2;
+    public static final double launchNoteTransportSpeed = 2.0;
     /**
      * The speed that notes are moved out of the transport for putting them into the trap, in meters per second.
      */

@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.I2C.Port;
-import frc.robot.subsystems.Superstructure.NoteState;
 import frc.robot.subsystems.lighting.Lighting.LightState;
 
 public class LightingIOReal implements LightingIO {

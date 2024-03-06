@@ -98,7 +98,7 @@ Operator:
     Start:
     Back:
 
-    Y: 
+    Y: Launch note
     B: Toggle intake active
     A: 
     X:

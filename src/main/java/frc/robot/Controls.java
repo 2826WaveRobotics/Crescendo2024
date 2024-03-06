@@ -75,21 +75,35 @@ public class Controls {
             transportSubsystem.setActive(!transportSubsystem.isActive())
         ));
 
-        launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(45));
-        operator.povUp().whileTrue(new RepeatCommand(new InstantCommand(() -> {
-            double launcherAngle = launcherSubsystem.launcherAngle + 0.15;
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
-        })));
-        operator.povDown().whileTrue(new RepeatCommand(new InstantCommand(() -> {
-            double launcherAngle = launcherSubsystem.launcherAngle - 0.15;
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
-        })));
+        final boolean TEST_LAUNCHER = true;
+        if(TEST_LAUNCHER) {
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(45));
+            operator.povUp().whileTrue(new RepeatCommand(new InstantCommand(() -> {
+                double launcherAngle = launcherSubsystem.launcherAngle + 0.15;
+                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
+            })));
+            operator.povDown().whileTrue(new RepeatCommand(new InstantCommand(() -> {
+                double launcherAngle = launcherSubsystem.launcherAngle - 0.15;
+                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
+            })));
 
-        operator.povRight().whileTrue(new RepeatCommand(new InstantCommand(() ->
-            launcherSubsystem.changeLauncherSpeed(20)
-        )));
-        operator.povLeft().whileTrue(new RepeatCommand(new InstantCommand(() ->
-            launcherSubsystem.changeLauncherSpeed(-20)
-        )));
+            operator.povRight().whileTrue(new RepeatCommand(new InstantCommand(() ->
+                launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed + 20)
+            )));
+            operator.povLeft().whileTrue(new RepeatCommand(new InstantCommand(() ->
+                launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed - 20)
+            )));
+        } else {
+            operator.povUp().onTrue(new InstantCommand(() -> {
+                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(35));
+                launcherSubsystem.setLauncherSpeed(4500);
+            }));
+            operator.povDown().onTrue(new InstantCommand(() -> {
+                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(50));
+                launcherSubsystem.launchRollersSlow();
+            }));
+        }
+
+        operator.y().onTrue(new InstantCommand(superstructure::launchNote));
     }
 }

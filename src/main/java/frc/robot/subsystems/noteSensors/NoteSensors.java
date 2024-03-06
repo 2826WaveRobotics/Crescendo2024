@@ -1,6 +1,7 @@
 package frc.robot.subsystems.noteSensors;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.noteSensors.NoteSensorIO;
@@ -29,6 +30,10 @@ public class NoteSensors extends SubsystemBase {
 
   private NoteSensors(NoteSensorIO noteSensorIO) {
     this.noteSensorIO = noteSensorIO;
+
+    Shuffleboard.getTab("Note sensors").addBoolean("Intake sensor activated", () -> inputs.intakeSensorActivated);
+    Shuffleboard.getTab("Note sensors").addBoolean("Note in position sensor activated", () -> inputs.noteInPositionSensorActivated);
+    Shuffleboard.getTab("Note sensors").addBoolean("Note in transition sensor activated", () -> inputs.noteInTransitionSensorActivated);
   }
 
   @Override
