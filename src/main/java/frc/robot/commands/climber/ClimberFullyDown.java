@@ -11,6 +11,7 @@ import frc.robot.subsystems.climber.Climber;
 public class ClimberFullyDown extends SequentialCommandGroup {
     public ClimberFullyDown() {
         Climber climber = Climber.getInstance();
+        addRequirements(climber);
         addCommands(
             new ParallelCommandGroup(
                 new ClimberSideFullyDown(climber::setLeftPosition, climber::setLeftSpeed, climber::getLeftPosition, climber::getLeftMotorStalling),

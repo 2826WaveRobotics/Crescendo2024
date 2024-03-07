@@ -54,13 +54,14 @@ public class Limelight extends SubsystemBase {
   private void updateOdometryPoseFromVisionMeasurements() {
     LimelightHelpers.PoseEstimate poseEstimateData = inputs.poseEstimateData;
     if(poseEstimateData == null) return;
+
+    // Don't use vision measurements if the robot is rotating more than 8 radians per second.
+    // 8 is an arbitrary number, but it's a good starting point. If the robot is rotating faster than this, it's likely that the vision measurements are not accurate
+    // since the Limelight camera is slightly blurred and delayed.
+    if (Math.abs(Swerve.getInstance().getRobotRelativeSpeeds().omegaRadiansPerSecond) > Units.degreesToRadians(8)) {
+      return;
+    }
     
-    if(poseEstimateData.tagCount <= 2) return;
-    if(poseEstimateData.avgTagDist > 5) return;
-
-    // Scale the vision measurement expected standard deviation exponentially by the distance 
-    double standardDeviationScalar = Math.max(0.01, 0.2 * Math.pow(1.5, poseEstimateData.avgTagDist) - 0.03) / (poseEstimateData.tagCount - 1);
-
     Pose2d pose = poseEstimateData.pose;
 
     Swerve swerve = Swerve.getInstance();
@@ -68,6 +69,12 @@ public class Limelight extends SubsystemBase {
     if (swerve.getPose().getTranslation().getDistance(pose.getTranslation()) > 1.5) {
       return;
     }
+    
+    if(poseEstimateData.tagCount <= 2) return;
+    if(poseEstimateData.avgTagDist > 5) return;
+
+    // Scale the vision measurement expected standard deviation exponentially by the distance 
+    double standardDeviationScalar = Math.max(0.01, 0.2 * Math.pow(1.5, poseEstimateData.avgTagDist) - 0.03) / (poseEstimateData.tagCount - 1);
 
     swerve.addVisionMeasurement(pose, poseEstimateData.timestampSeconds, standardDeviationScalar);
   }

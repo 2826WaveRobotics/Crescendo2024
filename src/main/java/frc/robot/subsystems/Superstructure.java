@@ -2,8 +2,9 @@ package frc.robot.subsystems;
 
 import java.util.HashMap;
 
+import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -12,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
 import frc.robot.commands.climber.ClimberFullyDown;
 import frc.robot.commands.climber.ClimberFullyUp;
 import frc.robot.commands.climber.RunClimberSideDistance;
@@ -21,11 +21,13 @@ import frc.robot.commands.elevator.AngleElevatorDown;
 import frc.robot.commands.elevator.AngleElevatorUp;
 import frc.robot.commands.elevator.ExtendElevator;
 import frc.robot.commands.elevator.RetractElevator;
+import frc.robot.commands.transport.EjectNoteForTrap;
+import frc.robot.commands.transport.LaunchNote;
 import frc.robot.subsystems.climber.Climber;
-import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.subsystems.elevator.Elevator.ElevatorState;
+import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.noteSensors.NoteSensors;
 import frc.robot.subsystems.transport.Transport;
+import frc.robot.subsystems.transport.Transport.TransportState;
 
 public class Superstructure extends SubsystemBase {
     private static Superstructure instance = null;
@@ -95,69 +97,71 @@ public class Superstructure extends SubsystemBase {
     }
 
     /**
+     * A notifier to update the note state.  
+     * We use a notifier instead of updating in periodic because we want faster updates than the periodic loop.
+     */
+    private Notifier updateNoteStateNotifier = new Notifier(this::updateNoteState);
+
+    /**
+     * The number of note state updates we run per second.
+     */
+    private static final double NOTE_STATE_UPDATE_RATE = 100;
+
+    private EventLoop noteStateEventLoop = new EventLoop();
+    private Trigger ejectingNoteEvent = new Trigger(noteStateEventLoop, () -> currentState == NoteState.EjectingNote);
+    private Trigger readyToLaunchEvent = new Trigger(noteStateEventLoop, () -> currentState == NoteState.ReadyToLaunch);
+
+    /**
      * Updates the current state based on the sensor values.
      */
     private void updateNoteState() {
         NoteSensors noteSensorsSubsystem = NoteSensors.getInstance();
+
+        // We don't do this in periodic because we want to synchronize the sensor reads with the superstructure state updates to avoid extra latency.
+        noteSensorsSubsystem.updateSensorValues();
+        
         currentState = sensorStateMap.get(
             (noteSensorsSubsystem.getIntakeSensorActivated() ? 1 : 0) +
             ((noteSensorsSubsystem.getNoteInTransitionSensorActivated() ? 1 : 0) << 1) +
             ((noteSensorsSubsystem.getNoteInPositionSensorActivated() ? 1 : 0) << 2)
         );
+
+        noteStateEventLoop.poll();
+
+        Transport transportSubsystem = Transport.getInstance();
+        readyToLaunchEvent.onTrue(new InstantCommand(() -> {
+            transportSubsystem.attemptTransitionToState(TransportState.Stopped);
+            transportSubsystem.immediatelyUppdateSpeeds();
+        }));
+        
+        ejectingNoteEvent.onTrue(new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.EjectingNote)));
+        ejectingNoteEvent.onFalse(new WaitCommand(0.5).andThen(() -> transportSubsystem.attemptTransitionToState(TransportState.Stopped)));
     }
 
     private Superstructure() {
-        Transport transportSubsystem = Transport.getInstance();
-
-        Trigger ejecting = new Trigger(() -> {
-            return currentState == NoteState.EjectingNote;
-        });
-        ejecting.onTrue(new InstantCommand(transportSubsystem::ejectNote));
-        ejecting.onFalse(new WaitCommand(0.5).andThen(new InstantCommand(transportSubsystem::stopEjectingNote)));
-
-        Trigger readyToLaunch = new Trigger(() -> currentState == NoteState.ReadyToLaunch);
-        readyToLaunch.onTrue(new InstantCommand(() -> transportSubsystem.setActive(false)));
+        updateNoteStateNotifier.startPeriodic(1 / NOTE_STATE_UPDATE_RATE);
 
         Shuffleboard.getTab("Note sensors").addString("Superstructure note state", () -> currentState.toString());
     }
 
     /**
-     * If we're currently launching a note.
-     */
-    private boolean launchingNote = false;
-
-    /**
-     * If we're currently ejecting the note for trapping.
-     */
-    private boolean ejectingNoteForTrap = false;
-
-    /**
-     * Launches a note. This is mostly temporary logic.
+     * Launches a note.
      */
     public void launchNote() {
-        if(currentState != NoteState.ReadyToLaunch) return;
-        
-        launchingNote = true;
-        new WaitCommand(0.5).andThen(new InstantCommand(() -> {
-            launchingNote = false;
-        })).schedule();
+        new LaunchNote().schedule();
     }
 
     /**
      * Ejects the current note for the trap.
      */
     public void ejectNoteForTrap() {
-        if(Elevator.getInstance().currentState != ElevatorState.Extended) return;
-
-        ejectingNoteForTrap = true;
-        new WaitCommand(0.5).andThen(new InstantCommand(() ->
-            ejectingNoteForTrap = false
-        )).schedule();
+        new EjectNoteForTrap().schedule();
     }
 
     Command scheduledClimbCommand = null;
 
-    public void resetSubsystems() {
+    public void resetSubsystemsForAuto() {
+        // Reset climber
         if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
 
         scheduledClimbCommand = new ParallelCommandGroup(
@@ -168,6 +172,17 @@ public class Superstructure extends SubsystemBase {
             new ClimberFullyDown()
         );
         scheduledClimbCommand.schedule();
+
+        // Reset the odometry to face the current gyro angle
+        Swerve.getInstance().resetRotation();
+
+        // Reset the transport state
+        Transport.getInstance().resetState();
+    }
+    
+    public void resetSubsystemsForTeleop() {
+        // Reset the transport state
+        Transport.getInstance().resetState();
     }
 
     public void setupClimb() {
@@ -228,21 +243,5 @@ public class Superstructure extends SubsystemBase {
         
         scheduledClimbCommand = new ClimberFullyDown();
         scheduledClimbCommand.schedule();
-    }
-
-    @Override
-    public void periodic() {
-        updateNoteState();
-        
-        Transport transportSubsystem = Transport.getInstance();
-
-        double upperTransportSpeed = 0;
-        if(launchingNote) {
-            upperTransportSpeed = Constants.Transport.launchNoteTransportSpeed;
-        } else if(ejectingNoteForTrap) {
-            upperTransportSpeed = Constants.Transport.trapEjectSpeed;
-        }
-
-        transportSubsystem.setUpperTransportSpeed(upperTransportSpeed);
     }
 }

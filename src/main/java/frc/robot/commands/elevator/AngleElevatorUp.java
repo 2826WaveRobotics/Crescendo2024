@@ -10,6 +10,8 @@ import frc.robot.subsystems.elevator.Elevator.ElevatorState;
  */
 public class AngleElevatorUp extends SequentialCommandGroup {
     public AngleElevatorUp() {
+        addRequirements(Elevator.getInstance());
+        
         addCommands(new SetElevatorAngle(Constants.Elevator.elevatorUpAngle));
         finallyDo(() -> Elevator.getInstance().currentState = ElevatorState.Extended);
     }

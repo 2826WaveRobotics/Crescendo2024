@@ -6,10 +6,12 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorState;
 
 /**
- * Angles the elevator upward to the angle defined under `Constants.Elevator.elevatorUpAngle`.
+ * Angles the elevator downward until it stalls.
  */
 public class AngleElevatorDown extends SequentialCommandGroup {
     public AngleElevatorDown() {
+        addRequirements(Elevator.getInstance());
+        
         if(Elevator.getInstance().currentState == ElevatorState.Extended) {
             cancel();
             return;
@@ -19,6 +21,6 @@ public class AngleElevatorDown extends SequentialCommandGroup {
             new SetElevatorAngle(Rotation2d.fromDegrees(5)),
             new RunElevatorAngleUntilStall()
         );
-        finallyDo(() -> Elevator.getInstance().currentState = ElevatorState.Extended);
+        finallyDo(() -> Elevator.getInstance().currentState = ElevatorState.Stowed);
     }
 }

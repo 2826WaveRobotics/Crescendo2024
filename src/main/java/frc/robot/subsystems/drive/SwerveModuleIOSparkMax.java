@@ -82,7 +82,6 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     turnRelativeEncoder.setPosition(
       (turnAbsolutePosition.getValueAsDouble() - absoluteEncoderOffset.getRotations()) * Constants.Swerve.angleGearRatio
     );
-    SmartDashboard.putNumber("Absolute start offset", (turnAbsolutePosition.getValueAsDouble() - absoluteEncoderOffset.getRotations()) * Constants.Swerve.angleGearRatio);
     turnRelativeEncoder.setMeasurementPeriod(10);
     turnRelativeEncoder.setAverageDepth(2);
 

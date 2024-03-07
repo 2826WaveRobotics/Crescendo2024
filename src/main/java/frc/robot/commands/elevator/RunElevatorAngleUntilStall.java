@@ -5,7 +5,6 @@ import frc.robot.subsystems.elevator.Elevator;
 
 public class RunElevatorAngleUntilStall extends Command {
     public RunElevatorAngleUntilStall() {
-        addRequirements(Elevator.getInstance());
     }
 
     @Override

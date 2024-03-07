@@ -10,6 +10,7 @@ import frc.robot.subsystems.climber.Climber;
 public class ClimberFullyUp extends ParallelCommandGroup {
     public ClimberFullyUp() {
         Climber climber = Climber.getInstance();
+        addRequirements(climber);
         addCommands(
             new SetClimberSidePosition(climber::setLeftPosition, climber::getLeftPosition, Constants.Climber.fullUpRotations),
             new SetClimberSidePosition(climber::setRightPosition, climber::getRightPosition, Constants.Climber.fullUpRotations)

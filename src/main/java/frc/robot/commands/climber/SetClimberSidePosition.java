@@ -15,8 +15,6 @@ public class SetClimberSidePosition extends Command {
         DoubleSupplier getPosition,
         double position
     ) {
-      addRequirements(Climber.getInstance());
-      
       setPosition.accept(position);
       
       targetPosition = position;

@@ -18,7 +18,7 @@ public final class Constants {
    * This _must_ be changed before running simulations or on the real robot.  
    * There may be a better way to do this, but we need to differentiate between replays and normal simulations which doesn't seem possible.
    */
-  public static final Mode currentMode = Mode.REAL;
+  public static final Mode currentMode = Mode.SIM;
   /** A situation that the robot is currently running in: real, simulation, or replay. */
   public enum Mode {
     /** Running on a real robot. */
@@ -207,7 +207,7 @@ public final class Constants {
 
   public static final class Intake {
     public static final int frontIntakeMotorCANID = 46;
-    public static final int beltIntakeMotorCANID = 4;
+    public static final int backIntakeMotorCANID = 4;
 
     public static final CANSparkMaxConfig intakeMotorConfig = new CANSparkMaxConfig(
       IdleMode.kCoast,
@@ -218,21 +218,14 @@ public final class Constants {
     ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 0.000175);
     
     /**
-     * The belt pulley radius, in meters.
+     * The transport wheel radius, in meters.
      */
-    public static final double beltPulleyRadius = Units.inchesToMeters(15.0 / 16.0);
+    public static final double wheelRadius = Units.inchesToMeters(1.0);
 
     /**
      * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at), in meters per second.
      */
     public static final double intakeSpeed = 10.0;
-
-    /**
-     * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at)
-     * when ejecting notes. This happens when we accidentally intake two notes. When this happens,
-     * the front and back intake rollers run quickly in reverse to eject the note.
-     */
-    public static final double ejectSpeedMetersPerSecond = 0.5;
   }
 
   public static final class NoteSensors {
@@ -325,6 +318,11 @@ public final class Constants {
      * The speed that notes are moved out of the transport for putting them into the trap, in meters per second.
      */
     public static final double trapEjectSpeed = 0.5;
+    /**
+     * The speed to move notes when ejecting.  
+     * Notes are ejected when we have more than 1 note in the transport at a time.
+     */
+    public static final double ejectNoteSpeed = 1.0;
   }
 
   public static final class Climber {

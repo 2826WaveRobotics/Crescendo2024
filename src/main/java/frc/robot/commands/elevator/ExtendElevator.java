@@ -10,6 +10,8 @@ import frc.robot.subsystems.elevator.Elevator.ElevatorState;
  */
 public class ExtendElevator extends SequentialCommandGroup {
     public ExtendElevator() {
+        addRequirements(Elevator.getInstance());
+        
         if(Elevator.getInstance().currentState == ElevatorState.Stowed) {
             cancel();
             return;

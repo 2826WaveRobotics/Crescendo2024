@@ -9,26 +9,26 @@ import frc.robot.Constants;
 public class TransportIOReal implements TransportIO {
   private CANSparkMax frontIntakeMotor;
   private CANSparkMax lowerTransportMotor;
-  private CANSparkMax beltIntakeMotor;
+  private CANSparkMax backIntakeMotor;
   private CANSparkMax upperTransportMotor;
 
   private SparkPIDController upperTransportPIDController;
   private SparkPIDController frontIntakePIDController;
   private SparkPIDController lowerTransportPIDController;
-  private SparkPIDController beltIntakePIDController;
+  private SparkPIDController backIntakePIDController;
 
   public TransportIOReal() {
     frontIntakeMotor = new CANSparkMax(Constants.Intake.frontIntakeMotorCANID, CANSparkMax.MotorType.kBrushless);
     lowerTransportMotor = new CANSparkMax(Constants.Transport.lowerTransportMotorCANID, CANSparkMax.MotorType.kBrushless);
-    beltIntakeMotor = new CANSparkMax(Constants.Intake.beltIntakeMotorCANID, CANSparkMax.MotorType.kBrushless);
+    backIntakeMotor = new CANSparkMax(Constants.Intake.backIntakeMotorCANID, CANSparkMax.MotorType.kBrushless);
     upperTransportMotor = new CANSparkMax(Constants.Transport.upperTransportMotorCANID, CANSparkMax.MotorType.kBrushless);
 
     frontIntakePIDController = frontIntakeMotor.getPIDController();
     lowerTransportPIDController = lowerTransportMotor.getPIDController();
-    beltIntakePIDController = beltIntakeMotor.getPIDController();
+    backIntakePIDController = backIntakeMotor.getPIDController();
     upperTransportPIDController = upperTransportMotor.getPIDController();
     
-    Constants.Intake.intakeMotorConfig.configure(beltIntakeMotor, beltIntakePIDController);
+    Constants.Intake.intakeMotorConfig.configure(backIntakeMotor, backIntakePIDController);
     Constants.Intake.intakeMotorConfig.configure(frontIntakeMotor, frontIntakePIDController);
 
     Constants.Transport.transportMotorConfig.configure(lowerTransportMotor, lowerTransportPIDController);
@@ -43,8 +43,8 @@ public class TransportIOReal implements TransportIO {
    * @return
    */
   private double getIntakeMotorRPM(double speedMetersPerSecond, double gearRatio) {
-    double beltPulleyCircumference = Constants.Intake.beltPulleyRadius * Math.PI * 2;
-    double revolutionsPerSecond = speedMetersPerSecond / beltPulleyCircumference * gearRatio;
+    double wheelCircumference = Constants.Intake.wheelRadius * Math.PI * 2;
+    double revolutionsPerSecond = speedMetersPerSecond / wheelCircumference * gearRatio;
     return revolutionsPerSecond * 60;
   }
 
@@ -61,13 +61,10 @@ public class TransportIOReal implements TransportIO {
     double beltRPM = getIntakeMotorRPM(intakeSpeedMetersPerSecond, 15);
 
     frontIntakePIDController.setReference(frontRPM, ControlType.kVelocity);
-    // lowerTransportPIDController.setReference(-beltRPM, ControlType.kVelocity);
-    beltIntakePIDController.setReference(beltRPM, ControlType.kVelocity);
+    lowerTransportPIDController.setReference(-beltRPM, ControlType.kVelocity);
+    backIntakePIDController.setReference(beltRPM, ControlType.kVelocity);
 
-    double upperTransportSpeed = getIntakeMotorRPM(
-      Math.max(transportSpeedMetersPerSecond, intakeSpeedMetersPerSecond),
-      25
-    ) / 3.;
+    double upperTransportSpeed = getIntakeMotorRPM(transportSpeedMetersPerSecond, 25);
 
     upperTransportPIDController.setReference(-upperTransportSpeed, ControlType.kVelocity);
   }

@@ -7,8 +7,6 @@ public class SetElevatorExtensionDistance extends Command {
     private double targetDistance;
 
     public SetElevatorExtensionDistance(double distance) {
-        addRequirements(Elevator.getInstance());
-
         targetDistance = distance;
     }
 

@@ -5,6 +5,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.transport.Transport;
+import frc.robot.subsystems.transport.Transport.TransportState;
 
 public class TeleopIntake extends Command {
     private DoubleSupplier intakeOverride;
@@ -25,8 +26,15 @@ public class TeleopIntake extends Command {
 
         if(lastSetSpeed != intakeSpeed) {
             lastSetSpeed = intakeSpeed;
-            Transport.getInstance().setIntakeSpeed(intakeSpeed);
-            Transport.getInstance().setUpperTransportSpeed(intakeSpeed);
+
+            Transport transport = Transport.getInstance();
+
+            if(intakeSpeed == 0) {
+                transport.attemptTransitionToState(TransportState.Stopped);
+            } else {
+                transport.attemptTransitionToState(TransportState.OperatorOverride);
+                transport.setOperatorOverrideSpeedMetersPerSecond(intakeSpeed);
+            }
         }
     }
 }

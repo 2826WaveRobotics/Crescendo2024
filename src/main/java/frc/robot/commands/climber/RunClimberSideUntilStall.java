@@ -11,8 +11,6 @@ public class RunClimberSideUntilStall extends Command {
     DoubleConsumer setSideVelocity;
 
     public RunClimberSideUntilStall(DoubleConsumer setSideVelocity, BooleanSupplier isStalling) {
-        addRequirements(Climber.getInstance());
-
         this.isStalling = isStalling;
         this.setSideVelocity = setSideVelocity;
     }

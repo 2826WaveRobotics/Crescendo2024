@@ -11,6 +11,8 @@ public class RetractElevator extends SequentialCommandGroup {
     private Elevator elevatorSubsystem;
 
     public RetractElevator() {
+        addRequirements(Elevator.getInstance());
+        
         addCommands(
             new SetElevatorExtensionDistance(0.05),
             new RunElevatorExtensionUntilStall()

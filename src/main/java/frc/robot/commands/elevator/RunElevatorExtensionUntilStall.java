@@ -5,7 +5,6 @@ import frc.robot.subsystems.elevator.Elevator;
 
 public class RunElevatorExtensionUntilStall extends Command {
     public RunElevatorExtensionUntilStall() {
-        addRequirements(Elevator.getInstance());
     }
 
     @Override

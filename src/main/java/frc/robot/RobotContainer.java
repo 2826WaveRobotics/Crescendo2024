@@ -15,10 +15,10 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.subsystems.*;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
 import frc.robot.subsystems.transport.Transport;
+import frc.robot.subsystems.transport.Transport.TransportState;
 import frc.robot.commands.auto.LaunchCloseCommand;
 import frc.robot.commands.auto.LaunchStartCommand;
 
@@ -55,12 +55,12 @@ public class RobotContainer {
     Launcher launcherSubsystem = Launcher.getInstance();
     Transport transportSubsystem = Transport.getInstance();
 
-    NamedCommands.registerCommand("Launch close", new LaunchCloseCommand(launcherSubsystem, transportSubsystem));
-    NamedCommands.registerCommand("Launch start line", new LaunchStartCommand(launcherSubsystem, transportSubsystem));
-    NamedCommands.registerCommand("Enable intake", new InstantCommand(() -> transportSubsystem.setActive(true)));
-    NamedCommands.registerCommand("Slow constant launch", new InstantCommand(() -> {
+    NamedCommands.registerCommand("Launch close", new LaunchCloseCommand());
+    NamedCommands.registerCommand("Launch start line", new LaunchStartCommand());
+    NamedCommands.registerCommand("Enable intake", new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote)));
+    NamedCommands.registerCommand("Sweep launch", new InstantCommand(() -> {
       launcherSubsystem.launchRollersSlow();
-      transportSubsystem.setUpperTransportSpeed(10.0);
+      transportSubsystem.attemptTransitionToState(TransportState.SweepTransport);
     }));
     NamedCommands.registerCommand("Launch rollers fast", new InstantCommand(launcherSubsystem::launchRollersFast));
     NamedCommands.registerCommand("Launch rollers slow", new InstantCommand(launcherSubsystem::launchRollersSlow));

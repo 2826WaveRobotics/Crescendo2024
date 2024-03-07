@@ -1,19 +1,16 @@
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.TeleopIntake;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
 import frc.robot.subsystems.transport.Transport;
+import frc.robot.subsystems.transport.Transport.TransportState;
 
 /**
  * This class manages the controls of the robot. We use it so all the button bindings can be in one place.
@@ -57,7 +54,7 @@ public class Controls {
         );
 
         driver.x().onTrue(new InstantCommand(swerveSubsystem::stopWithX, swerveSubsystem));
-        driver.y().onTrue(new InstantCommand(swerveSubsystem::resetRotation, swerveSubsystem).ignoringDisable(true));
+        driver.start().onTrue(new InstantCommand(swerveSubsystem::resetRotation, swerveSubsystem).ignoringDisable(true));
 
         /*//////////////////////////*/
         /*    Operator Controls     */
@@ -71,9 +68,13 @@ public class Controls {
         
         transportSubsystem.setDefaultCommand(new TeleopIntake(() -> -operator.getLeftY()));
     
-        operator.b().onTrue(new InstantCommand(() -> 
-            transportSubsystem.setActive(!transportSubsystem.isActive())
-        ));
+        operator.b().onTrue(new InstantCommand(() -> {
+            if(transportSubsystem.getCurrentState() == TransportState.Stopped) {
+                transportSubsystem.attemptTransitionToState(TransportState.IntakingNote);
+            } else {
+                transportSubsystem.attemptTransitionToState(TransportState.Stopped);
+            }
+        }));
 
         final boolean TEST_LAUNCHER = true;
         if(TEST_LAUNCHER) {

@@ -4,25 +4,22 @@
 
 package frc.robot.commands.auto;
 
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.commands.transport.LaunchNote;
+import frc.robot.commands.transport.SetLauncherAngle;
 import frc.robot.subsystems.launcher.Launcher;
 import frc.robot.subsystems.transport.Transport;
 
 /**
- * A command used for launching when the robot is aligned to the speaker and directly in front of the start line.
+ * A command used for launching when the robot is aligned to the speaker and directly in front of the start line.  
+ * This command runs for 1.0 seconds.
  */
-public class LaunchStartCommand extends ParallelCommandGroup {
-    public LaunchStartCommand(Launcher launchSubsystem, Transport transportSubsystem) {
-        // addRequirements(launchSubsystem, transportSubsystem);
+public class LaunchStartCommand extends SequentialCommandGroup {
+    public LaunchStartCommand() {
+        addRequirements(Launcher.getInstance(), Transport.getInstance());
         addCommands(
-            new WaitCommand(1.5),
-            new SequentialCommandGroup(
-                new SetLauncherAngle(launchSubsystem, 50),
-                new WaitCommand(0.5),
-                new LaunchNote(launchSubsystem, transportSubsystem)
-            )
+            new SetLauncherAngle(50),
+            new LaunchNote()
         );
     }
 }

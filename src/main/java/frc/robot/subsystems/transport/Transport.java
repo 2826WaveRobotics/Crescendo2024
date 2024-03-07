@@ -1,12 +1,18 @@
 package frc.robot.subsystems.transport;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-// List class features here, including any motors, sensors, and functionality:
-// Two Motors for the intake
-// Primary motor has first contact with the Note.  Secondary controls the rollers behind the primary motor.
-// This is the intake subsystem where the intake is fully internal in the robot
+/**
+ * The transport subsystem.  This subsystem controls the transport of notes from the intake to the shooter.
+ * The transport is a state machine with predefined transitions.
+ * Higher priority states can't transition to lower priority states;
+ * for example, you can't transition from MovingNote to IntakingNote or EjectingNote to MovingNote.
+ */
 public class Transport extends SubsystemBase {
   private static Transport instance = null;
   public static Transport getInstance() {
@@ -30,71 +36,143 @@ public class Transport extends SubsystemBase {
   }
 
   /**
-   * The intake wheel speeds.
-   * Speeds are how fast the belt/edge of intake wheels will move at, in meters per second.
-   * This is effectively the speed that the note moves.  
-   * If the intake is running faster than the transport, the transport will run at the intake speed.
+   * A state the transport can be in.  
+   * The transport is a state machine with predefined transitions.
+   * Higher priority states can't transition to lower priority states;
+   * for example, you can't transition from MovingNote to IntakingNote or EjectingNote to MovingNote.
    */
-  double intakeSpeedMetersPerSecond = 0;
+  public enum TransportState {
+    IntakingNote,
+    MovingNote,
+    EjectingNote,
+    OperatorOverride,
+    LaunchingNote,
+    TrapEjectNote,
+    /**
+     * Used when we do a "center sweep" to put notes on our side in auto.
+     * Different from IntakingNote because there are no normally-run transitions from this state,
+     * so it stays on until the end of auto or we request a transition to "stopped".
+     */
+    SweepTransport,
+    Stopped
+  }
+
   /**
-   * The upper transport wheel speed.
-   * Speeds are how fast the belt/edge of intake wheels will move at, in meters per second.
-   * This is effectively the speed that the note moves.  
-   * If the intake is running faster than the transport, the transport will run at the intake speed.
+   * The current state of the transport.
+   * The transport is a state machine with predefined transitions.
+   * Higher priority states can't transition to lower priority states;
+   * for example, you can't transition from MovingNote to IntakingNote or EjectingNote to MovingNote.
    */
-  double transportSpeedMetersPerSecond = 0; 
+  private TransportState transportState = TransportState.Stopped;
+
+  /**
+   * The operator can override the transport to run at a specific speed.  
+   * This is the speed that the transport will run at when being overriden by an operator, in meters per second.
+   */
+  private double operatorOverrideSpeedMetersPerSecond = 0;
+  /**
+   * Sets the speed that the transport will run at when being overriden by an operator, in meters per second.
+   * @param speedMetersPerSecond
+   */
+  public void setOperatorOverrideSpeedMetersPerSecond(double speedMetersPerSecond) {
+    operatorOverrideSpeedMetersPerSecond = speedMetersPerSecond;
+  }
+
+  /** Valid state transitions, in the order (from, to) */
+  private HashSet<Pair<TransportState, TransportState>> validStateTransitions = new HashSet<Pair<TransportState, TransportState>>();
+  {
+    // Standard note path transitions
+    validStateTransitions.add(new Pair<>(TransportState.Stopped, TransportState.IntakingNote));
+    validStateTransitions.add(new Pair<>(TransportState.IntakingNote, TransportState.MovingNote));
+    validStateTransitions.add(new Pair<>(TransportState.MovingNote, TransportState.Stopped));
+    validStateTransitions.add(new Pair<>(TransportState.Stopped, TransportState.LaunchingNote));
+    validStateTransitions.add(new Pair<>(TransportState.LaunchingNote, TransportState.Stopped));
     
+    validStateTransitions.add(new Pair<>(TransportState.MovingNote, TransportState.LaunchingNote));
+
+    validStateTransitions.add(new Pair<>(TransportState.Stopped, TransportState.TrapEjectNote));
+    validStateTransitions.add(new Pair<>(TransportState.TrapEjectNote, TransportState.Stopped));
+
+    // Operator override transitions
+    validStateTransitions.add(new Pair<>(TransportState.Stopped, TransportState.OperatorOverride));
+    validStateTransitions.add(new Pair<>(TransportState.EjectingNote, TransportState.OperatorOverride));
+    validStateTransitions.add(new Pair<>(TransportState.IntakingNote, TransportState.OperatorOverride));
+    validStateTransitions.add(new Pair<>(TransportState.LaunchingNote, TransportState.OperatorOverride));
+    validStateTransitions.add(new Pair<>(TransportState.MovingNote, TransportState.OperatorOverride));
+    validStateTransitions.add(new Pair<>(TransportState.OperatorOverride, TransportState.Stopped));
+    validStateTransitions.add(new Pair<>(TransportState.SweepTransport, TransportState.OperatorOverride));
+
+    // Ejecting note transitions
+    validStateTransitions.add(new Pair<>(TransportState.IntakingNote, TransportState.EjectingNote));
+    validStateTransitions.add(new Pair<>(TransportState.MovingNote, TransportState.EjectingNote));
+    validStateTransitions.add(new Pair<>(TransportState.Stopped, TransportState.EjectingNote));
+    validStateTransitions.add(new Pair<>(TransportState.LaunchingNote, TransportState.EjectingNote));
+    validStateTransitions.add(new Pair<>(TransportState.EjectingNote, TransportState.Stopped));
+
+    // Sweep transport transitions
+    validStateTransitions.add(new Pair<>(TransportState.Stopped, TransportState.SweepTransport));
+    validStateTransitions.add(new Pair<>(TransportState.SweepTransport, TransportState.Stopped));
+    validStateTransitions.add(new Pair<>(TransportState.SweepTransport, TransportState.EjectingNote));
+  }
+
   /**
-   * Returns if the intake is currently active, meaning the speed is nonzero.
+   * Attempts to transition to a new state.  
+   * Some state transitions don't work. For example, you can't transition from MovingNote to IntakingNote or EjectingNote to MovingNote.
+   * @param newState
+   */
+  public void attemptTransitionToState(TransportState newState) {
+    if (validStateTransitions.contains(new Pair<>(transportState, newState))) {
+      transportState = newState;
+    }
+  }
+
+  /**
+   * Gets the current state of the transport.
    * @return
    */
-  public boolean isActive() {
-    return intakeSpeedMetersPerSecond != 0;
+  public TransportState getCurrentState() {
+    return transportState;
   }
 
   /**
-   * Sets the intake active. False sets the speed to 0 and true sets the speed to `Constants.Intake.intakeSpeed`.
-   * @param active
-   */
-  public void setActive(boolean active) {
-    setIntakeSpeed(active ? Constants.Intake.intakeSpeed : 0);
-  }
-  
-  /**
-   * Sets the speed of the top transport motor. If the intake is faster, this is overriden to avoid ripping
-   * notes and/or the robot apart.
-   * @param speed The speed the the edge of the wheels will move at, in meters per second.
+   * The speed for each state, in meters per second.  
+   * Speeds are how fast the belt/edge of intake wheels will move at, in meters per second.
    * This is effectively the speed that the note moves.
+   * The order of the pair is (upper transport speed, intake speed).
    */
-  public void setUpperTransportSpeed(double speed) {
-    transportSpeedMetersPerSecond = speed;
+  private HashMap<TransportState, Pair<Double, Double>> stateSpeeds = new HashMap<>();
+  {
+    stateSpeeds.put(TransportState.Stopped, new Pair<>(0.0, 0.0));
+    stateSpeeds.put(TransportState.IntakingNote, new Pair<>(Constants.Intake.intakeSpeed, Constants.Intake.intakeSpeed));
+    stateSpeeds.put(TransportState.MovingNote, new Pair<>(Constants.Intake.intakeSpeed, 0.));
+    stateSpeeds.put(TransportState.EjectingNote, new Pair<>(-Constants.Transport.ejectNoteSpeed, -Constants.Transport.ejectNoteSpeed));
+    stateSpeeds.put(TransportState.OperatorOverride, new Pair<>(0.0, 0.0)); // Manually handled
+    stateSpeeds.put(TransportState.SweepTransport, new Pair<>(Constants.Intake.intakeSpeed, Constants.Intake.intakeSpeed));
+    stateSpeeds.put(TransportState.LaunchingNote, new Pair<>(Constants.Transport.launchNoteTransportSpeed, 0.0));
   }
-
-  /**
-   * Sets the intake motors to the given speed.
-   * @param speed The speed the the belt/edge of intake wheels will move at, in meters per second.
-   * This is effectively the speed that the note moves.
-   */
-  public void setIntakeSpeed(double speedInMetersPerSecond) {
-    intakeSpeedMetersPerSecond = speedInMetersPerSecond;
-  }
-
-  public boolean isEjectingNote = false;
-  /**
-   * Starts ejecting a note.  
-   * This occurs when there are multiple notes in the intake at once.
-   */
-  public void ejectNote() { isEjectingNote = true; }
-  /**
-   * Stops ejecting a note.  
-   * This occurs when there are multiple notes in the intake at once.
-   */
-  public void stopEjectingNote() { isEjectingNote = false; }
 
   @Override
   public void periodic() {
-    double intakeSpeed = isEjectingNote ? -Constants.Intake.ejectSpeedMetersPerSecond : intakeSpeedMetersPerSecond;
-    double transportSpeed = isEjectingNote ? -Constants.Intake.ejectSpeedMetersPerSecond : transportSpeedMetersPerSecond;
-    transportIO.setTransportSpeed(transportSpeed, intakeSpeed);
+    // Speeds are how fast the belt/edge of intake wheels will move at, in meters per second.
+    // This is effectively the speed that the note moves.  
+
+    immediatelyUppdateSpeeds();
+  }
+
+  /**
+   * Resets all transport state; called at the start of auto and teleop.
+   */
+  public void resetState() {
+    transportState = TransportState.Stopped;
+  }
+
+  /** Immediately updates the transport motors with the new speeds. Used to reduce latency. */
+  public void immediatelyUppdateSpeeds() {
+    if (transportState == TransportState.OperatorOverride) {
+      transportIO.setTransportSpeed(operatorOverrideSpeedMetersPerSecond, operatorOverrideSpeedMetersPerSecond);
+    } else {
+      var speed = stateSpeeds.get(transportState);
+      transportIO.setTransportSpeed(speed.getFirst(), speed.getSecond());
+    }
   }
 }

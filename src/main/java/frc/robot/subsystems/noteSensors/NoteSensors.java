@@ -36,8 +36,11 @@ public class NoteSensors extends SubsystemBase {
     Shuffleboard.getTab("Note sensors").addBoolean("Note in transition sensor activated", () -> inputs.noteInTransitionSensorActivated);
   }
 
-  @Override
-  public void periodic() {
+  /**
+   * Updates the read sensor values.  
+   * We don't do this in periodic because we want to synchronize the sensor reads with the superstructure state updates to avoid extra latency.
+   */
+  public void updateSensorValues() {
     noteSensorIO.updateInputs(inputs);
   }
 

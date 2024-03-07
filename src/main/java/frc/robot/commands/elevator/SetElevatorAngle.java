@@ -8,7 +8,6 @@ public class SetElevatorAngle extends Command {
     public Rotation2d targetAngle;
 
     public SetElevatorAngle(Rotation2d angle) {
-        addRequirements(Elevator.getInstance());
         targetAngle = angle;
     }
 
