@@ -23,6 +23,7 @@ import frc.robot.commands.elevator.ExtendElevator;
 import frc.robot.commands.elevator.RetractElevator;
 import frc.robot.commands.transport.EjectNoteForTrap;
 import frc.robot.commands.transport.LaunchNote;
+import frc.robot.controls.SwerveAlignmentController;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.noteSensors.NoteSensors;
@@ -178,11 +179,15 @@ public class Superstructure extends SubsystemBase {
 
         // Reset the transport state
         Transport.getInstance().resetState();
+
+        SwerveAlignmentController.getInstance().reset();
     }
     
     public void resetSubsystemsForTeleop() {
         // Reset the transport state
         Transport.getInstance().resetState();
+        
+        SwerveAlignmentController.getInstance().reset();
     }
 
     public void setupClimb() {

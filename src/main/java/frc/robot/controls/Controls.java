@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.controls;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.TeleopIntake;
+import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
@@ -55,6 +56,15 @@ public class Controls {
 
         driver.x().onTrue(new InstantCommand(swerveSubsystem::stopWithX, swerveSubsystem));
         driver.start().onTrue(new InstantCommand(swerveSubsystem::resetRotation, swerveSubsystem).ignoringDisable(true));
+
+        // Snap alignment
+        SwerveAlignmentController alignmentController = SwerveAlignmentController.getInstance();
+        driver.povUp().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Forward)));
+        driver.povDown().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Backward)));
+        driver.povLeft().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Left)));
+        driver.povRight().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Right)));
+        
+        driver.rightBumper().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.AllianceSpeaker)));
 
         /*//////////////////////////*/
         /*    Operator Controls     */

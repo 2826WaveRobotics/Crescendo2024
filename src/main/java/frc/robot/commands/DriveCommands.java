@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants;
+import frc.robot.controls.SwerveAlignmentController;
 import frc.robot.subsystems.drive.Swerve;
 
 import java.util.function.BooleanSupplier;
@@ -51,6 +52,13 @@ public class DriveCommands {
         linearMagnitude = linearMagnitude * linearMagnitude;
         omega = Math.copySign(omega * omega, omega);
 
+        SwerveAlignmentController alignmentController = SwerveAlignmentController.getInstance();
+
+        // If omega isn't 0, set the swerve alignment mode to manual
+        if (omega != 0) {
+          alignmentController.setAlignmentMode(SwerveAlignmentController.AlignmentMode.Manual);
+        }
+
         // Calcaulate new linear velocity
         Translation2d linearVelocity = new Pose2d(
           new Translation2d(),
@@ -65,7 +73,7 @@ public class DriveCommands {
           // We use "Always blue origin" coordinates. For more information about why we flip for red, see the following documentation:
           // https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html#always-blue-origin
           boolean isFlipped = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
-          swerve.driveVelocity(
+          swerve.driveVelocity(alignmentController.updateSpeedsToAlign(
             ChassisSpeeds.fromFieldRelativeSpeeds(
               linearVelocity.getX() * Constants.Swerve.maxSpeed,
               linearVelocity.getY() * Constants.Swerve.maxSpeed,
@@ -73,18 +81,18 @@ public class DriveCommands {
               isFlipped
                 ? swerve.getRotation().plus(new Rotation2d(Math.PI))
                 : swerve.getRotation())
-          );
+          ));
         } else {
           // Drive relative to the robot
 
           // Convert to robot relative speeds and send command
-          swerve.driveVelocity(
+          swerve.driveVelocity(alignmentController.updateSpeedsToAlign(
             new ChassisSpeeds(
               linearVelocity.getX() * Constants.Swerve.maxSpeed,
               linearVelocity.getY() * Constants.Swerve.maxSpeed,
               omega * Constants.Swerve.maxAngularVelocity
             )
-          );
+          ));
         }
       },
       swerve);

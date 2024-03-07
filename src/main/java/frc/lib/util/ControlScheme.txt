@@ -2,19 +2,19 @@ Driver:
     LeftTrigger:
     RightTrigger:
     LeftBumper: Use robot-centric driving
-    RightBumper:
+    RightBumper: Auto align to alliance speaker (until rotation stick is next moved)
 
     x-LeftJoystick: Swerve Strafe
     y-LeftJoystick: Swerve Velocity
     x-RightJoystick: Swerve Rotate
     y-RightJoystick: 
 
-    up-POV:
-    down-POV:
-    left-POV:
-    right-POV:
+    up-POV: Snap forward (until rotation stick is next moved)
+    down-POV: Snap backward (until rotation stick is next moved)
+    left-POV: Snap left (until rotation stick is next moved)
+    right-POV: Snap right (until rotation stick is next moved)
 
-    Start: Zero gryo
+    Start: Change current field-relative orientaton to match direction
     Back:
 
     Y: 
