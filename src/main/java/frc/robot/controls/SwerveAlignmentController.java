@@ -3,9 +3,11 @@ package frc.robot.controls;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import frc.robot.Constants;
 import frc.robot.subsystems.drive.Swerve;
 
 /**
@@ -31,7 +33,7 @@ public class SwerveAlignmentController {
 
     private AlignmentMode alignmentMode = AlignmentMode.Manual;
 
-    private PIDController thetaController = new PIDController(0.001, 0.0, 0.0);
+    private PIDController thetaController = new PIDController(Constants.Swerve.trackingAngleControllerP, Constants.Swerve.trackingAngleControllerI, Constants.Swerve.trackingAngleControllerD);
 
     private SwerveAlignmentController() {
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
@@ -44,15 +46,20 @@ public class SwerveAlignmentController {
     private Rotation2d getTargetAngle() {
         switch (alignmentMode) {
             case AllianceSpeaker:
-                Translation2d currentTranslation = Swerve.getInstance().getPose().getTranslation();
+                Swerve swerve = Swerve.getInstance();
+
+                double lookaheadDistance = swerve.getRobotSpeed() * 0.05; // 0.05 is abritrary; let's say it takes 50ms to rotate to the proper angle
+                Pose2d pose = swerve.getPose().transformBy(new Transform2d(lookaheadDistance, 0.0, new Rotation2d()));
+                Translation2d currentTranslation = pose.getTranslation();
+
                 boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
                 Translation2d allianceSpeakerTranslation = isBlueAlliance ? new Translation2d(0.2, 5.55) : new Translation2d(16.34, 5.55);
 
                 return Rotation2d.fromRadians(
-                    Math.atan2(
+                    -Math.atan2(
                         allianceSpeakerTranslation.getY() - currentTranslation.getY(),
                         allianceSpeakerTranslation.getX() - currentTranslation.getX()
-                    )
+                    ) // Negative because we want to face the launcher toward the alliance speaker instead of the intake, which is the real front of the robot
                 );
             case Forward:
                 return Rotation2d.fromDegrees(0.0);
@@ -80,8 +87,6 @@ public class SwerveAlignmentController {
 
         // If we are in any other mode, we want to change the speeds to align with the target angle.
         Rotation2d targetAngle = getTargetAngle();
-
-        // TODO: We could factor in the current robot velocity to make speaker tracking more accurate.
 
         Rotation2d currentAngle = Swerve.getInstance().getPose().getRotation();
 

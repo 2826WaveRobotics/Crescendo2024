@@ -1,6 +1,7 @@
 package frc.robot;
 
 import com.revrobotics.CANSparkBase.IdleMode;
+import com.pathplanner.lib.path.PathConstraints;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -51,7 +52,13 @@ public final class Constants {
     public static final double driveGearRatio = (6.75 / 1.0); // 6.75:1
     public static final double angleGearRatio = (12.8 / 1.0); // 12.8:1
 
-    public static String[] moduleNames = {"frontLeft", "frontRight", "backLeft", "backRight"};
+    public static final String[] moduleNames = {"frontLeft", "frontRight", "backLeft", "backRight"};
+
+    /** The constraints to use while pathfinding. This doesn't apply to the paths followed at the end. */
+    public static final PathConstraints pathfindingConstraints = new PathConstraints(3.4, 6.0, Units.degreesToRadians(540), Units.degreesToRadians(720));;
+    public static final double trackingAngleControllerP = 0.01;
+    public static final double trackingAngleControllerI = 0.0;
+    public static final double trackingAngleControllerD = 0.0;
 
     // The locations of the modules on the robot, in meters.
     public static final Translation2d[] modulePositions = {

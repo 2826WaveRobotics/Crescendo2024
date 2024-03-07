@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.TeleopIntake;
+import frc.robot.commands.control.PathfindToAmpAndLaunch;
+import frc.robot.commands.control.PathfindToSpeakerAndLaunch;
 import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.drive.Swerve;
@@ -65,6 +67,9 @@ public class Controls {
         driver.povRight().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Right)));
         
         driver.rightBumper().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.AllianceSpeaker)));
+
+        driver.y().whileTrue(new PathfindToSpeakerAndLaunch());
+        driver.b().whileTrue(new PathfindToAmpAndLaunch());
 
         /*//////////////////////////*/
         /*    Operator Controls     */
