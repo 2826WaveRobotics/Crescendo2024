@@ -48,6 +48,7 @@ public class SwerveAlignmentController {
             case AllianceSpeaker:
                 Swerve swerve = Swerve.getInstance();
 
+                // Adjust for the robot's speed since by the time we reach the target, the robot will have moved
                 double lookaheadDistance = swerve.getRobotSpeed() * 0.05; // 0.05 is abritrary; let's say it takes 50ms to rotate to the proper angle
                 Pose2d pose = swerve.getPose().transformBy(new Transform2d(lookaheadDistance, 0.0, new Rotation2d()));
                 Translation2d currentTranslation = pose.getTranslation();
