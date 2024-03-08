@@ -193,7 +193,10 @@ public class Swerve extends SubsystemBase {
    */
   public double getRobotSpeed() {
     ChassisSpeeds chassisSpeeds = getRobotRelativeSpeeds();
-    return Math.sqrt(chassisSpeeds.vxMetersPerSecond + chassisSpeeds.vyMetersPerSecond);
+    return Math.sqrt(
+      chassisSpeeds.vxMetersPerSecond * chassisSpeeds.vxMetersPerSecond +
+      chassisSpeeds.vyMetersPerSecond * chassisSpeeds.vyMetersPerSecond
+    );
   }
 
   public ChassisSpeeds getRobotRelativeSpeeds() {

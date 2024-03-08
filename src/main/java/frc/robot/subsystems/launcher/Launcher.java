@@ -103,8 +103,5 @@ public class Launcher extends SubsystemBase {
     launcherIO.runRollers(launcherSpeed);
     
     SmartDashboard.putNumber("LauncherSpeed", launcherSpeed);
-    
-    SmartDashboard.putNumber("Launcher absolute encoder", inputs.absoluteLauncherAngle.getDegrees());
-    SmartDashboard.putNumber("Launcher relative encoder", inputs.launcherRelativeConchAngle.getDegrees());
   }
 }

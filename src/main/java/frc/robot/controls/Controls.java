@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.TeleopIntake;
-import frc.robot.commands.control.AutomaticLauncherControl;
 import frc.robot.commands.control.PathfindToAmpAndLaunch;
 import frc.robot.commands.control.PathfindToSpeakerAndLaunch;
 import frc.robot.controls.SwerveAlignmentController.AlignmentMode;

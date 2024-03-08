@@ -91,7 +91,10 @@ public class SwerveAlignmentController {
 
         Rotation2d currentAngle = Swerve.getInstance().getPose().getRotation();
 
-        double newOmegaRadiansPerSecond = thetaController.calculate(currentAngle.getRadians(), targetAngle.getRadians());
+        double newOmegaRadiansPerSecond = Math.min(
+            thetaController.calculate(currentAngle.getRadians(), targetAngle.getRadians()),
+            Constants.Swerve.maxAngularVelocity
+        );
 
         return new ChassisSpeeds(
             speeds.vxMetersPerSecond,

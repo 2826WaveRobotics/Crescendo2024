@@ -1,10 +1,8 @@
 package frc.robot.subsystems.noteSensors;
 
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.subsystems.noteSensors.NoteSensorIO;
 
 public class NoteSensors extends SubsystemBase {
   private static NoteSensors instance = null;

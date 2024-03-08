@@ -156,7 +156,7 @@ public class Transport extends SubsystemBase {
     // Speeds are how fast the belt/edge of intake wheels will move at, in meters per second.
     // This is effectively the speed that the note moves.  
 
-    immediatelyUppdateSpeeds();
+    immediatelyUpdateSpeeds();
   }
 
   /**
@@ -167,7 +167,7 @@ public class Transport extends SubsystemBase {
   }
 
   /** Immediately updates the transport motors with the new speeds. Used to reduce latency. */
-  public void immediatelyUppdateSpeeds() {
+  public void immediatelyUpdateSpeeds() {
     if (transportState == TransportState.OperatorOverride) {
       transportIO.setTransportSpeed(operatorOverrideSpeedMetersPerSecond, operatorOverrideSpeedMetersPerSecond);
     } else {

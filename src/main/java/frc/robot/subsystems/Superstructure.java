@@ -132,7 +132,7 @@ public class Superstructure extends SubsystemBase {
         Transport transportSubsystem = Transport.getInstance();
         readyToLaunchEvent.onTrue(new InstantCommand(() -> {
             transportSubsystem.attemptTransitionToState(TransportState.Stopped);
-            transportSubsystem.immediatelyUppdateSpeeds();
+            transportSubsystem.immediatelyUpdateSpeeds();
         }));
         
         ejectingNoteEvent.onTrue(new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.EjectingNote)));
