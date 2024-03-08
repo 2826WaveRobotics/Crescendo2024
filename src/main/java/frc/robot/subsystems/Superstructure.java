@@ -23,6 +23,8 @@ import frc.robot.commands.elevator.RetractElevator;
 import frc.robot.commands.transport.EjectNoteForTrap;
 import frc.robot.commands.transport.LaunchNote;
 import frc.robot.controls.SwerveAlignmentController;
+import frc.robot.controls.VibrationFeedback;
+import frc.robot.controls.VibrationFeedback.VibrationPatternType;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.noteSensors.NoteSensors;
@@ -118,6 +120,9 @@ public class Superstructure extends SubsystemBase {
     private BooleanEvent movingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.MovingNote).debounce(0.25).rising();
 
     private BooleanEvent stopNoteAtLauncherEvent = readyToLaunchEvent.and(ejectingNoteEvent.negate()).rising();
+
+    /** Used for controller vibration feedback. */
+    private BooleanEvent intakingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.IntakingNote).debounce(0.2, DebounceType.kRising).rising();
  
     /**
      * Updates the current state based on the sensor values.
@@ -150,6 +155,8 @@ public class Superstructure extends SubsystemBase {
             transportSubsystem.attemptTransitionToState(TransportState.Stopped);
             transportSubsystem.immediatelyUpdateSpeeds();
         });
+
+        intakingNoteEvent.ifHigh(() -> VibrationFeedback.getInstance().runPattern(VibrationPatternType.IntakingNote));
     }
 
     private Superstructure() {

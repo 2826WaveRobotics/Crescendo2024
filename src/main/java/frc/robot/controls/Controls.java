@@ -1,6 +1,7 @@
 package frc.robot.controls;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -33,6 +34,18 @@ public class Controls {
 
     private Controls() {
         // This is a singleton class.
+    }
+
+    /** Sets the rumble on the driver controller. */
+    public void setDriverRumble(double left, double right) {
+        driver.getHID().setRumble(RumbleType.kLeftRumble, left);
+        driver.getHID().setRumble(RumbleType.kRightRumble, right);
+    }
+
+    /** Sets the rumble on the operator controller. */
+    public void setOperatorRumble(double left, double right) {
+        operator.getHID().setRumble(RumbleType.kLeftRumble, left);
+        operator.getHID().setRumble(RumbleType.kRightRumble, right);
     }
 
     /**
