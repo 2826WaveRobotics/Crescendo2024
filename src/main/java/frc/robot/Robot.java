@@ -15,6 +15,7 @@ import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.controls.VibrationFeedback;
 import frc.robot.subsystems.Superstructure;
 
 
@@ -138,6 +139,12 @@ public class Robot extends LoggedRobot {
     }
 
     Superstructure.getInstance().resetSubsystemsForTeleop();
+    VibrationFeedback.getInstance().teleopInit();
+  }
+
+  @Override
+  public void teleopExit() {
+    VibrationFeedback.getInstance().teleopExit();
   }
 
   @Override

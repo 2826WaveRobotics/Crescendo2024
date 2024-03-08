@@ -1,8 +1,10 @@
 package frc.robot.controls;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class VibrationFeedback {
     private static VibrationFeedback instance = null;
@@ -13,13 +15,29 @@ public class VibrationFeedback {
         return instance;
     }
 
+    private final Timer matchTimer = new Timer();
+
+    public void teleopInit() {
+        matchTimer.reset();
+        matchTimer.start();
+    }
+    public void teleopExit() {
+        matchTimer.stop();
+    }
+    
     private VibrationFeedback() {
-        // This is a singleton class.
+        new Trigger(() -> matchTimer.hasElapsed(45)).onTrue(
+            new InstantCommand(() -> runPattern(VibrationPatternType.NinetySecondWarning)));
+        new Trigger(() -> matchTimer.hasElapsed(75)).onTrue(
+            new InstantCommand(() -> runPattern(VibrationPatternType.SixtySecondWarning)));
+        new Trigger(() -> matchTimer.hasElapsed(105)).onTrue(
+            new InstantCommand(() -> runPattern(VibrationPatternType.ThirtySecondWarning)));
     }
 
     private enum Controller {
         Driver,
-        Operator
+        Operator,
+        Both
     }
 
     private class SetVibrationCommand extends InstantCommand {
@@ -29,6 +47,10 @@ public class VibrationFeedback {
                     Controls.getInstance().setDriverRumble(left, right);
                     break;
                 case Operator:
+                    Controls.getInstance().setOperatorRumble(left, right);
+                    break;
+                case Both:
+                    Controls.getInstance().setDriverRumble(left, right);
                     Controls.getInstance().setOperatorRumble(left, right);
                     break;
             }
@@ -56,7 +78,11 @@ public class VibrationFeedback {
     }
 
     public enum VibrationPatternType {
-        IntakingNote
+        IntakingNote,
+
+        NinetySecondWarning,
+        SixtySecondWarning,
+        ThirtySecondWarning
     }
 
     public void runPattern(VibrationPatternType pattern) {
@@ -67,6 +93,23 @@ public class VibrationFeedback {
                     new VibrationPulse(Controller.Operator, 0.5, 0.75),
                     new VibrationPulse(Controller.Operator, 0.5, 0.5)
                 ).schedule();
+                break;
+            
+            case NinetySecondWarning:
+                new SequentialCommandGroup(
+                    new VibrationPulse(Controller.Both, 0.5, 0.5, 0.3, 0.1),
+                    new VibrationPulse(Controller.Both, 0.35, 0.35, 0.3, 0.1),
+                    new VibrationPulse(Controller.Both, 0.2, 0.2, 0.3, 0.1)
+                ).schedule();
+                break;
+            case SixtySecondWarning:
+                new SequentialCommandGroup(
+                    new VibrationPulse(Controller.Both, 0.5, 0.5, 0.3, 0.1),
+                    new VibrationPulse(Controller.Both, 0.35, 0.35, 0.3, 0.1)
+                ).schedule();
+                break;
+            case ThirtySecondWarning:
+                new VibrationPulse(Controller.Both, 0.5, 0.5, 0.3).schedule();
                 break;
         }
     }
