@@ -365,7 +365,6 @@ public class Swerve extends SubsystemBase {
     // We use many samples per update to vastly increase the accuracy of the odometry.
 
     double[] sampleTimestamps = swerveModules[0].getOdometryTimestamps(); // All signals are sampled together
-    SmartDashboard.putNumber("Swerve odometry sample timestamp count", sampleTimestamps.length);
     int sampleCount = sampleTimestamps.length;
     for (int i = 0; i < sampleCount; i++) {
       // Read wheel positions and deltas from each module

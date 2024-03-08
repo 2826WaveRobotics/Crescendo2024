@@ -1,11 +1,8 @@
 package frc.robot.subsystems.transport;
 
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -35,6 +32,8 @@ public class Transport extends SubsystemBase {
 
   private Transport(TransportIO transportIO) {
     this.transportIO = transportIO;
+
+    Shuffleboard.getTab("Notes").addString("Transport state", () -> transportState.toString());
   }
 
   /**
@@ -80,57 +79,74 @@ public class Transport extends SubsystemBase {
     operatorOverrideSpeedMetersPerSecond = speedMetersPerSecond;
   }
 
-  // private class TransportStatePair {
-  //   TransportState from;
-  //   TransportState to;
+  private class TransportStatePair {
+    // Allow unused since this is used for a set of valid state transitions so we only need the data for equality checks
+    @SuppressWarnings("unused")
+    private TransportState from;
+    @SuppressWarnings("unused")
+    private TransportState to;
 
-  //   TransportStatePair(TransportState from, TransportState to) {
-  //     this.from = from;
-  //     this.to = to;
-  //   }
+    public TransportStatePair(TransportState from, TransportState to) {
+      this.from = from;
+      this.to = to;
+    }
 
-  //   @Override
-  //   public int hashCode() {
-  //       return from.ordinal() + to.ordinal() * 100;
-  //   }
-  // }
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof TransportStatePair) {
+        TransportStatePair other = (TransportStatePair) obj;
+        return other.from == from && other.to == to;
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return from.hashCode() + to.hashCode();
+    }
+  }
     
-  // /** Valid state transitions, in the order (from, to) */
-  // private Set<TransportStatePair> validStateTransitions = Collections.synchronizedSet(new HashSet<>());
-  // {
-  //   // Standard note path transitions
-  //   validStateTransitions.add(new TransportStatePair(TransportState.Stopped, TransportState.IntakingNote));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.IntakingNote, TransportState.MovingNote));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.Stopped));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.Stopped, TransportState.LaunchingNote));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.LaunchingNote, TransportState.Stopped));
+  /** Valid state transitions, in the order (from, to) */
+  private HashSet<TransportStatePair> validStateTransitions = getValidStateTransitions();
+  private HashSet<TransportStatePair> getValidStateTransitions() {
+    HashSet<TransportStatePair> transitions = new HashSet<>();
+
+    // Standard note path transitions
+    transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.IntakingNote));
+    transitions.add(new TransportStatePair(TransportState.IntakingNote, TransportState.MovingNote));
+    transitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.Stopped));
+    transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.LaunchingNote));
+    transitions.add(new TransportStatePair(TransportState.LaunchingNote, TransportState.Stopped));
     
-  //   validStateTransitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.LaunchingNote));
+    transitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.LaunchingNote));
 
-  //   validStateTransitions.add(new TransportStatePair(TransportState.Stopped, TransportState.TrapEjectNote));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.TrapEjectNote, TransportState.Stopped));
+    transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.TrapEjectNote));
+    transitions.add(new TransportStatePair(TransportState.TrapEjectNote, TransportState.Stopped));
 
-  //   // Operator override transitions
-  //   validStateTransitions.add(new TransportStatePair(TransportState.Stopped, TransportState.OperatorOverride));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.EjectingNote, TransportState.OperatorOverride));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.IntakingNote, TransportState.OperatorOverride));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.LaunchingNote, TransportState.OperatorOverride));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.OperatorOverride));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.OperatorOverride, TransportState.Stopped));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.OperatorOverride));
+    // Operator override transitions
+    transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.OperatorOverride));
+    transitions.add(new TransportStatePair(TransportState.EjectingNote, TransportState.OperatorOverride));
+    transitions.add(new TransportStatePair(TransportState.IntakingNote, TransportState.OperatorOverride));
+    transitions.add(new TransportStatePair(TransportState.LaunchingNote, TransportState.OperatorOverride));
+    transitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.OperatorOverride));
+    transitions.add(new TransportStatePair(TransportState.OperatorOverride, TransportState.Stopped));
+    transitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.OperatorOverride));
 
-  //   // Ejecting note transitions
-  //   validStateTransitions.add(new TransportStatePair(TransportState.IntakingNote, TransportState.EjectingNote));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.EjectingNote));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.Stopped, TransportState.EjectingNote));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.LaunchingNote, TransportState.EjectingNote));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.EjectingNote, TransportState.Stopped));
+    // Ejecting note transitions
+    transitions.add(new TransportStatePair(TransportState.IntakingNote, TransportState.EjectingNote));
+    transitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.EjectingNote));
+    transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.EjectingNote));
+    transitions.add(new TransportStatePair(TransportState.LaunchingNote, TransportState.EjectingNote));
+    transitions.add(new TransportStatePair(TransportState.EjectingNote, TransportState.Stopped));
+    transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.MovingNote));
 
-  //   // Sweep transport transitions
-  //   validStateTransitions.add(new TransportStatePair(TransportState.Stopped, TransportState.SweepTransport));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.Stopped));
-  //   validStateTransitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.EjectingNote));
-  // }
+    // Sweep transport transitions
+    transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.SweepTransport));
+    transitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.Stopped));
+    transitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.EjectingNote));
+
+    return transitions;
+  }
 
   /**
    * Attempts to transition to a new state.  
@@ -138,7 +154,9 @@ public class Transport extends SubsystemBase {
    * @param newState
    */
   public void attemptTransitionToState(TransportState newState) {
-    transportState = newState;
+    if (validStateTransitions.contains(new TransportStatePair(transportState, newState))) {
+      transportState = newState;
+    }
   }
 
   /**

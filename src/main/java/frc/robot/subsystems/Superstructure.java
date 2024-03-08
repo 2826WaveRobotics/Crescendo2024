@@ -1,10 +1,9 @@
 package frc.robot.subsystems;
 
 import java.util.HashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -12,9 +11,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.climber.ClimberFullyDown;
 import frc.robot.commands.climber.ClimberFullyUp;
 import frc.robot.commands.climber.RunClimberSideDistance;
@@ -111,11 +108,17 @@ public class Superstructure extends SubsystemBase {
     private static final double NOTE_STATE_UPDATE_RATE = 100;
 
     private EventLoop noteStateEventLoop = new EventLoop();
-    private Trigger ejectingNoteEvent = new Trigger(noteStateEventLoop, () -> currentState == NoteState.EjectingNote);
-    private Trigger readyToLaunchEvent = new Trigger(noteStateEventLoop, () -> currentState == NoteState.ReadyToLaunch);
 
-    private Lock sensorMapLock = new ReentrantLock();
-    
+    // I would use a trigger here, but for some reason, they lead to internal scheduler ConcurrentModificationException errors that I don't want to deal with.
+    private BooleanEvent ejectingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.EjectingNote).debounce(0.5, DebounceType.kFalling);
+    private BooleanEvent startEjectNoteEvent = ejectingNoteEvent.rising();
+    private BooleanEvent stopEjectNoteEvent = ejectingNoteEvent.falling();
+
+    private BooleanEvent readyToLaunchEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.ReadyToLaunch);
+    private BooleanEvent movingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.MovingNote).debounce(0.25).rising();
+
+    private BooleanEvent stopNoteAtLauncherEvent = readyToLaunchEvent.and(ejectingNoteEvent.negate()).rising();
+ 
     /**
      * Updates the current state based on the sensor values.
      */
@@ -125,30 +128,35 @@ public class Superstructure extends SubsystemBase {
         // We don't do this in periodic because we want to synchronize the sensor reads with the superstructure state updates to avoid extra latency.
         noteSensorsSubsystem.updateSensorValues();
         
-        sensorMapLock.lock();
         currentState = sensorStateMap.get(
             (noteSensorsSubsystem.getIntakeSensorActivated() ? 1 : 0) +
             ((noteSensorsSubsystem.getNoteInTransitionSensorActivated() ? 1 : 0) << 1) +
             ((noteSensorsSubsystem.getNoteInPositionSensorActivated() ? 1 : 0) << 2)
         );
-        sensorMapLock.unlock();
 
         noteStateEventLoop.poll();
 
         Transport transportSubsystem = Transport.getInstance();
-        readyToLaunchEvent.onTrue(new InstantCommand(() -> {
+
+        movingNoteEvent.ifHigh(() -> {
+            transportSubsystem.attemptTransitionToState(TransportState.MovingNote);
+            transportSubsystem.immediatelyUpdateSpeeds();
+        });
+
+        startEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.EjectingNote));
+        stopEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.Stopped));
+        
+        stopNoteAtLauncherEvent.ifHigh(() -> {
             transportSubsystem.attemptTransitionToState(TransportState.Stopped);
             transportSubsystem.immediatelyUpdateSpeeds();
-        }));
-        
-        ejectingNoteEvent.onTrue(new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.EjectingNote)));
-        ejectingNoteEvent.onFalse(new WaitCommand(0.5).andThen(() -> transportSubsystem.attemptTransitionToState(TransportState.Stopped)));
+        });
     }
 
     private Superstructure() {
         updateNoteStateNotifier.startPeriodic(1 / NOTE_STATE_UPDATE_RATE);
+        updateNoteStateNotifier.setName("SuperstructureNoteState");
 
-        Shuffleboard.getTab("Note sensors").addString("Superstructure note state", () -> currentState.toString());
+        Shuffleboard.getTab("Notes").addString("Superstructure note state", () -> currentState.toString());
     }
 
     /**
