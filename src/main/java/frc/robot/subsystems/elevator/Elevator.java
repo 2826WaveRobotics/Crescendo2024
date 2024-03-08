@@ -4,7 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-public class Elevator extends SubsystemBase {
+public class Elevator extends SubsystemBase implements AutoCloseable {
     private static Elevator instance = null;
     public static Elevator getInstance() {
         if (instance == null) {
@@ -127,5 +127,10 @@ public class Elevator extends SubsystemBase {
     @Override
     public void periodic() {
         elevatorIO.updateInputs(inputs);
+    }
+    
+    @Override
+    public void close() {
+        elevatorIO.close();
     }
 }

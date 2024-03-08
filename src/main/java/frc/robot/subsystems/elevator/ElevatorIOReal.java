@@ -10,7 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.robot.Constants;
 
-public class ElevatorIOReal implements ElevatorIO {
+public class ElevatorIOReal implements ElevatorIO, AutoCloseable {
     /**
      * The elevator motor that extends and retracts the elevator
      */
@@ -135,5 +135,14 @@ public class ElevatorIOReal implements ElevatorIO {
 
         inputs.angleOutputCurrent = elevatorAngleMotor.getOutputCurrent();
         inputs.extensionOutputCurrent = elevatorExtensionMotor.getOutputCurrent();
+    }
+
+    @Override
+    public void close() throws Exception {
+        // The motor has a close method so the elevatorExtensionEcoder do not need to be closed
+        elevatorExtensionMotor.close();
+        elevatorAngleMotor.close();
+        // This one is a standalone encoder (not a relative encoder - not a motor encoder) so it needs to be closed independently
+        elevatorAngleAbsoluteEncoder.close();
     }
 }
