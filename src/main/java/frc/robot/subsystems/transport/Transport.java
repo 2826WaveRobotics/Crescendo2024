@@ -1,9 +1,11 @@
 package frc.robot.subsystems.transport;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -78,42 +80,57 @@ public class Transport extends SubsystemBase {
     operatorOverrideSpeedMetersPerSecond = speedMetersPerSecond;
   }
 
-  /** Valid state transitions, in the order (from, to) */
-  private HashSet<Pair<TransportState, TransportState>> validStateTransitions = new HashSet<Pair<TransportState, TransportState>>();
-  {
-    // Standard note path transitions
-    validStateTransitions.add(new Pair<>(TransportState.Stopped, TransportState.IntakingNote));
-    validStateTransitions.add(new Pair<>(TransportState.IntakingNote, TransportState.MovingNote));
-    validStateTransitions.add(new Pair<>(TransportState.MovingNote, TransportState.Stopped));
-    validStateTransitions.add(new Pair<>(TransportState.Stopped, TransportState.LaunchingNote));
-    validStateTransitions.add(new Pair<>(TransportState.LaunchingNote, TransportState.Stopped));
+  // private class TransportStatePair {
+  //   TransportState from;
+  //   TransportState to;
+
+  //   TransportStatePair(TransportState from, TransportState to) {
+  //     this.from = from;
+  //     this.to = to;
+  //   }
+
+  //   @Override
+  //   public int hashCode() {
+  //       return from.ordinal() + to.ordinal() * 100;
+  //   }
+  // }
     
-    validStateTransitions.add(new Pair<>(TransportState.MovingNote, TransportState.LaunchingNote));
+  // /** Valid state transitions, in the order (from, to) */
+  // private Set<TransportStatePair> validStateTransitions = Collections.synchronizedSet(new HashSet<>());
+  // {
+  //   // Standard note path transitions
+  //   validStateTransitions.add(new TransportStatePair(TransportState.Stopped, TransportState.IntakingNote));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.IntakingNote, TransportState.MovingNote));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.Stopped));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.Stopped, TransportState.LaunchingNote));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.LaunchingNote, TransportState.Stopped));
+    
+  //   validStateTransitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.LaunchingNote));
 
-    validStateTransitions.add(new Pair<>(TransportState.Stopped, TransportState.TrapEjectNote));
-    validStateTransitions.add(new Pair<>(TransportState.TrapEjectNote, TransportState.Stopped));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.Stopped, TransportState.TrapEjectNote));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.TrapEjectNote, TransportState.Stopped));
 
-    // Operator override transitions
-    validStateTransitions.add(new Pair<>(TransportState.Stopped, TransportState.OperatorOverride));
-    validStateTransitions.add(new Pair<>(TransportState.EjectingNote, TransportState.OperatorOverride));
-    validStateTransitions.add(new Pair<>(TransportState.IntakingNote, TransportState.OperatorOverride));
-    validStateTransitions.add(new Pair<>(TransportState.LaunchingNote, TransportState.OperatorOverride));
-    validStateTransitions.add(new Pair<>(TransportState.MovingNote, TransportState.OperatorOverride));
-    validStateTransitions.add(new Pair<>(TransportState.OperatorOverride, TransportState.Stopped));
-    validStateTransitions.add(new Pair<>(TransportState.SweepTransport, TransportState.OperatorOverride));
+  //   // Operator override transitions
+  //   validStateTransitions.add(new TransportStatePair(TransportState.Stopped, TransportState.OperatorOverride));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.EjectingNote, TransportState.OperatorOverride));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.IntakingNote, TransportState.OperatorOverride));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.LaunchingNote, TransportState.OperatorOverride));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.OperatorOverride));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.OperatorOverride, TransportState.Stopped));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.OperatorOverride));
 
-    // Ejecting note transitions
-    validStateTransitions.add(new Pair<>(TransportState.IntakingNote, TransportState.EjectingNote));
-    validStateTransitions.add(new Pair<>(TransportState.MovingNote, TransportState.EjectingNote));
-    validStateTransitions.add(new Pair<>(TransportState.Stopped, TransportState.EjectingNote));
-    validStateTransitions.add(new Pair<>(TransportState.LaunchingNote, TransportState.EjectingNote));
-    validStateTransitions.add(new Pair<>(TransportState.EjectingNote, TransportState.Stopped));
+  //   // Ejecting note transitions
+  //   validStateTransitions.add(new TransportStatePair(TransportState.IntakingNote, TransportState.EjectingNote));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.EjectingNote));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.Stopped, TransportState.EjectingNote));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.LaunchingNote, TransportState.EjectingNote));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.EjectingNote, TransportState.Stopped));
 
-    // Sweep transport transitions
-    validStateTransitions.add(new Pair<>(TransportState.Stopped, TransportState.SweepTransport));
-    validStateTransitions.add(new Pair<>(TransportState.SweepTransport, TransportState.Stopped));
-    validStateTransitions.add(new Pair<>(TransportState.SweepTransport, TransportState.EjectingNote));
-  }
+  //   // Sweep transport transitions
+  //   validStateTransitions.add(new TransportStatePair(TransportState.Stopped, TransportState.SweepTransport));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.Stopped));
+  //   validStateTransitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.EjectingNote));
+  // }
 
   /**
    * Attempts to transition to a new state.  
@@ -121,9 +138,7 @@ public class Transport extends SubsystemBase {
    * @param newState
    */
   public void attemptTransitionToState(TransportState newState) {
-    if (validStateTransitions.contains(new Pair<>(transportState, newState))) {
-      transportState = newState;
-    }
+    transportState = newState;
   }
 
   /**
@@ -132,23 +147,6 @@ public class Transport extends SubsystemBase {
    */
   public TransportState getCurrentState() {
     return transportState;
-  }
-
-  /**
-   * The speed for each state, in meters per second.  
-   * Speeds are how fast the belt/edge of intake wheels will move at, in meters per second.
-   * This is effectively the speed that the note moves.
-   * The order of the pair is (upper transport speed, intake speed).
-   */
-  private HashMap<TransportState, Pair<Double, Double>> stateSpeeds = new HashMap<>();
-  {
-    stateSpeeds.put(TransportState.Stopped, new Pair<>(0.0, 0.0));
-    stateSpeeds.put(TransportState.IntakingNote, new Pair<>(Constants.Intake.intakeSpeed, Constants.Intake.intakeSpeed));
-    stateSpeeds.put(TransportState.MovingNote, new Pair<>(Constants.Intake.intakeSpeed, 0.));
-    stateSpeeds.put(TransportState.EjectingNote, new Pair<>(-Constants.Transport.ejectNoteSpeed, -Constants.Transport.ejectNoteSpeed));
-    stateSpeeds.put(TransportState.OperatorOverride, new Pair<>(0.0, 0.0)); // Manually handled
-    stateSpeeds.put(TransportState.SweepTransport, new Pair<>(Constants.Intake.intakeSpeed, Constants.Intake.intakeSpeed));
-    stateSpeeds.put(TransportState.LaunchingNote, new Pair<>(Constants.Transport.launchNoteTransportSpeed, 0.0));
   }
 
   @Override
@@ -171,8 +169,26 @@ public class Transport extends SubsystemBase {
     if (transportState == TransportState.OperatorOverride) {
       transportIO.setTransportSpeed(operatorOverrideSpeedMetersPerSecond, operatorOverrideSpeedMetersPerSecond);
     } else {
-      var speed = stateSpeeds.get(transportState);
-      transportIO.setTransportSpeed(speed.getFirst(), speed.getSecond());
+      switch(transportState) {
+        case IntakingNote:
+          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, Constants.Intake.intakeSpeed);
+          break;
+        case MovingNote:
+          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, 0.);
+          break;
+        case EjectingNote:
+          transportIO.setTransportSpeed(-Constants.Transport.ejectNoteSpeed, -Constants.Transport.ejectNoteSpeed);
+          break;
+        case SweepTransport:
+          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, Constants.Intake.intakeSpeed);
+          break;
+        case LaunchingNote:
+          transportIO.setTransportSpeed(Constants.Transport.launchNoteTransportSpeed, 0.0);
+          break;
+        default:
+          transportIO.setTransportSpeed(0., 0.);
+          break;
+      }
     }
   }
 }

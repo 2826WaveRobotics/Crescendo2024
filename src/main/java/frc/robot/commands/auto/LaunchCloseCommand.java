@@ -16,7 +16,7 @@ import frc.robot.subsystems.transport.Transport;
  */
 public class LaunchCloseCommand extends SequentialCommandGroup {
     public LaunchCloseCommand() {
-        addRequirements(Launcher.getInstance(), Transport.getInstance());
+        // addRequirements(Launcher.getInstance(), Transport.getInstance());
         addCommands(
             new SetLauncherAngle(60),
             new LaunchNote()

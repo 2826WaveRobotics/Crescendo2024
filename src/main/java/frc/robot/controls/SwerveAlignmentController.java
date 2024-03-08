@@ -57,11 +57,11 @@ public class SwerveAlignmentController {
                 Translation2d allianceSpeakerTranslation = isBlueAlliance ? new Translation2d(0.2, 5.55) : new Translation2d(16.34, 5.55);
 
                 return Rotation2d.fromRadians(
-                    -Math.atan2(
+                    Math.atan2(
                         allianceSpeakerTranslation.getY() - currentTranslation.getY(),
                         allianceSpeakerTranslation.getX() - currentTranslation.getX()
-                    ) // Negative because we want to face the launcher toward the alliance speaker instead of the intake, which is the real front of the robot
-                );
+                    )
+                ).plus(Rotation2d.fromRadians(Math.PI)); // Add 180 degrees because we want to face the launcher toward the alliance speaker instead of the intake, which is the real front of the robot
             case Forward:
                 return Rotation2d.fromDegrees(0.0);
             case Right:

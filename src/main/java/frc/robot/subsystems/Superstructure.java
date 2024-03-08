@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
 import java.util.HashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.event.EventLoop;
@@ -112,6 +114,8 @@ public class Superstructure extends SubsystemBase {
     private Trigger ejectingNoteEvent = new Trigger(noteStateEventLoop, () -> currentState == NoteState.EjectingNote);
     private Trigger readyToLaunchEvent = new Trigger(noteStateEventLoop, () -> currentState == NoteState.ReadyToLaunch);
 
+    private Lock sensorMapLock = new ReentrantLock();
+    
     /**
      * Updates the current state based on the sensor values.
      */
@@ -121,11 +125,13 @@ public class Superstructure extends SubsystemBase {
         // We don't do this in periodic because we want to synchronize the sensor reads with the superstructure state updates to avoid extra latency.
         noteSensorsSubsystem.updateSensorValues();
         
+        sensorMapLock.lock();
         currentState = sensorStateMap.get(
             (noteSensorsSubsystem.getIntakeSensorActivated() ? 1 : 0) +
             ((noteSensorsSubsystem.getNoteInTransitionSensorActivated() ? 1 : 0) << 1) +
             ((noteSensorsSubsystem.getNoteInPositionSensorActivated() ? 1 : 0) << 2)
         );
+        sensorMapLock.unlock();
 
         noteStateEventLoop.poll();
 
@@ -165,14 +171,14 @@ public class Superstructure extends SubsystemBase {
         // Reset climber
         if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
 
-        scheduledClimbCommand = new ParallelCommandGroup(
-            new SequentialCommandGroup(
-                new RetractElevator(),
-                new AngleElevatorDown()
-            ),
-            new ClimberFullyDown()
-        );
-        scheduledClimbCommand.schedule();
+        // scheduledClimbCommand = new ParallelCommandGroup(
+        //     new SequentialCommandGroup(
+        //         new RetractElevator(),
+        //         new AngleElevatorDown()
+        //     ),
+        //     new ClimberFullyDown()
+        // );
+        // scheduledClimbCommand.schedule();
 
         // Reset the odometry to face the current gyro angle
         Swerve.getInstance().resetRotation();

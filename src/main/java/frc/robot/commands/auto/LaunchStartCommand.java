@@ -16,7 +16,7 @@ import frc.robot.subsystems.transport.Transport;
  */
 public class LaunchStartCommand extends SequentialCommandGroup {
     public LaunchStartCommand() {
-        addRequirements(Launcher.getInstance(), Transport.getInstance());
+        // addRequirements(Launcher.getInstance(), Transport.getInstance());
         addCommands(
             new SetLauncherAngle(50),
             new LaunchNote()

@@ -19,7 +19,7 @@ public final class Constants {
    * This _must_ be changed before running simulations or on the real robot.  
    * There may be a better way to do this, but we need to differentiate between replays and normal simulations which doesn't seem possible.
    */
-  public static final Mode currentMode = Mode.SIM;
+  public static final Mode currentMode = Mode.REAL;
   /** A situation that the robot is currently running in: real, simulation, or replay. */
   public enum Mode {
     /** Running on a real robot. */
@@ -56,7 +56,7 @@ public final class Constants {
 
     /** The constraints to use while pathfinding. This doesn't apply to the paths followed at the end. */
     public static final PathConstraints pathfindingConstraints = new PathConstraints(3.4, 6.0, Units.degreesToRadians(540), Units.degreesToRadians(720));;
-    public static final double trackingAngleControllerP = 10.0;
+    public static final double trackingAngleControllerP = 7.5;
     public static final double trackingAngleControllerI = 0.0;
     public static final double trackingAngleControllerD = 0.0;
 
@@ -320,7 +320,7 @@ public final class Constants {
     /**
      * The speed that notes are moved into the launcher to shoot, in meters per second.
      */
-    public static final double launchNoteTransportSpeed = 2.0;
+    public static final double launchNoteTransportSpeed = 4.0;
     /**
      * The speed that notes are moved out of the transport for putting them into the trap, in meters per second.
      */
