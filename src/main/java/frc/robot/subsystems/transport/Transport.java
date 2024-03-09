@@ -113,6 +113,7 @@ public class Transport extends SubsystemBase {
 
     // Standard note path transitions
     transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.IntakingNote));
+    transitions.add(new TransportStatePair(TransportState.IntakingNote, TransportState.Stopped));
     transitions.add(new TransportStatePair(TransportState.IntakingNote, TransportState.MovingNote));
     transitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.Stopped));
     transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.LaunchingNote));
@@ -156,6 +157,9 @@ public class Transport extends SubsystemBase {
   public void attemptTransitionToState(TransportState newState) {
     if (validStateTransitions.contains(new TransportStatePair(transportState, newState))) {
       transportState = newState;
+    } else {
+      if(transportState == newState) return;
+      System.out.println("Did not transition from " + transportState.toString() + " to " + newState.toString());
     }
   }
 
@@ -192,7 +196,7 @@ public class Transport extends SubsystemBase {
           transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, Constants.Intake.intakeSpeed);
           break;
         case MovingNote:
-          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, 0.);
+          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed / 2., 0.);
           break;
         case EjectingNote:
           transportIO.setTransportSpeed(-Constants.Transport.ejectNoteSpeed, -Constants.Transport.ejectNoteSpeed);

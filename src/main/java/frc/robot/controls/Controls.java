@@ -1,5 +1,6 @@
 package frc.robot.controls;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -11,6 +12,7 @@ import frc.robot.commands.control.PathfindToAmpAndLaunch;
 import frc.robot.commands.control.PathfindToSpeakerAndLaunch;
 import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
 import frc.robot.subsystems.transport.Transport;
@@ -30,7 +32,7 @@ public class Controls {
     
     /* Controllers */
     private final CommandXboxController driver = new CommandXboxController(0);
-    private final CommandXboxController operator = new CommandXboxController(1);
+    public final CommandXboxController operator = new CommandXboxController(1);
 
     private Controls() {
         // This is a singleton class.
@@ -69,32 +71,32 @@ public class Controls {
             )
         );
 
-        driver.x().onTrue(new InstantCommand(swerveSubsystem::stopWithX, swerveSubsystem));
-        driver.start().onTrue(new InstantCommand(swerveSubsystem::resetRotation, swerveSubsystem).ignoringDisable(true));
+        // driver.x().onTrue(new InstantCommand(swerveSubsystem::stopWithX, swerveSubsystem));
+        // driver.start().onTrue(new InstantCommand(swerveSubsystem::resetRotation, swerveSubsystem).ignoringDisable(true));
 
-        // Snap alignment
-        SwerveAlignmentController alignmentController = SwerveAlignmentController.getInstance();
-        driver.povUp().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Forward)));
-        driver.povDown().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Backward)));
-        driver.povLeft().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Left)));
-        driver.povRight().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Right)));
+        // // Snap alignment
+        // SwerveAlignmentController alignmentController = SwerveAlignmentController.getInstance();
+        // driver.povUp().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Forward)));
+        // driver.povDown().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Backward)));
+        // driver.povLeft().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Left)));
+        // driver.povRight().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Right)));
         
-        driver.rightBumper().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.AllianceSpeaker)));
+        // driver.rightBumper().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.AllianceSpeaker)));
 
-        driver.y().whileTrue(new PathfindToSpeakerAndLaunch());
-        driver.b().whileTrue(new PathfindToAmpAndLaunch());
+        // driver.y().whileTrue(new PathfindToSpeakerAndLaunch());
+        // driver.b().whileTrue(new PathfindToAmpAndLaunch());
 
-        /*//////////////////////////*/
-        /*    Operator Controls     */
-        /*//////////////////////////*/
+        // /*//////////////////////////*/
+        // /*    Operator Controls     */
+        // /*//////////////////////////*/
 
         Superstructure superstructure = Superstructure.getInstance();
-        operator.leftBumper().onTrue(new InstantCommand(superstructure::setupClimb));
-        operator.leftBumper().onFalse(new InstantCommand(superstructure::climb));
-        operator.rightBumper().onTrue(new InstantCommand(superstructure::unclimbStart));
-        operator.rightBumper().onFalse(new InstantCommand(superstructure::unclimbEnd));
+        // operator.leftBumper().onTrue(new InstantCommand(superstructure::setupClimb));
+        // operator.leftBumper().onFalse(new InstantCommand(superstructure::climb));
+        // operator.rightBumper().onTrue(new InstantCommand(superstructure::unclimbStart));
+        // operator.rightBumper().onFalse(new InstantCommand(superstructure::unclimbEnd));
         
-        transportSubsystem.setDefaultCommand(new TeleopIntake(() -> -operator.getLeftY()));
+        // transportSubsystem.setDefaultCommand(new TeleopIntake(() -> -operator.getLeftY()));
     
         operator.b().onTrue(new InstantCommand(() -> {
             if(transportSubsystem.getCurrentState() == TransportState.Stopped) {
@@ -104,37 +106,37 @@ public class Controls {
             }
         }));
 
-        AutomaticLauncherControl launcherControl = AutomaticLauncherControl.getInstance();
-        operator.leftBumper().whileTrue(new RepeatCommand(new InstantCommand(launcherControl::autoAlign)));
+        // AutomaticLauncherControl launcherControl = AutomaticLauncherControl.getInstance();
+        // operator.leftBumper().whileTrue(new RepeatCommand(new InstantCommand(launcherControl::autoAlign)));
 
-        final boolean TEST_LAUNCHER = true;
-        if(TEST_LAUNCHER) {
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(45));
-            operator.povUp().whileTrue(new RepeatCommand(new InstantCommand(() -> {
-                double launcherAngle = launcherSubsystem.launcherAngle + 0.15;
-                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
-            })));
-            operator.povDown().whileTrue(new RepeatCommand(new InstantCommand(() -> {
-                double launcherAngle = launcherSubsystem.launcherAngle - 0.15;
-                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
-            })));
+        // final boolean TEST_LAUNCHER = true;
+        // if(TEST_LAUNCHER) {
+        //     launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(45));
+        //     operator.povUp().whileTrue(new RepeatCommand(new InstantCommand(() -> {
+        //         double launcherAngle = launcherSubsystem.launcherAngle + 0.15;
+        //         launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
+        //     })));
+        //     operator.povDown().whileTrue(new RepeatCommand(new InstantCommand(() -> {
+        //         double launcherAngle = launcherSubsystem.launcherAngle - 0.15;
+        //         launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
+        //     })));
 
-            operator.povRight().whileTrue(new RepeatCommand(new InstantCommand(() ->
-                launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed + 20)
-            )));
-            operator.povLeft().whileTrue(new RepeatCommand(new InstantCommand(() ->
-                launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed - 20)
-            )));
-        } else {
-            operator.povUp().onTrue(new InstantCommand(() -> {
-                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(35));
-                launcherSubsystem.setLauncherSpeed(4500);
-            }));
-            operator.povDown().onTrue(new InstantCommand(() -> {
-                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(50));
-                launcherSubsystem.launchRollersSlow();
-            }));
-        }
+        //     operator.povRight().whileTrue(new RepeatCommand(new InstantCommand(() ->
+        //         launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed + 20)
+        //     )));
+        //     operator.povLeft().whileTrue(new RepeatCommand(new InstantCommand(() ->
+        //         launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed - 20)
+        //     )));
+        // } else {
+        //     operator.povUp().onTrue(new InstantCommand(() -> {
+        //         launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(35));
+        //         launcherSubsystem.setLauncherSpeed(4500);
+        //     }));
+        //     operator.povDown().onTrue(new InstantCommand(() -> {
+        //         launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(50));
+        //         launcherSubsystem.launchRollersSlow();
+        //     }));
+        // }
 
         operator.y().onTrue(new InstantCommand(superstructure::launchNote));
     }

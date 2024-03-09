@@ -88,7 +88,7 @@ public class Superstructure extends SubsystemBase {
         hashmap.put(0b001, NoteState.IntakingNote);
         hashmap.put(0b010, NoteState.MovingNote);
         hashmap.put(0b011, NoteState.EjectingNote);
-        hashmap.put(0b100, NoteState.MovingNote);
+        hashmap.put(0b100, NoteState.ReadyToLaunch); // Technically, launching
         hashmap.put(0b101, NoteState.EjectingNote);
         hashmap.put(0b110, NoteState.ReadyToLaunch);
         hashmap.put(0b111, NoteState.EjectingNote);
@@ -108,18 +108,25 @@ public class Superstructure extends SubsystemBase {
 
     private EventLoop noteStateEventLoop = new EventLoop();
 
-    // I would use a trigger here, but for some reason, they lead to internal scheduler ConcurrentModificationException errors that I don't want to deal with.
-    private BooleanEvent ejectingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.EjectingNote).debounce(0.5, DebounceType.kFalling);
-    private BooleanEvent startEjectNoteEvent = ejectingNoteEvent.rising();
-    private BooleanEvent stopEjectNoteEvent = ejectingNoteEvent.falling();
-
-    private BooleanEvent readyToLaunchEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.ReadyToLaunch);
-    private BooleanEvent movingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.MovingNote).debounce(0.25).rising();
-
-    private BooleanEvent stopNoteAtLauncherEvent = readyToLaunchEvent.and(ejectingNoteEvent.negate()).rising();
+    // I would use triggers here, but for some reason, they lead to internal scheduler ConcurrentModificationException errors that I don't want to deal with.
 
     /** Used for controller vibration feedback. */
-    private BooleanEvent intakingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.IntakingNote).debounce(0.2, DebounceType.kRising).rising();
+    private BooleanEvent intakingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.IntakingNote)
+        .debounce(0.2, DebounceType.kFalling)
+        .rising();
+
+    private BooleanEvent movingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.MovingNote)
+        .debounce(0.2, DebounceType.kBoth)
+        .rising();
+    
+    private BooleanEvent readyToLaunchEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.ReadyToLaunch)
+        .debounce(0.01, DebounceType.kRising);
+    // private BooleanEvent stopNoteAtLauncherEvent = readyToLaunchEvent.and(ejectingNoteEvent.negate()).rising();
+    private BooleanEvent stopNoteAtLauncherEvent = readyToLaunchEvent.rising();
+    
+    // private BooleanEvent ejectingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.EjectingNote).debounce(0.5, DebounceType.kFalling);
+    // private BooleanEvent startEjectNoteEvent = ejectingNoteEvent.rising();
+    // private BooleanEvent stopEjectNoteEvent = ejectingNoteEvent.falling();
  
     /**
      * Updates the current state based on the sensor values.
@@ -140,20 +147,19 @@ public class Superstructure extends SubsystemBase {
 
         Transport transportSubsystem = Transport.getInstance();
 
+        intakingNoteEvent.ifHigh(() -> VibrationFeedback.getInstance().runPattern(VibrationPatternType.IntakingNote));
         movingNoteEvent.ifHigh(() -> {
             transportSubsystem.attemptTransitionToState(TransportState.MovingNote);
             transportSubsystem.immediatelyUpdateSpeeds();
         });
 
-        startEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.EjectingNote));
-        stopEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.Stopped));
+        // startEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.EjectingNote));
+        // stopEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.Stopped));
         
         stopNoteAtLauncherEvent.ifHigh(() -> {
             transportSubsystem.attemptTransitionToState(TransportState.Stopped);
             transportSubsystem.immediatelyUpdateSpeeds();
         });
-
-        intakingNoteEvent.ifHigh(() -> VibrationFeedback.getInstance().runPattern(VibrationPatternType.IntakingNote));
     }
 
     private Superstructure() {

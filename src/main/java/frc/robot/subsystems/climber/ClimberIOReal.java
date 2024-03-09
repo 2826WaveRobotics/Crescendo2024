@@ -5,9 +5,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants;
-import frc.robot.subsystems.elevator.ElevatorIO.ElevatorIOInputs;
 
 public class ClimberIOReal implements ClimberIO {
   private CANSparkMax leftClimberMotor;
@@ -22,12 +20,15 @@ public class ClimberIOReal implements ClimberIO {
   public ClimberIOReal() {
     leftClimberMotor = new CANSparkMax(Constants.Climber.leftClimberMotorCANID, CANSparkMax.MotorType.kBrushless);
     rightClimberMotor = new CANSparkMax(Constants.Climber.rightClimberMotorCANID, CANSparkMax.MotorType.kBrushless);
-    
+
     leftClimberEncoder = leftClimberMotor.getEncoder();
     rightClimberEncoder = rightClimberMotor.getEncoder();
 
     leftPIDController = leftClimberMotor.getPIDController();
     rightPIDController = rightClimberMotor.getPIDController();
+    
+    Constants.Climber.motorConfig.configure(leftClimberMotor, leftPIDController);
+    Constants.Climber.motorConfig.configure(rightClimberMotor, rightPIDController);
   }
   
   /** Resets the encoder value for the left motor to 0. */

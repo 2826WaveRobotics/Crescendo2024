@@ -60,7 +60,7 @@ public class Climber extends SubsystemBase {
    * @param speed
    */
   public void setRightSpeed(double speed) {
-    climberIO.setRightPosition(speed);
+    climberIO.setRightSpeed(speed);
   }
 
   /**

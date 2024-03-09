@@ -13,11 +13,14 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.revrobotics.REVPhysicsSim;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Watchdog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.controls.Controls;
 import frc.robot.controls.VibrationFeedback;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.climber.Climber;
 
 
 /**
@@ -127,7 +130,10 @@ public class Robot extends LoggedRobot {
   
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    Climber.getInstance().setLeftSpeed(MathUtil.applyDeadband(Controls.getInstance().operator.getRightY(), 0.15) * 5000);
+    Climber.getInstance().setRightSpeed(MathUtil.applyDeadband(Controls.getInstance().operator.getLeftY(), 0.15) * 5000);
+  }
 
   @Override
   public void teleopInit() {

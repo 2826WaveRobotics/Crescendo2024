@@ -1,6 +1,10 @@
 package frc.robot.subsystems.transport;
 
 import com.revrobotics.CANSparkBase.ControlType;
+
+import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkPIDController;
 
@@ -33,6 +37,8 @@ public class TransportIOReal implements TransportIO {
 
     Constants.Transport.transportMotorConfig.configure(lowerTransportMotor, lowerTransportPIDController);
     Constants.Transport.transportMotorConfig.configure(upperTransportMotor, upperTransportPIDController);
+
+    Shuffleboard.getTab("Notes").addNumber("Bottom transport current draw", () -> lowerTransportMotor.getOutputCurrent());
   }
 
   /**
@@ -49,6 +55,11 @@ public class TransportIOReal implements TransportIO {
   }
 
   /**
+   * The slew rate limiter for the transport speed.
+   */
+  private SlewRateLimiter transportSlewRateLimiter = new SlewRateLimiter(11000 * 4.);
+
+  /**
    * Sets the transport speeds. Speeds are how fast the belt/edge of intake wheels will move at, in meters per second.
    * This is effectively the speed that the note moves.  
    * If the intake is running faster than the transport, the transport will run at the intake speed.
@@ -57,15 +68,19 @@ public class TransportIOReal implements TransportIO {
    */
   @Override
   public void setTransportSpeed(double transportSpeedMetersPerSecond, double intakeSpeedMetersPerSecond) {
+    double limitedTransportSpeed = transportSlewRateLimiter.calculate(transportSpeedMetersPerSecond);
+    if(transportSpeedMetersPerSecond == 0.0) limitedTransportSpeed = 0.0;
+
     double frontRPM = getIntakeMotorRPM(intakeSpeedMetersPerSecond, 25);
-    double beltRPM = getIntakeMotorRPM(intakeSpeedMetersPerSecond, 15);
-
     frontIntakePIDController.setReference(frontRPM, ControlType.kVelocity);
-    lowerTransportPIDController.setReference(-beltRPM, ControlType.kVelocity);
-    backIntakePIDController.setReference(beltRPM, ControlType.kVelocity);
 
-    double upperTransportSpeed = getIntakeMotorRPM(transportSpeedMetersPerSecond, 25);
+    double lowerTransportRPM = getIntakeMotorRPM(limitedTransportSpeed, 15);
+    lowerTransportPIDController.setReference(-lowerTransportRPM, ControlType.kVelocity);
 
+    double backRPM = getIntakeMotorRPM(intakeSpeedMetersPerSecond, 15);
+    backIntakePIDController.setReference(backRPM, ControlType.kVelocity);
+
+    double upperTransportSpeed = getIntakeMotorRPM(limitedTransportSpeed, 25);
     upperTransportPIDController.setReference(-upperTransportSpeed, ControlType.kVelocity);
   }
 }

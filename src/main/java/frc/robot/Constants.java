@@ -171,8 +171,8 @@ public final class Constants {
 
     public static CANSparkMaxConfig rollerConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kCoast,
-      15,
-      20,
+      30,
+      40,
       100,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
@@ -218,8 +218,8 @@ public final class Constants {
 
     public static final CANSparkMaxConfig intakeMotorConfig = new CANSparkMaxConfig(
       IdleMode.kCoast,
-      15, 20,
-      100,
+      10, 15,
+      0.25,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
     ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 0.000175);
@@ -232,7 +232,7 @@ public final class Constants {
     /**
      * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at), in meters per second.
      */
-    public static final double intakeSpeed = 10.0;
+    public static final double intakeSpeed = 1.0;
   }
 
   public static final class NoteSensors {
@@ -311,16 +311,16 @@ public final class Constants {
 
     public static final CANSparkMaxConfig transportMotorConfig = new CANSparkMaxConfig(
       IdleMode.kCoast,
-      15, 20,
-      100,
+      10, 15,
+      0.0, // We manually use a slew rate limiter so we can stop instantly.
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 0.000175);
+    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 1. / 11000.);
 
     /**
      * The speed that notes are moved into the launcher to shoot, in meters per second.
      */
-    public static final double launchNoteTransportSpeed = 4.0;
+    public static final double launchNoteTransportSpeed = 1.0;
     /**
      * The speed that notes are moved out of the transport for putting them into the trap, in meters per second.
      */
@@ -329,7 +329,7 @@ public final class Constants {
      * The speed to move notes when ejecting.  
      * Notes are ejected when we have more than 1 note in the transport at a time.
      */
-    public static final double ejectNoteSpeed = 1.0;
+    public static final double ejectNoteSpeed = 0.5;
   }
 
   public static final class Climber {
@@ -341,14 +341,15 @@ public final class Constants {
     public static final int stallSmartCurrentLimit = 20;
     public static final int stallSecondaryCurrentLimit = 25;
 
-    public static final CANSparkMaxConfig leftMotorConfig = new CANSparkMaxConfig(
+    public static final CANSparkMaxConfig motorConfig = new CANSparkMaxConfig(
       IdleMode.kBrake,
-      climbingSmartCurrentLimit, climbingSecondaryCurrentLimit,
-      100,
+      // climbingSmartCurrentLimit, climbingSecondaryCurrentLimit,
+      10, 5,
+      0.5,
       12.0,
       Usage.kAll
     ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)        // Position controller
-     .configurePIDSlot(1, 1e-6, 0.0, 0.0, 0.000175); // Velocity controller
+     .configurePIDSlot(1, 1e-7, 0.0, 0.0, 1. / 11000.); // Velocity controller
 
     // TODO: Find real value
     public static final double fullUpRotations = 10;

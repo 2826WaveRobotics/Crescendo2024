@@ -1,6 +1,8 @@
 package frc.robot.controls;
 
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -24,12 +26,16 @@ public class VibrationFeedback {
     public void teleopExit() {
         matchTimer.stop();
     }
+
+    EventLoop eventLoop = new EventLoop();
+    Notifier timeNotifier = new Notifier(() -> eventLoop.poll());
     
     private VibrationFeedback() {
-        new Trigger(() -> matchTimer.hasElapsed(75)).onTrue(
+        new Trigger(eventLoop, () -> matchTimer.hasElapsed(75)).onTrue(
             new InstantCommand(() -> runPattern(VibrationPatternType.SixtySecondWarning)));
-        new Trigger(() -> matchTimer.hasElapsed(115)).onTrue(
+        new Trigger(eventLoop, () -> matchTimer.hasElapsed(115)).onTrue(
             new InstantCommand(() -> runPattern(VibrationPatternType.TwentySecondWarning)));
+        timeNotifier.startPeriodic(0.5);
     }
 
     private enum Controller {
@@ -63,7 +69,8 @@ public class VibrationFeedback {
         public VibrationPulse(Controller controller, double left, double right, double duration, double wait) {
             addCommands(
                 new SetVibrationCommand(controller, left, right),
-                new SetVibrationCommand(controller, 0, 0).withTimeout(duration),
+                new WaitCommand(duration),
+                new SetVibrationCommand(controller, 0, 0),
                 new WaitCommand(wait)
             );
         }

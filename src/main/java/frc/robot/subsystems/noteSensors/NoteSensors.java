@@ -31,7 +31,8 @@ public class NoteSensors extends SubsystemBase {
     this.noteSensorIO = noteSensorIO;
 
     ShuffleboardTab notesTab = Shuffleboard.getTab("Notes");
-    notesTab.addBoolean("Intake sensor activated", () -> inputs.intakeSensorActivated);
+    // notesTab.addBoolean("Intake sensor activated", () -> inputs.intakeSensorActivated);
+    notesTab.addBoolean("Intake sensor activated", () -> false);
     notesTab.addBoolean("Note in position sensor activated", () -> inputs.noteInPositionSensorActivated);
     notesTab.addBoolean("Note in transition sensor activated", () -> inputs.noteInTransitionSensorActivated);
   }
@@ -49,7 +50,9 @@ public class NoteSensors extends SubsystemBase {
    * @return
    */
   public boolean getIntakeSensorActivated() {
-    return inputs.intakeSensorActivated;
+    // return inputs.intakeSensorActivated;
+    // Temporary
+    return false;
   }
 
   /**
