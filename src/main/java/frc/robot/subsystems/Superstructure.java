@@ -16,10 +16,7 @@ import frc.robot.commands.climber.ClimberFullyDown;
 import frc.robot.commands.climber.ClimberFullyUp;
 import frc.robot.commands.climber.RunClimberSideDistance;
 import frc.robot.commands.climber.RunClimberSideUntilStall;
-import frc.robot.commands.elevator.AngleElevatorDown;
-import frc.robot.commands.elevator.AngleElevatorUp;
-import frc.robot.commands.elevator.ExtendElevator;
-import frc.robot.commands.elevator.RetractElevator;
+import frc.robot.commands.elevator.ElevatorCommands;
 import frc.robot.commands.transport.EjectNoteForTrap;
 import frc.robot.commands.transport.LaunchNote;
 import frc.robot.controls.SwerveAlignmentController;
@@ -217,7 +214,7 @@ public class Superstructure extends SubsystemBase {
         scheduledClimbCommand = new SequentialCommandGroup(
             new WaitUntilCommand(() -> getNoteState() != NoteState.IntakingNote),
             new ParallelCommandGroup(
-                new AngleElevatorUp(),
+                ElevatorCommands.angleElevatorUp(),
                 new ClimberFullyUp()
             )
         );
@@ -230,7 +227,7 @@ public class Superstructure extends SubsystemBase {
             // Trap sequence
             scheduledClimbCommand = new SequentialCommandGroup(
                 new ParallelCommandGroup(
-                    new ExtendElevator(),
+                    ElevatorCommands.extendElevator(),
                     new ClimberFullyDown()
                 ),
                 new InstantCommand(this::ejectNoteForTrap)
@@ -257,10 +254,10 @@ public class Superstructure extends SubsystemBase {
         
         scheduledClimbCommand = new SequentialCommandGroup(
             new ParallelCommandGroup(
-                new RetractElevator(),
+                ElevatorCommands.retractElevator(),
                 new ClimberFullyUp()
             ),
-            new AngleElevatorDown()
+            ElevatorCommands.angleElevatorDown()
         );
         scheduledClimbCommand.schedule();
     }

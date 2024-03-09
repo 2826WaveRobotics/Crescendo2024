@@ -26,12 +26,10 @@ public class VibrationFeedback {
     }
     
     private VibrationFeedback() {
-        new Trigger(() -> matchTimer.hasElapsed(45)).onTrue(
-            new InstantCommand(() -> runPattern(VibrationPatternType.NinetySecondWarning)));
         new Trigger(() -> matchTimer.hasElapsed(75)).onTrue(
             new InstantCommand(() -> runPattern(VibrationPatternType.SixtySecondWarning)));
-        new Trigger(() -> matchTimer.hasElapsed(105)).onTrue(
-            new InstantCommand(() -> runPattern(VibrationPatternType.ThirtySecondWarning)));
+        new Trigger(() -> matchTimer.hasElapsed(115)).onTrue(
+            new InstantCommand(() -> runPattern(VibrationPatternType.TwentySecondWarning)));
     }
 
     private enum Controller {
@@ -80,9 +78,8 @@ public class VibrationFeedback {
     public enum VibrationPatternType {
         IntakingNote,
 
-        NinetySecondWarning,
         SixtySecondWarning,
-        ThirtySecondWarning
+        TwentySecondWarning
     }
 
     public void runPattern(VibrationPatternType pattern) {
@@ -95,20 +92,13 @@ public class VibrationFeedback {
                 ).schedule();
                 break;
             
-            case NinetySecondWarning:
-                new SequentialCommandGroup(
-                    new VibrationPulse(Controller.Both, 0.5, 0.5, 0.3, 0.1),
-                    new VibrationPulse(Controller.Both, 0.35, 0.35, 0.3, 0.1),
-                    new VibrationPulse(Controller.Both, 0.2, 0.2, 0.3, 0.1)
-                ).schedule();
-                break;
             case SixtySecondWarning:
                 new SequentialCommandGroup(
                     new VibrationPulse(Controller.Both, 0.5, 0.5, 0.3, 0.1),
                     new VibrationPulse(Controller.Both, 0.35, 0.35, 0.3, 0.1)
                 ).schedule();
                 break;
-            case ThirtySecondWarning:
+            case TwentySecondWarning:
                 new VibrationPulse(Controller.Both, 0.5, 0.5, 0.3).schedule();
                 break;
         }
