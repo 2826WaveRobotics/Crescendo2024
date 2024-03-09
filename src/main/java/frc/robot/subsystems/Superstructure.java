@@ -230,7 +230,10 @@ public class Superstructure extends SubsystemBase {
                     ElevatorCommands.extendElevator(),
                     new ClimberFullyDown()
                 ),
-                new InstantCommand(this::ejectNoteForTrap)
+                new InstantCommand(this::ejectNoteForTrap),
+                new InstantCommand(() -> {
+                    Climber.getInstance().useStallCurrentLimit();
+                })
             );
         } else {
             // Non-trap sequence
@@ -243,7 +246,10 @@ public class Superstructure extends SubsystemBase {
                 new ParallelCommandGroup(
                     new RunClimberSideDistance(climber::setLeftPosition, climber::getLeftPosition, -15),
                     new RunClimberSideDistance(climber::setRightPosition, climber::getRightPosition, -15)
-                )
+                ),
+                new InstantCommand(() -> {
+                    Climber.getInstance().useStallCurrentLimit();
+                })
             );
         }
         scheduledClimbCommand.schedule();
@@ -252,6 +258,8 @@ public class Superstructure extends SubsystemBase {
     public void unclimbStart() {
         if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
         
+        Climber.getInstance().useClimbingCurrentLimit();
+
         scheduledClimbCommand = new SequentialCommandGroup(
             new ParallelCommandGroup(
                 ElevatorCommands.retractElevator(),

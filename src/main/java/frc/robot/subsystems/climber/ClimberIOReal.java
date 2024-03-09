@@ -83,4 +83,12 @@ public class ClimberIOReal implements ClimberIO {
     inputs.leftPosition = leftClimberEncoder.getPosition();
     inputs.rightPosition = rightClimberEncoder.getPosition();
   }
+
+  @Override
+  public void useCurrentLimits(int smartLimit, int secondaryLimit) {
+    leftClimberMotor.setSmartCurrentLimit(smartLimit);
+    rightClimberMotor.setSmartCurrentLimit(smartLimit);
+    leftClimberMotor.setSecondaryCurrentLimit(secondaryLimit);
+    rightClimberMotor.setSecondaryCurrentLimit(secondaryLimit);
+  }
 }

@@ -336,9 +336,14 @@ public final class Constants {
     public static final int leftClimberMotorCANID = 55;
     public static final int rightClimberMotorCANID = 56;
 
+    public static final int climbingSmartCurrentLimit = 30;
+    public static final int climbingSecondaryCurrentLimit = 35;
+    public static final int stallSmartCurrentLimit = 20;
+    public static final int stallSecondaryCurrentLimit = 25;
+
     public static final CANSparkMaxConfig leftMotorConfig = new CANSparkMaxConfig(
       IdleMode.kBrake,
-      10, 15,
+      climbingSmartCurrentLimit, climbingSecondaryCurrentLimit,
       100,
       12.0,
       Usage.kAll

@@ -97,4 +97,11 @@ public class Climber extends SubsystemBase {
   public void periodic() {
     climberIO.updateInputs(inputs);
   }
+
+  public void useClimbingCurrentLimit() {
+    climberIO.useCurrentLimits(Constants.Climber.climbingSmartCurrentLimit, Constants.Climber.climbingSecondaryCurrentLimit);
+  }
+  public void useStallCurrentLimit() {
+    climberIO.useCurrentLimits(Constants.Climber.stallSmartCurrentLimit, Constants.Climber.stallSecondaryCurrentLimit);
+  }
 }

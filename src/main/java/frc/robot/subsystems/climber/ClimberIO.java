@@ -43,4 +43,12 @@ public interface ClimberIO {
    * @param position
    */
   public default void setLeftPosition(double position) {}
+
+  /**
+   * Sets the current limits on both climber motors.  
+   * Used because we have a lower current limit when at the top of the climbing cycle than when moving.
+   * @param smartLimit The smart current limit for the motors.
+   * @param secondaryLimit The secondary current for the motors.
+   */
+  public default void useCurrentLimits(int smartLimit, int secondaryLimit) {}
 }
