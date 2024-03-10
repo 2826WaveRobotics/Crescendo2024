@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Swerve;
@@ -54,7 +55,8 @@ public class SwerveAlignmentController {
                 Translation2d currentTranslation = pose.getTranslation();
 
                 boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
-                Translation2d allianceSpeakerTranslation = isBlueAlliance ? new Translation2d(0.2, 5.55) : new Translation2d(16.34, 5.55);
+                double speakerInward = 0.1;
+                Translation2d allianceSpeakerTranslation = isBlueAlliance ? new Translation2d(speakerInward, 5.55) : new Translation2d(Units.feetToMeters(54) - speakerInward, 5.55);
 
                 return Rotation2d.fromRadians(
                     Math.atan2(

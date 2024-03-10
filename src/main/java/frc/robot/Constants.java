@@ -322,7 +322,7 @@ public final class Constants {
     /**
      * The speed that notes are moved into the launcher to shoot, in meters per second.
      */
-    public static final double launchNoteTransportSpeed = 1.0;
+    public static final double launchNoteTransportSpeed = 1.7;
     /**
      * The speed that notes are moved out of the transport for putting them into the trap, in meters per second.
      */

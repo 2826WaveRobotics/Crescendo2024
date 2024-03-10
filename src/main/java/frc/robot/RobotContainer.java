@@ -24,6 +24,7 @@ import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
 import frc.robot.subsystems.transport.Transport;
 import frc.robot.subsystems.transport.Transport.TransportState;
+import frc.robot.subsystems.vision.Limelight;
 import frc.robot.commands.auto.LaunchCloseCommand;
 import frc.robot.commands.auto.LaunchStartCommand;
 import frc.robot.controls.Controls;
@@ -39,6 +40,7 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
+    Limelight.getInstance();
     Swerve swerveSubsystem = Swerve.getInstance();
     
     registerAutoCommands();

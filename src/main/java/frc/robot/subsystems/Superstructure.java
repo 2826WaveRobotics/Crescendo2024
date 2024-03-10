@@ -113,11 +113,11 @@ public class Superstructure extends SubsystemBase {
 
     /** Used for controller vibration feedback. */
     private BooleanEvent intakingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.IntakingNote)
-        .debounce(0.2, DebounceType.kFalling)
+        // .debounce(0.2, DebounceType.kFalling)
         .rising();
 
     private BooleanEvent movingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.MovingNote)
-        .debounce(0.2, DebounceType.kRising)
+        // .debounce(0.2, DebounceType.kRising)
         .rising();
     
     private BooleanEvent readyToLaunchEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.ReadyToLaunch);

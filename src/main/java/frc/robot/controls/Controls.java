@@ -1,5 +1,7 @@
 package frc.robot.controls;
 
+import java.util.function.BooleanSupplier;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -112,39 +114,48 @@ public class Controls {
         AutomaticLauncherControl launcherControl = AutomaticLauncherControl.getInstance();
         operator.leftBumper().whileTrue(new RepeatCommand(new InstantCommand(launcherControl::autoAlign)));
 
-        final boolean TEST_LAUNCHER = true;
-        if(TEST_LAUNCHER) {
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(45));
-            operator.povUp().whileTrue(new RepeatCommand(new InstantCommand(() -> {
-                double launcherAngle = launcherSubsystem.launcherAngle + 0.15;
-                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
-            })));
-            operator.povDown().whileTrue(new RepeatCommand(new InstantCommand(() -> {
-                double launcherAngle = launcherSubsystem.launcherAngle - 0.15;
-                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
-            })));
+        BooleanSupplier testMode = () -> operator.getHID().getXButton();
 
-            operator.povRight().whileTrue(new RepeatCommand(new InstantCommand(() ->
-                launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed + 20)
-            )));
-            operator.povLeft().whileTrue(new RepeatCommand(new InstantCommand(() ->
-                launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed - 20)
-            )));
-        } else {
-            operator.povUp().onTrue(new InstantCommand(() -> {
-                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(35));
-                launcherSubsystem.setLauncherSpeed(4500);
-            }));
-            // Amp preset
-            operator.povLeft().onTrue(new InstantCommand(() -> {
-                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(58.95));
-                launcherSubsystem.setLauncherSpeed(1540);
-            }));
-            operator.povDown().onTrue(new InstantCommand(() -> {
-                launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(50));
-                launcherSubsystem.launchRollersSlow();
-            }));
-        }
+        // Test angle mode
+        launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(45));
+        operator.povUp().whileTrue(new RepeatCommand(new InstantCommand(() -> {
+            if(!testMode.getAsBoolean()) return; // Test angle mode
+            double launcherAngle = launcherSubsystem.launcherAngle + 0.15;
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
+        })));
+        operator.povDown().whileTrue(new RepeatCommand(new InstantCommand(() -> {
+            if(!testMode.getAsBoolean()) return; // Test angle mode
+            double launcherAngle = launcherSubsystem.launcherAngle - 0.15;
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
+        })));
+
+        operator.povRight().whileTrue(new RepeatCommand(new InstantCommand(() -> {
+            if(!testMode.getAsBoolean()) return; // Test angle mode
+            launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed + 20);
+        })));
+        operator.povLeft().whileTrue(new RepeatCommand(new InstantCommand(() -> {
+            if(!testMode.getAsBoolean()) return; // Test angle mode
+            launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed - 20);
+        })));
+
+        // Presets
+        operator.povUp().onTrue(new InstantCommand(() -> {
+            if(testMode.getAsBoolean()) return; // Test angle mode
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(35));
+            launcherSubsystem.setLauncherSpeed(4500);
+        }));
+        // Amp preset
+        operator.povLeft().onTrue(new InstantCommand(() -> {
+            if(testMode.getAsBoolean()) return; // Test angle mode
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(58.95));
+            launcherSubsystem.setLauncherSpeed(1540);
+        }));
+        // Slow preset
+        operator.povDown().onTrue(new InstantCommand(() -> {
+            if(testMode.getAsBoolean()) return; // Test angle mode
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(50));
+            launcherSubsystem.launchRollersSlow();
+        }));
 
         operator.y().onTrue(new InstantCommand(superstructure::launchNote));
     }

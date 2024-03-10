@@ -58,7 +58,7 @@ public class TransportIOReal implements TransportIO {
   /**
    * The slew rate limiter for the transport speed.
    */
-  private SlewRateLimiter transportSlewRateLimiter = new SlewRateLimiter(11000 * 4.);
+  private SlewRateLimiter transportSlewRateLimiter = new SlewRateLimiter(11000 * 6.);
 
   /**
    * Sets the transport speeds. Speeds are how fast the belt/edge of intake wheels will move at, in meters per second.
