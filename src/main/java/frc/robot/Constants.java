@@ -37,6 +37,8 @@ public final class Constants {
 
   public static final boolean enableShuffleboard = true;
 
+  public static final double fieldLengthMeters = Units.feetToMeters(54 + 1/12);
+
   public static final class Swerve {
     public static final double stickDeadband = 0.1;
 
@@ -123,7 +125,7 @@ public final class Constants {
       public static final int driveMotorID = 21;
       public static final int angleMotorID = 22;
       public static final int canCoderID = 23;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(103.535);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(119.355);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -257,8 +259,8 @@ public final class Constants {
     public static final int angleMotorCANID = 44;
 
     public static final CANSparkMaxConfig positionMotorConfig = new CANSparkMaxConfig(
-      IdleMode.kCoast,
-      20, 30,
+      IdleMode.kBrake,
+      10, 15,
       100,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly

@@ -56,7 +56,7 @@ public class SwerveAlignmentController {
 
                 boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
                 double speakerInward = 0.1;
-                Translation2d allianceSpeakerTranslation = isBlueAlliance ? new Translation2d(speakerInward, 5.55) : new Translation2d(Units.feetToMeters(54) - speakerInward, 5.55);
+                Translation2d allianceSpeakerTranslation = isBlueAlliance ? new Translation2d(speakerInward, 5.55) : new Translation2d(Constants.fieldLengthMeters - speakerInward, 5.55);
 
                 return Rotation2d.fromRadians(
                     Math.atan2(

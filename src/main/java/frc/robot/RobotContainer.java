@@ -15,6 +15,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -57,6 +58,12 @@ public class RobotContainer {
       swerveSubsystem.setPose(new Pose2d(
         new Translation2d(1.37, 5.55),
         new Rotation2d()
+      )
+    )));
+    autoChooser.addOption("Set odometry: Front of red speaker", new InstantCommand(() ->
+      swerveSubsystem.setPose(new Pose2d(
+        new Translation2d(Constants.fieldLengthMeters - 1.37, 5.55),
+        Rotation2d.fromDegrees(180)
       )
     )));
 

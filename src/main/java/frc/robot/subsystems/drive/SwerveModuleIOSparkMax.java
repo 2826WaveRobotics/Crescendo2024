@@ -143,23 +143,35 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     turnPositionQueue.clear();
   }
 
+  double oldReferenceRPM = 0;
   @Override
   public void setDriveVelocity(double rpm) {
+    if(rpm == oldReferenceRPM) return;
+    oldReferenceRPM = rpm;
     drivePIDController.setReference(rpm * Constants.Swerve.driveGearRatio, ControlType.kVelocity);
   }
 
+  Rotation2d oldTurnAngle = new Rotation2d();
   @Override
   public void setTurnAngle(Rotation2d angle) {
+    if(angle == oldTurnAngle) return;
+    oldTurnAngle = angle;
     turnPIDController.setReference(angle.getRotations() * Constants.Swerve.angleGearRatio, ControlType.kPosition);
   }
 
+  boolean oldDriveBrakeModeEnabled = false;
   @Override
   public void setDriveBrakeMode(boolean enable) {
+    if(enable == oldDriveBrakeModeEnabled) return;
+    oldDriveBrakeModeEnabled = enable;
     driveSparkMax.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
   }
 
+  boolean oldTurnBrakeModeEnabled = false;
   @Override
   public void setTurnBrakeMode(boolean enable) {
+    if(enable == oldTurnBrakeModeEnabled) return;
+    oldTurnBrakeModeEnabled = enable;
     turnSparkMax.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
   }
 

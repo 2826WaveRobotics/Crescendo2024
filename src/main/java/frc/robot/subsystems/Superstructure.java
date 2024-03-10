@@ -121,12 +121,12 @@ public class Superstructure extends SubsystemBase {
         .rising();
     
     private BooleanEvent readyToLaunchEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.ReadyToLaunch);
-    // private BooleanEvent stopNoteAtLauncherEvent = readyToLaunchEvent.and(ejectingNoteEvent.negate()).rising();
-    private BooleanEvent stopNoteAtLauncherEvent = readyToLaunchEvent.rising();
     
-    // private BooleanEvent ejectingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.EjectingNote).debounce(0.5, DebounceType.kFalling);
-    // private BooleanEvent startEjectNoteEvent = ejectingNoteEvent.rising();
-    // private BooleanEvent stopEjectNoteEvent = ejectingNoteEvent.falling();
+    private BooleanEvent ejectingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.EjectingNote).debounce(0.5, DebounceType.kFalling);
+    private BooleanEvent startEjectNoteEvent = ejectingNoteEvent.rising();
+    private BooleanEvent stopEjectNoteEvent = ejectingNoteEvent.falling();
+    
+    private BooleanEvent stopNoteAtLauncherEvent = readyToLaunchEvent.rising().and(ejectingNoteEvent.negate());
  
     /**
      * Updates the current state based on the sensor values.
@@ -144,7 +144,12 @@ public class Superstructure extends SubsystemBase {
         );
 
         noteStateEventLoop.poll();
+    }
 
+    private Superstructure() {
+        updateNoteStateNotifier.startPeriodic(1 / NOTE_STATE_UPDATE_RATE);
+        updateNoteStateNotifier.setName("SuperstructureNoteState");
+        
         Transport transportSubsystem = Transport.getInstance();
 
         intakingNoteEvent.ifHigh(() -> VibrationFeedback.getInstance().runPattern(VibrationPatternType.IntakingNote));
@@ -153,18 +158,13 @@ public class Superstructure extends SubsystemBase {
             transportSubsystem.immediatelyUpdateSpeeds();
         });
 
-        // startEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.EjectingNote));
-        // stopEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.Stopped));
+        startEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.EjectingNote));
+        stopEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.Stopped));
         
         stopNoteAtLauncherEvent.ifHigh(() -> {
             transportSubsystem.attemptTransitionToState(TransportState.Stopped);
             transportSubsystem.immediatelyUpdateSpeeds();
         });
-    }
-
-    private Superstructure() {
-        updateNoteStateNotifier.startPeriodic(1 / NOTE_STATE_UPDATE_RATE);
-        updateNoteStateNotifier.setName("SuperstructureNoteState");
 
         if(!Constants.enableShuffleboard) return;
         Shuffleboard.getTab("Notes").addString("Superstructure note state", () -> currentState.toString());

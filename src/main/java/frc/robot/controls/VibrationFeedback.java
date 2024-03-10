@@ -27,15 +27,15 @@ public class VibrationFeedback {
         matchTimer.stop();
     }
 
-    // EventLoop eventLoop = new EventLoop();
-    // Notifier timeNotifier = new Notifier(() -> eventLoop.poll());
+    EventLoop eventLoop = new EventLoop();
+    Notifier timeNotifier = new Notifier(() -> eventLoop.poll());
     
     private VibrationFeedback() {
-        // new Trigger(eventLoop, () -> matchTimer.hasElapsed(75)).onTrue(
-        //     new InstantCommand(() -> runPattern(VibrationPatternType.SixtySecondWarning)));
-        // new Trigger(eventLoop, () -> matchTimer.hasElapsed(115)).onTrue(
-        //     new InstantCommand(() -> runPattern(VibrationPatternType.TwentySecondWarning)));
-        // timeNotifier.startPeriodic(0.5);
+        new Trigger(eventLoop, () -> matchTimer.hasElapsed(75)).onTrue(
+            new InstantCommand(() -> runPattern(VibrationPatternType.SixtySecondWarning)));
+        new Trigger(eventLoop, () -> matchTimer.hasElapsed(115)).onTrue(
+            new InstantCommand(() -> runPattern(VibrationPatternType.TwentySecondWarning)));
+        timeNotifier.startPeriodic(0.5);
     }
 
     private enum Controller {

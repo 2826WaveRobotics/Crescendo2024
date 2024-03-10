@@ -70,15 +70,13 @@ public class Limelight extends SubsystemBase {
     //   return;
     // }
     
-    System.out.println(poseEstimateData.tagCount + ", " + poseEstimateData.avgTagDist);
-
-    if(poseEstimateData.tagCount <= 2) return;
+    if(poseEstimateData.tagCount < 2) return;
     if(poseEstimateData.avgTagDist > 5) return;
 
     // Scale the vision measurement expected standard deviation exponentially by the distance 
-    double standardDeviationScalar = Math.max(0.01, 0.2 * Math.pow(1.5, poseEstimateData.avgTagDist) - 0.03) / (poseEstimateData.tagCount - 1);
+    double standardDeviationScalar = Math.max(0.01, 0.5 * Math.pow(1.5, poseEstimateData.avgTagDist) - 0.03) / (poseEstimateData.tagCount - 1);
 
-    System.out.println("Adding vision measurement");
+    // System.out.println("Adding vision estimate t:" + poseEstimateData.timestampSeconds + ", sds: " + standardDeviationScalar);
 
     swerve.addVisionMeasurement(pose, poseEstimateData.timestampSeconds, standardDeviationScalar);
   }
