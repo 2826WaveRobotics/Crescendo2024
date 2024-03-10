@@ -38,6 +38,7 @@ public class TransportIOReal implements TransportIO {
     Constants.Transport.transportMotorConfig.configure(lowerTransportMotor, lowerTransportPIDController);
     Constants.Transport.transportMotorConfig.configure(upperTransportMotor, upperTransportPIDController);
 
+    if(!Constants.enableShuffleboard) return;
     Shuffleboard.getTab("Notes").addNumber("Bottom transport current draw", () -> lowerTransportMotor.getOutputCurrent());
   }
 

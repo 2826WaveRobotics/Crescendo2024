@@ -47,7 +47,9 @@ public class Launcher extends SubsystemBase {
    */
   public void setLauncherAngle(Rotation2d angle) {
     launcherAngle = angle.getDegrees();
-    SmartDashboard.putNumber("LauncherAngle", launcherAngle);
+    if(Constants.enableShuffleboard) {
+      SmartDashboard.putNumber("LauncherAngle", launcherAngle);
+    }
     
     // All length units here are in inches
     double conchToPivotDistance = 5.153673;
@@ -102,6 +104,8 @@ public class Launcher extends SubsystemBase {
     launcherIO.updateInputs(inputs);
     launcherIO.runRollers(launcherSpeed);
     
-    SmartDashboard.putNumber("LauncherSpeed", launcherSpeed);
+    if(Constants.enableShuffleboard) {
+      SmartDashboard.putNumber("LauncherSpeed", launcherSpeed);
+    }
   }
 }

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import frc.robot.Constants;
 import frc.robot.commands.climber.ClimberFullyDown;
 import frc.robot.commands.climber.ClimberFullyUp;
 import frc.robot.commands.climber.RunClimberSideDistance;
@@ -116,11 +117,10 @@ public class Superstructure extends SubsystemBase {
         .rising();
 
     private BooleanEvent movingNoteEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.MovingNote)
-        .debounce(0.2, DebounceType.kBoth)
+        .debounce(0.2, DebounceType.kRising)
         .rising();
     
-    private BooleanEvent readyToLaunchEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.ReadyToLaunch)
-        .debounce(0.01, DebounceType.kRising);
+    private BooleanEvent readyToLaunchEvent = new BooleanEvent(noteStateEventLoop, () -> currentState == NoteState.ReadyToLaunch);
     // private BooleanEvent stopNoteAtLauncherEvent = readyToLaunchEvent.and(ejectingNoteEvent.negate()).rising();
     private BooleanEvent stopNoteAtLauncherEvent = readyToLaunchEvent.rising();
     
@@ -166,6 +166,7 @@ public class Superstructure extends SubsystemBase {
         updateNoteStateNotifier.startPeriodic(1 / NOTE_STATE_UPDATE_RATE);
         updateNoteStateNotifier.setName("SuperstructureNoteState");
 
+        if(!Constants.enableShuffleboard) return;
         Shuffleboard.getTab("Notes").addString("Superstructure note state", () -> currentState.toString());
     }
 

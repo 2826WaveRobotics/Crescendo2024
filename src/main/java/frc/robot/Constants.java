@@ -35,6 +35,8 @@ public final class Constants {
    */
   public static final double triggerDeadband = 0.03;
 
+  public static final boolean enableShuffleboard = true;
+
   public static final class Swerve {
     public static final double stickDeadband = 0.1;
 
@@ -344,11 +346,11 @@ public final class Constants {
     public static final CANSparkMaxConfig motorConfig = new CANSparkMaxConfig(
       IdleMode.kBrake,
       // climbingSmartCurrentLimit, climbingSecondaryCurrentLimit,
-      10, 5,
+      10, 15,
       0.5,
       12.0,
       Usage.kAll
-    ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)        // Position controller
+    ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)         // Position controller
      .configurePIDSlot(1, 1e-7, 0.0, 0.0, 1. / 11000.); // Velocity controller
 
     // TODO: Find real value

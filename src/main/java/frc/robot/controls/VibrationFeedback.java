@@ -27,15 +27,15 @@ public class VibrationFeedback {
         matchTimer.stop();
     }
 
-    EventLoop eventLoop = new EventLoop();
-    Notifier timeNotifier = new Notifier(() -> eventLoop.poll());
+    // EventLoop eventLoop = new EventLoop();
+    // Notifier timeNotifier = new Notifier(() -> eventLoop.poll());
     
     private VibrationFeedback() {
-        new Trigger(eventLoop, () -> matchTimer.hasElapsed(75)).onTrue(
-            new InstantCommand(() -> runPattern(VibrationPatternType.SixtySecondWarning)));
-        new Trigger(eventLoop, () -> matchTimer.hasElapsed(115)).onTrue(
-            new InstantCommand(() -> runPattern(VibrationPatternType.TwentySecondWarning)));
-        timeNotifier.startPeriodic(0.5);
+        // new Trigger(eventLoop, () -> matchTimer.hasElapsed(75)).onTrue(
+        //     new InstantCommand(() -> runPattern(VibrationPatternType.SixtySecondWarning)));
+        // new Trigger(eventLoop, () -> matchTimer.hasElapsed(115)).onTrue(
+        //     new InstantCommand(() -> runPattern(VibrationPatternType.TwentySecondWarning)));
+        // timeNotifier.startPeriodic(0.5);
     }
 
     private enum Controller {
@@ -91,23 +91,23 @@ public class VibrationFeedback {
 
     public void runPattern(VibrationPatternType pattern) {
         switch (pattern) {
-            case IntakingNote:
-                new SequentialCommandGroup(
-                    new VibrationPulse(Controller.Operator, 0.75, 0.5),
-                    new VibrationPulse(Controller.Operator, 0.5, 0.75),
-                    new VibrationPulse(Controller.Operator, 0.5, 0.5)
-                ).schedule();
-                break;
+            // case IntakingNote:
+            //     new SequentialCommandGroup(
+            //         new VibrationPulse(Controller.Operator, 0.75, 0.5),
+            //         new VibrationPulse(Controller.Operator, 0.5, 0.75),
+            //         new VibrationPulse(Controller.Operator, 0.5, 0.5)
+            //     ).schedule();
+            //     break;
             
-            case SixtySecondWarning:
-                new SequentialCommandGroup(
-                    new VibrationPulse(Controller.Both, 0.5, 0.5, 0.3, 0.1),
-                    new VibrationPulse(Controller.Both, 0.35, 0.35, 0.3, 0.1)
-                ).schedule();
-                break;
-            case TwentySecondWarning:
-                new VibrationPulse(Controller.Both, 0.5, 0.5, 0.3).schedule();
-                break;
+            // case SixtySecondWarning:
+            //     new SequentialCommandGroup(
+            //         new VibrationPulse(Controller.Both, 0.5, 0.5, 0.3, 0.1),
+            //         new VibrationPulse(Controller.Both, 0.35, 0.35, 0.3, 0.1)
+            //     ).schedule();
+            //     break;
+            // case TwentySecondWarning:
+            //     new VibrationPulse(Controller.Both, 0.5, 0.5, 0.3).schedule();
+            //     break;
         }
     }
 }

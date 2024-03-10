@@ -54,14 +54,14 @@ public class LauncherIOReal implements LauncherIO {
 
     // This doesn't work for some reason.
     // Constants.Launcher.angleConfig.configure(angleLauncherMotor, anglePIDController);
-    angleLauncherMotor.setSoftLimit(
-    SoftLimitDirection.kReverse,
-    (float)(Constants.Launcher.softStopMarginLow.getRotations() * Constants.Launcher.angleMotorGearboxReduction)
-    );
-    angleLauncherMotor.setSoftLimit(
-    SoftLimitDirection.kForward,
-    (float)((1 - Constants.Launcher.softStopMarginHigh.getRotations()) * Constants.Launcher.angleMotorGearboxReduction)
-    );
+    // angleLauncherMotor.setSoftLimit(
+    // SoftLimitDirection.kReverse,
+    // (float)(Constants.Launcher.softStopMarginLow.getRotations() * Constants.Launcher.angleMotorGearboxReduction)
+    // );
+    // angleLauncherMotor.setSoftLimit(
+    // SoftLimitDirection.kForward,
+    // (float)((1 - Constants.Launcher.softStopMarginHigh.getRotations()) * Constants.Launcher.angleMotorGearboxReduction)
+    // );
     angleLauncherMotor.setInverted(Constants.Launcher.invertAngle);
 
     angleLauncherMotor.burnFlash();

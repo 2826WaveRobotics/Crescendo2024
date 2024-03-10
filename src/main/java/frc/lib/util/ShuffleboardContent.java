@@ -5,10 +5,13 @@ import java.util.Map;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
+import frc.robot.Constants;
 import frc.robot.subsystems.drive.SwerveModule;
 
 public class ShuffleboardContent {
     public static void initSwerveModuleShuffleboard(SwerveModule module) {
+        if(!Constants.enableShuffleboard) return;
+        
         int moduleNumber = module.moduleIndex;
         String[] modulePosition = { "FL", "FR", "BL", "BR" };
         String modulePositionAbbreviation = modulePosition[moduleNumber];

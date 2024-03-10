@@ -33,6 +33,7 @@ public class Transport extends SubsystemBase {
   private Transport(TransportIO transportIO) {
     this.transportIO = transportIO;
 
+    if(!Constants.enableShuffleboard) return;
     Shuffleboard.getTab("Notes").addString("Transport state", () -> transportState.toString());
   }
 
@@ -98,7 +99,7 @@ public class Transport extends SubsystemBase {
         return other.from == from && other.to == to;
       }
       return false;
-    }
+  }
 
     @Override
     public int hashCode() {

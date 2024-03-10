@@ -37,8 +37,8 @@ Operator:
     Right joystick vertical AND menu (right tiny middle button): Override elevator extension
 
     D-pad up: Some preset 1
-    D-pad down: Some preset 2
-    D-pad left: Some preset 3
+    D-pad down: Slow preset
+    D-pad left: Amp preset
     D-pad right: Some preset 4
 
     Start:
