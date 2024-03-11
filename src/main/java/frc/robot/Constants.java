@@ -200,8 +200,8 @@ public final class Constants {
      */
     public static final double maxRollerVelocity = 3700.0;
 
-    public static final Rotation2d softStopMarginLow = Rotation2d.fromDegrees(10);
-    public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(45);
+    public static final Rotation2d softStopMarginLow = Rotation2d.fromDegrees(8);
+    public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(35);
 
     public static final double angleMotorGearboxReduction = Math.pow(5.23, 3);
 

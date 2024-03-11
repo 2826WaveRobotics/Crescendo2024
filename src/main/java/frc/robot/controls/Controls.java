@@ -138,11 +138,11 @@ public class Controls {
             launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed - 20);
         })));
 
-        // Presets
+        // Close speaker preset
         operator.povUp().onTrue(new InstantCommand(() -> {
             if(testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(35));
-            launcherSubsystem.setLauncherSpeed(4500);
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(57));
+            launcherSubsystem.setLauncherSpeed(2880);
         }));
         // Amp preset
         operator.povLeft().onTrue(new InstantCommand(() -> {
