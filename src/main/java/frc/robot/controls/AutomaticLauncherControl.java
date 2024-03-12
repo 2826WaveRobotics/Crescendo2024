@@ -60,6 +60,7 @@ public class AutomaticLauncherControl {
 
       String line;
       while ((line = br.readLine()) != null) {
+        if(line.length() == 0) continue; // Skip empty lines -- the last line will be empty
         String[] parts = line.split(",");
         float speed = Float.parseFloat(parts[0]);
         float angle = Float.parseFloat(parts[1]);
