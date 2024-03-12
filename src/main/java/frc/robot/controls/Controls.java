@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.TeleopIntake;
 import frc.robot.commands.control.PathfindToAmpAndLaunch;
@@ -86,7 +87,8 @@ public class Controls {
         driver.povLeft().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Left)));
         driver.povRight().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Right)));
         
-        driver.rightBumper().onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.AllianceSpeaker)));
+        Trigger autoSpeakerAim = driver.rightBumper();
+        autoSpeakerAim.onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.AllianceSpeaker)));
 
         driver.y().whileTrue(new PathfindToSpeakerAndLaunch());
         driver.b().whileTrue(new PathfindToAmpAndLaunch());
@@ -97,10 +99,12 @@ public class Controls {
 
         Superstructure superstructure = Superstructure.getInstance();
         // TODO: Crashes when climbing
-        operator.leftBumper().onTrue(new InstantCommand(superstructure::setupClimb));
-        operator.leftBumper().onFalse(new InstantCommand(superstructure::climb));
-        operator.rightBumper().onTrue(new InstantCommand(superstructure::unclimbStart));
-        operator.rightBumper().onFalse(new InstantCommand(superstructure::unclimbEnd));
+        Trigger climbUp = operator.leftBumper();
+        Trigger climbDown = operator.rightBumper();
+        climbUp.onTrue(new InstantCommand(superstructure::setupClimb));
+        climbUp.onFalse(new InstantCommand(superstructure::climb));
+        climbDown.onTrue(new InstantCommand(superstructure::unclimbStart));
+        climbDown.onFalse(new InstantCommand(superstructure::unclimbEnd));
         
         transportSubsystem.setDefaultCommand(new TeleopIntake(() -> -operator.getLeftY()));
     
@@ -113,9 +117,9 @@ public class Controls {
         }));
 
         AutomaticLauncherControl launcherControl = AutomaticLauncherControl.getInstance();
-        driver.rightBumper().whileTrue(new RepeatCommand(new InstantCommand(launcherControl::autoAlign)));
+        autoSpeakerAim.whileTrue(new RepeatCommand(new InstantCommand(launcherControl::autoAlign)));
 
-        BooleanSupplier testMode = () -> operator.getHID().getXButton();
+        BooleanSupplier testMode = operator.x();
 
         // Test angle mode
         launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(45));
@@ -123,40 +127,39 @@ public class Controls {
             if(!testMode.getAsBoolean()) return; // Test angle mode
             double launcherAngle = launcherSubsystem.launcherAngle + 0.15;
             launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
-        })));
+        }))).onTrue(new InstantCommand(() -> {
+            // Close speaker preset
+            if(testMode.getAsBoolean()) return; // Test angle mode
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(42.1));
+            launcherSubsystem.setLauncherSpeed(2880, true);
+        }));
+
         operator.povDown().whileTrue(new RepeatCommand(new InstantCommand(() -> {
             if(!testMode.getAsBoolean()) return; // Test angle mode
             double launcherAngle = launcherSubsystem.launcherAngle - 0.15;
             launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
-        })));
+        }))).onTrue(new InstantCommand(() -> {
+            // Slow preset
+            if(testMode.getAsBoolean()) return; // Test angle mode
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(50));
+            launcherSubsystem.launchRollersSlow();
+        }));
 
         operator.povRight().whileTrue(new RepeatCommand(new InstantCommand(() -> {
             if(!testMode.getAsBoolean()) return; // Test angle mode
             launcherSubsystem.setLauncherSpeed(launcherSubsystem.topRollerSpeed + 20, true);
         })));
+
         operator.povLeft().whileTrue(new RepeatCommand(new InstantCommand(() -> {
             if(!testMode.getAsBoolean()) return; // Test angle mode
             launcherSubsystem.setLauncherSpeed(launcherSubsystem.topRollerSpeed - 20, true);
-        })));
-
-        // Close speaker preset
-        operator.povUp().onTrue(new InstantCommand(() -> {
-            if(testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(42.1));
-            launcherSubsystem.setLauncherSpeed(2880, true);
-        }));
-        // Amp preset
-        operator.povLeft().onTrue(new InstantCommand(() -> {
+        }))).onTrue(new InstantCommand(() -> {
+            // Amp preset
             if(testMode.getAsBoolean()) return; // Test angle mode
             launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(58.95));
             launcherSubsystem.setLauncherSpeed(1540, false);
         }));
-        // Slow preset
-        operator.povDown().onTrue(new InstantCommand(() -> {
-            if(testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(50));
-            launcherSubsystem.launchRollersSlow();
-        }));
+
 
         operator.y().onTrue(new InstantCommand(superstructure::launchNote));
     }

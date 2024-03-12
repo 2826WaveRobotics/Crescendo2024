@@ -12,7 +12,6 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
 
@@ -38,42 +37,44 @@ public class AutomaticLauncherControl {
       }
   }
 
-  private class LauncherLookupValue {
-      public LauncherState state;
-      public double x;
-      public double y;
-
-      public LauncherLookupValue(double x, double y, LauncherState state) {
-          this.state = state;
-          this.x = x;
-          this.y = y;
-      }
-  }
-
-  private ArrayList<LauncherLookupValue> lookupTable = new ArrayList<>();
+  private ArrayList<LauncherState> launcherStateGrid = new ArrayList<>();
+  private int grid_x_size;
+  private int grid_y_size;
+  private float minx;
+  private float maxx;
+  private float miny;
+  private float maxy;
   {
     try (BufferedReader br =
-      new BufferedReader(new FileReader(new File(Filesystem.getDeployDirectory(), "launcherData.csv")))
+      new BufferedReader(new FileReader(new File(Filesystem.getDeployDirectory(), "launcherData.txt")))
     ) {
-      // The first line is CSV labels
-      @SuppressWarnings("unused")
-      String labels = br.readLine();
+      // The custom file format is pretty simple; see misc/launcherAimDataProcessing.ipynb for more details
+
+      String[] sizes = br.readLine().split(":");
+      grid_x_size = Integer.parseInt(sizes[0]);
+      grid_y_size = Integer.parseInt(sizes[1]);
+      minx = Float.parseFloat(sizes[2]);
+      maxx = Float.parseFloat(sizes[3]);
+      miny = Float.parseFloat(sizes[4]);
+      maxy = Float.parseFloat(sizes[5]);
 
       String line;
       while ((line = br.readLine()) != null) {
         String[] parts = line.split(",");
-        lookupTable.add(new LauncherLookupValue(
-          Float.parseFloat(parts[0]),
-          Float.parseFloat(parts[1]),
-          new LauncherState(
-            Float.parseFloat(parts[2]),
-            Float.parseFloat(parts[3])
-          )
-        ));
+        float speed = Float.parseFloat(parts[0]);
+        float angle = Float.parseFloat(parts[1]);
+        launcherStateGrid.add(new LauncherState(speed, angle));
       }
     } catch(IOException ioException) {
       System.out.println("WARNING: IO exception while reading automatic launcher control file: " + ioException.getLocalizedMessage());
     }
+  }
+
+  private LauncherState getGridPoint(int x, int y) {
+    x = Math.min(Math.max(x, 0), grid_x_size - 1);
+    y = Math.min(Math.max(y, 0), grid_y_size - 1);
+
+    return launcherStateGrid.get(y * grid_x_size + x);
   }
 
   private LauncherState getLauncherState() {
@@ -85,48 +86,24 @@ public class AutomaticLauncherControl {
     Pose2d pose = swerve.getPose().transformBy(new Transform2d(lookaheadDistance, 0.0, new Rotation2d()));
     Translation2d currentTranslation = pose.getTranslation();
 
-    // If on the red alliance, flip the x coordinate
-    if(DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Red) {
-        currentTranslation = new Translation2d(-currentTranslation.getX(), currentTranslation.getY());
-    }
-    
-    LauncherLookupValue closestPoints[] = new LauncherLookupValue[4];
-    for (int i = 0; i < 4; i++) {
-        closestPoints[i] = lookupTable.get(0);
-    }
-    double closestDistances[] = new double[4];
-    for (int i = 0; i < 4; i++) {
-        closestDistances[i] = Double.MAX_VALUE;
-    }
+    // We find the 4 closest points in the grid and bilinearly interpolate between them
+    int x1 = (int) Math.floor((currentTranslation.getX() - minx) / (maxx - minx) * (grid_x_size - 1));
+    int y1 = (int) Math.floor((currentTranslation.getY() - miny) / (maxy - miny) * (grid_y_size - 1));
+    int x2 = x1 + 1;
+    int y2 = y1 + 1;
 
-    for (LauncherLookupValue value : lookupTable) {
-        double distance = currentTranslation.getDistance(new Translation2d(value.x, value.y));
-        for (int i = 0; i < 4; i++) {
-            if (distance < closestDistances[i]) {
-                closestDistances[i] = distance;
-                closestPoints[i] = value;
-                break;
-            }
-        }
-    }
+    double xfrac = (currentTranslation.getX() - minx) / (maxx - minx) * (grid_x_size - 1) - x1;
+    double yfrac = (currentTranslation.getY() - miny) / (maxy - miny) * (grid_y_size - 1) - y1;
 
-    // Interpolate between the 4 closest points using bilinear interpolation
+    LauncherState p1 = getGridPoint(x1, y1);
+    LauncherState p2 = getGridPoint(x2, y1);
+    LauncherState p3 = getGridPoint(x1, y2);
+    LauncherState p4 = getGridPoint(x2, y2);
 
-    // interpolated value = (1 - alpha) * ((1 - beta) * p1 + beta * p2) + alpha * ((1 - beta) * p3 + beta * p4)
-    // Source: https://stackoverflow.com/questions/23920976/bilinear-interpolation-with-non-aligned-input-points
+    double speed = (1 - xfrac) * (1 - yfrac) * p1.speed + xfrac * (1 - yfrac) * p2.speed + (1 - xfrac) * yfrac * p3.speed + xfrac * yfrac * p4.speed;
+    double angle = (1 - xfrac) * (1 - yfrac) * p1.angleDegrees + xfrac * (1 - yfrac) * p2.angleDegrees + (1 - xfrac) * yfrac * p3.angleDegrees + xfrac * yfrac * p4.angleDegrees;
 
-    double alpha = (currentTranslation.getX() - closestPoints[0].x) / (closestPoints[1].x - closestPoints[0].x);
-    double beta = (currentTranslation.getY() - closestPoints[0].y) / (closestPoints[2].y - closestPoints[0].y);
-
-    LauncherState p1 = closestPoints[0].state;
-    LauncherState p2 = closestPoints[1].state;
-    LauncherState p3 = closestPoints[2].state;
-    LauncherState p4 = closestPoints[3].state;
-
-    double speed = (1 - alpha) * ((1 - beta) * p1.speed + beta * p2.speed) + alpha * ((1 - beta) * p3.speed + beta * p4.speed);
-    double angleDegrees = (1 - alpha) * ((1 - beta) * p1.angleDegrees + beta * p2.angleDegrees) + alpha * ((1 - beta) * p3.angleDegrees + beta * p4.angleDegrees);
-
-    return new LauncherState(speed, angleDegrees);
+    return new LauncherState(speed, angle);
   }
 
   /**
