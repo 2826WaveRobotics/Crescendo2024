@@ -36,6 +36,11 @@ public class LaunchNote extends Command {
     Transport.getInstance().attemptTransitionToState(TransportState.Stopped);
   }
 
+  @Override
+  public void execute() {
+    Transport.getInstance().attemptTransitionToState(TransportState.LaunchingNote);
+  }
+
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {

@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
 
@@ -134,7 +135,9 @@ public class AutomaticLauncherControl {
   public void autoAlign() {
     LauncherState state = getLauncherState();
 
-    Launcher.getInstance().setLauncherSpeed(state.speed);
+    // SmartDashboard.putString("Automatic launcher control value", "[" + state.speed + ", " + state.angleDegrees + "]");
+
+    Launcher.getInstance().setLauncherSpeed(state.speed, true);
     Launcher.getInstance().setLauncherAngle(Rotation2d.fromDegrees(state.angleDegrees));
   }
 }

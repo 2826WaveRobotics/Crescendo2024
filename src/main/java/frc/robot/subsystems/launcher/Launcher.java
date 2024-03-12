@@ -39,7 +39,8 @@ public class Launcher extends SubsystemBase {
    * The current target launcher angle.
    */
   public double launcherAngle = 45;
-  public double launcherSpeed = 1200;
+  public double topRollerSpeed = 1200;
+  public double bottomRollerSpeed = 1200;
 
   /**
    * Calculates the required conch angle from the wanted launcher angle.
@@ -47,7 +48,7 @@ public class Launcher extends SubsystemBase {
    */
   public void setLauncherAngle(Rotation2d angle) {
     launcherAngle = angle.getDegrees();
-    if(Constants.enableShuffleboard) {
+    if(Constants.enableNonEssentialShuffleboard) {
       SmartDashboard.putNumber("LauncherAngle", launcherAngle);
     }
     
@@ -74,38 +75,46 @@ public class Launcher extends SubsystemBase {
       conchAngleRadians = Math.PI * 2 - Constants.Launcher.softStopMarginHigh.getRadians();
     }
 
-    launcherIO.setAngleReference(Rotation2d.fromRadians(conchAngleRadians).getRotations() * Constants.Launcher.angleMotorGearboxReduction);
+    launcherIO.setAngleReference(Rotation2d.fromRadians(conchAngleRadians).getRotations());
   }
 
   /**
    * Enables the launch rollers.
    */
   public void launchRollersFast() {
-    launcherSpeed = Constants.Launcher.maxRollerVelocity;
+    setLauncherSpeed(Constants.Launcher.maxRollerVelocity, false);
   }
 
   /**
    * Disables the launch rollers.
    */
   public void launchRollersSlow() {
-    launcherSpeed = Constants.Launcher.launchRollerVelocity;
+    setLauncherSpeed(Constants.Launcher.launchRollerVelocity, false);
   }
 
   /**
    * Sets the launch roller speed.
    * @param speed
-   */
-  public void setLauncherSpeed(double speed) {
-    launcherSpeed = speed;
+   * @param adjustToLevelNote If we should adjust the roller speeds so we can keep the notes level. Only used for the speaker shots.
+   */ 
+  public void setLauncherSpeed(double speed, boolean adjustToLevelNote) {
+    if(adjustToLevelNote) {
+      bottomRollerSpeed = speed * 0.65;
+    } else {
+      bottomRollerSpeed = speed;
+    }
+    topRollerSpeed = speed;
   }
 
   @Override
   public void periodic() {
     launcherIO.updateInputs(inputs);
-    launcherIO.runRollers(launcherSpeed);
+    launcherIO.runRollers(topRollerSpeed, bottomRollerSpeed);
+
+    SmartDashboard.putNumber("Absolute launcher angle", inputs.absoluteLauncherAngle.getDegrees());
     
-    if(Constants.enableShuffleboard) {
-      SmartDashboard.putNumber("LauncherSpeed", launcherSpeed);
+    if(Constants.enableNonEssentialShuffleboard) {
+      SmartDashboard.putNumber("LauncherSpeed", topRollerSpeed);
     }
   }
 }

@@ -12,7 +12,7 @@ public interface LauncherIO {
   }
 
   /** Runs the launch rollers at the specified speed in RPM. */
-  public default void runRollers(double speed) {}
+  public default void runRollers(double topRollerSpeed, double bottomRollerSpeed) {}
 
   /** Sets the angle of the conch motor in rotations. */
   public default void setAngleReference(double rotations) {}

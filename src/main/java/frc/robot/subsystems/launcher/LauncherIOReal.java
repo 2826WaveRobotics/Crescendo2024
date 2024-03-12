@@ -8,6 +8,7 @@ import com.revrobotics.SparkPIDController;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.util.CANSparkMaxUtil;
 import frc.lib.util.CANSparkMaxUtil.Usage;
 import frc.robot.Constants;
@@ -30,9 +31,6 @@ public class LauncherIOReal implements LauncherIO {
     bottomRollerMotor = new CANSparkMax(Constants.Launcher.bottomRollerCANID, CANSparkMax.MotorType.kBrushless);
     angleLauncherMotor = new CANSparkMax(Constants.Launcher.angleMotorCANID, CANSparkMax.MotorType.kBrushless);
 
-    angleLauncherEncoder = angleLauncherMotor.getEncoder();
-    absoluteAngleLauncherEncoder = new DutyCycleEncoder(0);
-
     topLaunchRollerPIDController = topRollerMotor.getPIDController();
     bottomLaunchRollerPIDController = bottomRollerMotor.getPIDController();
 
@@ -53,24 +51,30 @@ public class LauncherIOReal implements LauncherIO {
     angleLauncherMotor.setInverted(Constants.Launcher.invertAngle);
 
     // This doesn't work for some reason.
-    // Constants.Launcher.angleConfig.configure(angleLauncherMotor, anglePIDController);
-    // angleLauncherMotor.setSoftLimit(
-    // SoftLimitDirection.kReverse,
-    // (float)(Constants.Launcher.softStopMarginLow.getRotations() * Constants.Launcher.angleMotorGearboxReduction)
-    // );
-    // angleLauncherMotor.setSoftLimit(
-    // SoftLimitDirection.kForward,
-    // (float)((1 - Constants.Launcher.softStopMarginHigh.getRotations()) * Constants.Launcher.angleMotorGearboxReduction)
-    // );
+    Constants.Launcher.angleConfig.configure(angleLauncherMotor, anglePIDController);
+    angleLauncherMotor.setSoftLimit(
+      SoftLimitDirection.kReverse,
+      (float)(Constants.Launcher.softStopMarginLow.getRotations() * Constants.Launcher.angleMotorGearboxReduction)
+    );
+    angleLauncherMotor.setSoftLimit(
+      SoftLimitDirection.kForward,
+      (float)((1 - Constants.Launcher.softStopMarginHigh.getRotations()) * Constants.Launcher.angleMotorGearboxReduction)
+    );
     angleLauncherMotor.setInverted(Constants.Launcher.invertAngle);
 
     angleLauncherMotor.burnFlash();
+    
+    angleLauncherEncoder = angleLauncherMotor.getEncoder();
+    absoluteAngleLauncherEncoder = new DutyCycleEncoder(0);
+
     resetToAbsolute();
   }
   
   public void resetToAbsolute() {
     Rotation2d absolutePosition = getAbsoluteLauncherAngle().minus(Constants.Launcher.angleOffset);
-    angleLauncherEncoder.setPosition(absolutePosition.times(Constants.Launcher.angleMotorGearboxReduction).getRotations());
+    double rotations = absolutePosition.getRotations() % 1.;
+    if(rotations < 0.) rotations = rotations + 1;
+    angleLauncherEncoder.setPosition(rotations * Constants.Launcher.angleMotorGearboxReduction);
   }
 
   private Rotation2d getAbsoluteLauncherAngle() {
@@ -83,7 +87,10 @@ public class LauncherIOReal implements LauncherIO {
 
   @Override
   public void setAngleReference(double rotations) {
-    anglePIDController.setReference(rotations, CANSparkMax.ControlType.kPosition);
+    if(Constants.enableNonEssentialShuffleboard) {
+      SmartDashboard.putNumber("Launcher angle reference", rotations * 360.);
+    }
+    anglePIDController.setReference(rotations * Constants.Launcher.angleMotorGearboxReduction, CANSparkMax.ControlType.kPosition);
   }
 
   @Override
@@ -93,8 +100,8 @@ public class LauncherIOReal implements LauncherIO {
   }
 
   @Override
-  public void runRollers(double speed) {
-    topLaunchRollerPIDController.setReference(speed, CANSparkMax.ControlType.kVelocity);
-    bottomLaunchRollerPIDController.setReference(speed, CANSparkMax.ControlType.kVelocity);
+  public void runRollers(double topRollerSpeed, double bottomRollerSpeed) {
+    topLaunchRollerPIDController.setReference(topRollerSpeed, CANSparkMax.ControlType.kVelocity);
+    bottomLaunchRollerPIDController.setReference(bottomRollerSpeed, CANSparkMax.ControlType.kVelocity);
   }
 }

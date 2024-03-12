@@ -10,7 +10,7 @@ import frc.robot.subsystems.drive.SwerveModule;
 
 public class ShuffleboardContent {
     public static void initSwerveModuleShuffleboard(SwerveModule module) {
-        if(!Constants.enableShuffleboard) return;
+        if(!Constants.enableNonEssentialShuffleboard) return;
         
         int moduleNumber = module.moduleIndex;
         String[] modulePosition = { "FL", "FR", "BL", "BR" };

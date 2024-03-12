@@ -33,7 +33,7 @@ public class PathfindToSpeakerAndLaunch extends SequentialCommandGroup {
         addCommands(
             new ParallelCommandGroup(
                 new SetLauncherAngle(55),
-                new InstantCommand(() -> Launcher.getInstance().setLauncherSpeed(4300)),
+                new InstantCommand(() -> Launcher.getInstance().setLauncherSpeed(4300, true)),
                 pathfindingCommand
             ),
             new LaunchNote()

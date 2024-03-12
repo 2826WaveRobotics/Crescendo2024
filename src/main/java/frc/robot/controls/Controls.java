@@ -96,6 +96,7 @@ public class Controls {
         /*//////////////////////////*/
 
         Superstructure superstructure = Superstructure.getInstance();
+        // TODO: Crashes when climbing
         operator.leftBumper().onTrue(new InstantCommand(superstructure::setupClimb));
         operator.leftBumper().onFalse(new InstantCommand(superstructure::climb));
         operator.rightBumper().onTrue(new InstantCommand(superstructure::unclimbStart));
@@ -112,7 +113,7 @@ public class Controls {
         }));
 
         AutomaticLauncherControl launcherControl = AutomaticLauncherControl.getInstance();
-        operator.leftBumper().whileTrue(new RepeatCommand(new InstantCommand(launcherControl::autoAlign)));
+        driver.rightBumper().whileTrue(new RepeatCommand(new InstantCommand(launcherControl::autoAlign)));
 
         BooleanSupplier testMode = () -> operator.getHID().getXButton();
 
@@ -131,24 +132,24 @@ public class Controls {
 
         operator.povRight().whileTrue(new RepeatCommand(new InstantCommand(() -> {
             if(!testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed + 20);
+            launcherSubsystem.setLauncherSpeed(launcherSubsystem.topRollerSpeed + 20, true);
         })));
         operator.povLeft().whileTrue(new RepeatCommand(new InstantCommand(() -> {
             if(!testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherSpeed(launcherSubsystem.launcherSpeed - 20);
+            launcherSubsystem.setLauncherSpeed(launcherSubsystem.topRollerSpeed - 20, true);
         })));
 
         // Close speaker preset
         operator.povUp().onTrue(new InstantCommand(() -> {
             if(testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(57));
-            launcherSubsystem.setLauncherSpeed(2880);
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(42.1));
+            launcherSubsystem.setLauncherSpeed(2880, true);
         }));
         // Amp preset
         operator.povLeft().onTrue(new InstantCommand(() -> {
             if(testMode.getAsBoolean()) return; // Test angle mode
             launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(58.95));
-            launcherSubsystem.setLauncherSpeed(1540);
+            launcherSubsystem.setLauncherSpeed(1540, false);
         }));
         // Slow preset
         operator.povDown().onTrue(new InstantCommand(() -> {

@@ -35,7 +35,7 @@ public final class Constants {
    */
   public static final double triggerDeadband = 0.03;
 
-  public static final boolean enableShuffleboard = true;
+  public static final boolean enableNonEssentialShuffleboard = true;
 
   public static final double fieldLengthMeters = Units.feetToMeters(54 + 1/12);
 
@@ -200,15 +200,15 @@ public final class Constants {
      */
     public static final double maxRollerVelocity = 3700.0;
 
-    public static final Rotation2d softStopMarginLow = Rotation2d.fromDegrees(8);
-    public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(35);
+    public static final Rotation2d softStopMarginLow = Rotation2d.fromDegrees(3);
+    public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(40);
 
     public static final double angleMotorGearboxReduction = Math.pow(5.23, 3);
 
     /**
-     * The conch angle offset, in degrees. 0 degrees should be where the axle sits at the lowest point.
+     * The conch angle offset. 0 degrees should be where the axle sits at the lowest point.
      */
-    public static final Rotation2d angleOffset = Rotation2d.fromDegrees(108);
+    public static final Rotation2d angleOffset = Rotation2d.fromDegrees(100);
 
     /**
      * If we should invert the angle motor direction.
@@ -340,22 +340,21 @@ public final class Constants {
     public static final int leftClimberMotorCANID = 55;
     public static final int rightClimberMotorCANID = 56;
 
-    public static final int climbingSmartCurrentLimit = 30;
-    public static final int climbingSecondaryCurrentLimit = 35;
-    public static final int stallSmartCurrentLimit = 20;
-    public static final int stallSecondaryCurrentLimit = 25;
+    public static final int climbingSmartCurrentLimit = 10;
+    public static final int climbingSecondaryCurrentLimit = 15;
+    public static final int stallSmartCurrentLimit = 5;
+    public static final int stallSecondaryCurrentLimit = 10;
 
     public static final CANSparkMaxConfig motorConfig = new CANSparkMaxConfig(
       IdleMode.kBrake,
       // climbingSmartCurrentLimit, climbingSecondaryCurrentLimit,
-      10, 15,
-      0.5,
+      7, 15,
+      0.2,
       12.0,
       Usage.kAll
     ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)         // Position controller
      .configurePIDSlot(1, 1e-7, 0.0, 0.0, 1. / 11000.); // Velocity controller
 
-    // TODO: Find real value
-    public static final double fullUpRotations = 10;
+    public static final double fullUpRotations = 160;
   }
 }

@@ -3,8 +3,9 @@ package frc.robot.commands.climber;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleConsumer;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.climber.Climber;
 
 public class RunClimberSideUntilStall extends Command {
     BooleanSupplier isStalling;
@@ -15,14 +16,16 @@ public class RunClimberSideUntilStall extends Command {
         this.setSideVelocity = setSideVelocity;
     }
 
+    Debouncer debouncer = new Debouncer(0.25, DebounceType.kRising);
+
     @Override
     public boolean isFinished() {
-        return isStalling.getAsBoolean();
+        return debouncer.calculate(isStalling.getAsBoolean());
     }
 
     @Override
     public void initialize() {
-        setSideVelocity.accept(8);
+        setSideVelocity.accept(2000);
     }
 
     @Override

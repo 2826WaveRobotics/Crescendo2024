@@ -33,7 +33,7 @@ public class PathfindToAmpAndLaunch extends SequentialCommandGroup {
         addCommands(
             new ParallelCommandGroup(
                 new SetLauncherAngle(65),
-                new InstantCommand(() -> Launcher.getInstance().setLauncherSpeed(1500)),
+                new InstantCommand(() -> Launcher.getInstance().setLauncherSpeed(1500, false)),
                 pathfindingCommand
             ),
             new LaunchNote()

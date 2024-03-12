@@ -30,7 +30,7 @@ public class NoteSensors extends SubsystemBase {
   private NoteSensors(NoteSensorIO noteSensorIO) {
     this.noteSensorIO = noteSensorIO;
 
-    if(!Constants.enableShuffleboard) return;
+    if(!Constants.enableNonEssentialShuffleboard) return;
     ShuffleboardTab notesTab = Shuffleboard.getTab("Notes");
     // notesTab.addBoolean("Intake sensor activated", () -> inputs.intakeSensorActivated);
     notesTab.addBoolean("Intake sensor activated", () -> false);

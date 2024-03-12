@@ -44,6 +44,10 @@ public class SwerveAlignmentController {
         alignmentMode = mode;
     }
 
+    private boolean isBlueAlliance() {
+        return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
+    }
+
     private Rotation2d getTargetAngle() {
         switch (alignmentMode) {
             case AllianceSpeaker:
@@ -54,9 +58,8 @@ public class SwerveAlignmentController {
                 Pose2d pose = swerve.getPose().transformBy(new Transform2d(lookaheadDistance, 0.0, new Rotation2d()));
                 Translation2d currentTranslation = pose.getTranslation();
 
-                boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
-                double speakerInward = 0.1;
-                Translation2d allianceSpeakerTranslation = isBlueAlliance ? new Translation2d(speakerInward, 5.55) : new Translation2d(Constants.fieldLengthMeters - speakerInward, 5.55);
+                double speakerInward = -0.1;
+                Translation2d allianceSpeakerTranslation = isBlueAlliance() ? new Translation2d(speakerInward, 5.55) : new Translation2d(Constants.fieldLengthMeters - speakerInward, 5.55);
 
                 return Rotation2d.fromRadians(
                     Math.atan2(
@@ -64,16 +67,14 @@ public class SwerveAlignmentController {
                         allianceSpeakerTranslation.getX() - currentTranslation.getX()
                     )
                 ).plus(Rotation2d.fromRadians(Math.PI)); // Add 180 degrees because we want to face the launcher toward the alliance speaker instead of the intake, which is the real front of the robot
-            case Forward:
-                return Rotation2d.fromDegrees(0.0);
             case Right:
-                return Rotation2d.fromDegrees(270.0);
+                return Rotation2d.fromDegrees(isBlueAlliance() ? 270.0 : 90.0);
             case Backward:
-                return Rotation2d.fromDegrees(180.0);
+                return Rotation2d.fromDegrees(isBlueAlliance() ? 180.0 : 0.0);
             case Left:
-                return Rotation2d.fromDegrees(90.0);
+                return Rotation2d.fromDegrees(isBlueAlliance() ? 90.0 : 270.0);
             default:
-                return Rotation2d.fromDegrees(0.0);
+                return Rotation2d.fromDegrees(isBlueAlliance() ? 0.0 : 180.0);
         }
     }
 

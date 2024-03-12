@@ -166,7 +166,7 @@ public class Superstructure extends SubsystemBase {
             transportSubsystem.immediatelyUpdateSpeeds();
         });
 
-        if(!Constants.enableShuffleboard) return;
+        if(!Constants.enableNonEssentialShuffleboard) return;
         Shuffleboard.getTab("Notes").addString("Superstructure note state", () -> currentState.toString());
     }
 
@@ -190,14 +190,14 @@ public class Superstructure extends SubsystemBase {
         // Reset climber
         if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
 
-        // scheduledClimbCommand = new ParallelCommandGroup(
-        //     new SequentialCommandGroup(
-        //         new RetractElevator(),
-        //         new AngleElevatorDown()
-        //     ),
-        //     new ClimberFullyDown()
-        // );
-        // scheduledClimbCommand.schedule();
+        scheduledClimbCommand = new ParallelCommandGroup(
+            // new SequentialCommandGroup(
+                // new RetractElevator(),
+                // new AngleElevatorDown()
+            // ),
+            new ClimberFullyDown()
+        );
+        scheduledClimbCommand.schedule();
 
         // Reset the odometry to face the current gyro angle
         Swerve.getInstance().resetRotation();
@@ -221,7 +221,7 @@ public class Superstructure extends SubsystemBase {
         scheduledClimbCommand = new SequentialCommandGroup(
             new WaitUntilCommand(() -> getNoteState() != NoteState.IntakingNote),
             new ParallelCommandGroup(
-                ElevatorCommands.angleElevatorUp(),
+                // ElevatorCommands.angleElevatorUp(),
                 new ClimberFullyUp()
             )
         );
@@ -247,8 +247,8 @@ public class Superstructure extends SubsystemBase {
             Climber climber = Climber.getInstance();
             scheduledClimbCommand = new SequentialCommandGroup(
                 new ParallelCommandGroup(
-                    new RunClimberSideUntilStall(climber::setLeftSpeed, climber::getLeftMotorStalling),
-                    new RunClimberSideUntilStall(climber::setRightSpeed, climber::getRightMotorStalling)
+                    new RunClimberSideUntilStall(climber::setLeftSpeed, climber::getLeftMotorStallingClimb),
+                    new RunClimberSideUntilStall(climber::setRightSpeed, climber::getRightMotorStallingClimb)
                 ),
                 new ParallelCommandGroup(
                     new RunClimberSideDistance(climber::setLeftPosition, climber::getLeftPosition, -15),

@@ -33,7 +33,7 @@ public class Transport extends SubsystemBase {
   private Transport(TransportIO transportIO) {
     this.transportIO = transportIO;
 
-    if(!Constants.enableShuffleboard) return;
+    if(!Constants.enableNonEssentialShuffleboard) return;
     Shuffleboard.getTab("Notes").addString("Transport state", () -> transportState.toString());
   }
 

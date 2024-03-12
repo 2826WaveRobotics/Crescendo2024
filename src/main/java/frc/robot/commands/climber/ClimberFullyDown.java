@@ -14,8 +14,8 @@ public class ClimberFullyDown extends SequentialCommandGroup {
         addRequirements(climber);
         addCommands(
             new ParallelCommandGroup(
-                new ClimberSideFullyDown(climber::setLeftPosition, climber::setLeftSpeed, climber::getLeftPosition, climber::getLeftMotorStalling),
-                new ClimberSideFullyDown(climber::setRightPosition, climber::setRightSpeed, climber::getRightPosition, climber::getRightMotorStalling)
+                new ClimberSideFullyDown(climber::setLeftPosition, climber::setLeftSpeed, climber::getLeftPosition, climber::getLeftMotorStallingBottom)
+                // new ClimberSideFullyDown(climber::setRightPosition, climber::setRightSpeed, climber::getRightPosition, climber::getRightMotorStallingBottom)
             ),
             new InstantCommand(climber::resetLeftEncoder),
             new InstantCommand(climber::resetRightEncoder)

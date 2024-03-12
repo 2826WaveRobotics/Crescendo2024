@@ -42,21 +42,28 @@ public class ClimberIOReal implements ClimberIO {
   public void resetRightEncoder() {
     rightClimberEncoder.setPosition(0);
   }
+
+  public boolean currentlyControllingSpeedLeft = false;
+  public boolean currentlyControllingSpeedRight = false;
   
   /**
-   * Sets the left motor speed in RPM. Positive values move the elevator downward.
+   * Sets the left motor speed in RPM. Positive values move the climber downward.
    * @param speed The target speed, in RPM.
    */
   @Override
   public void setLeftSpeed(double speed) {
-    leftPIDController.setReference(speed, ControlType.kVelocity, 1);
+    if(!currentlyControllingSpeedLeft) leftClimberMotor.stopMotor();
+    currentlyControllingSpeedLeft = true;
+    leftPIDController.setReference(-speed, ControlType.kVelocity, 1);
   }
   /**
-   * Sets the right motor speed in RPM. Positive values move the elevator downward.
+   * Sets the right motor speed in RPM. Positive values move the climber downward.
    * @param speed
    */
   @Override
   public void setRightSpeed(double speed) {
+    if(!currentlyControllingSpeedRight) rightClimberMotor.stopMotor();
+    currentlyControllingSpeedRight = true;
     rightPIDController.setReference(speed, ControlType.kVelocity, 1);
   }
   /**
@@ -65,6 +72,8 @@ public class ClimberIOReal implements ClimberIO {
    */
   @Override
   public void setRightPosition(double position) {
+    if(currentlyControllingSpeedRight) rightClimberMotor.stopMotor();
+    currentlyControllingSpeedRight = false;
     rightPIDController.setReference(position, ControlType.kPosition, 0);
   }
   /**
@@ -73,6 +82,8 @@ public class ClimberIOReal implements ClimberIO {
    */
   @Override
   public void setLeftPosition(double position) {
+    if(currentlyControllingSpeedLeft) leftClimberMotor.stopMotor();
+    currentlyControllingSpeedLeft = false;
     leftPIDController.setReference(position, ControlType.kPosition, 0);
   }
 

@@ -27,15 +27,22 @@ public class Climber extends SubsystemBase {
   }
 
   /** Gets the current draw of the left climber motor in amps. */
-  public boolean getLeftMotorStalling() {
-    // TODO: Find real values.
-    return inputs.leftClimberCurrentDrawAmps > 10.0;
+  public boolean getLeftMotorStallingClimb() {
+    return inputs.leftClimberCurrentDrawAmps > 5.0;
+  }
+  
+  public boolean getLeftMotorStallingBottom() {
+    return inputs.leftClimberCurrentDrawAmps > 2.0;
   }
   
   /** Gets the current draw of the right climber motor in amps. */
-  public boolean getRightMotorStalling() {
-    // TODO: Find real values.
+  public boolean getRightMotorStallingClimb() {
     return inputs.rightClimberCurrentDrawAmps > 10.0;
+  }
+  
+  /** Gets the current draw of the right climber motor in amps. */
+  public boolean getRightMotorStallingBottom() {
+    return inputs.rightClimberCurrentDrawAmps > 5.0;
   }
 
   /** Resets the encoder value for the left motor to 0. */
