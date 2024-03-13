@@ -2,10 +2,10 @@ package frc.robot.controls;
 
 import java.util.function.BooleanSupplier;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -16,7 +16,6 @@ import frc.robot.commands.control.PathfindToAmpAndLaunch;
 import frc.robot.commands.control.PathfindToSpeakerAndLaunch;
 import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.Superstructure;
-import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
 import frc.robot.subsystems.transport.Transport;
@@ -154,7 +153,10 @@ public class Controls {
             launcherSubsystem.setLauncherSpeed(1540, false);
         }));
 
-
         operator.rightTrigger(0.2).onTrue(new InstantCommand(superstructure::launchNote));
+        operator.start().whileTrue(Commands.startEnd(
+            () -> launcherSubsystem.setLauncherSpeed(-6800, false),
+            () -> launcherSubsystem.setLauncherSpeed(0, false)
+        ));
     }
 }

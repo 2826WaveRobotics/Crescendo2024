@@ -43,7 +43,7 @@ Operator:
     D-pad left: Amp preset
     D-pad right:
 
-    Start:
+    Start: Retrieve note from launcher (runs launchers at 100% power backward; can be dangerous)
     Back:
 
     Y: 
