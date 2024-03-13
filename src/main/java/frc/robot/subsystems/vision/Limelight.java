@@ -8,6 +8,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.controls.SwerveAlignmentController;
+import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.vision.LimelightIO.LimelightIOInputsLogged;
 import frc.lib.LimelightHelpers;
@@ -42,7 +44,7 @@ public class Limelight extends SubsystemBase {
    * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and radians.
    * We use an extremely high standard deviation for the heading measurement because we trust our gyro more than our vision for heading measurements.
    */
-  public static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(180));
+  public static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(30));
   
   private LimelightIO limelightIO;
   private LimelightIOInputsLogged inputs = new LimelightIOInputsLogged();
@@ -70,11 +72,13 @@ public class Limelight extends SubsystemBase {
     //   return;
     // }
     
-    if(poseEstimateData.tagCount < 2) return;
-    if(poseEstimateData.avgTagDist > 3) return;
+    int tagsRequired = 1;
+    if(SwerveAlignmentController.getInstance().getAlignmentMode() == AlignmentMode.AllianceSpeaker) tagsRequired = 2;
+    if(poseEstimateData.tagCount < tagsRequired) return;
+    if(poseEstimateData.avgTagDist > 5) return;
 
     // Scale the vision measurement expected standard deviation exponentially by the distance 
-    double standardDeviationScalar = Math.max(0.01, 0.5 * Math.pow(1.5, poseEstimateData.avgTagDist) - 0.03) / (poseEstimateData.tagCount - 1);
+    double standardDeviationScalar = Math.max(0.01, 0.5 * Math.pow(1.5, poseEstimateData.avgTagDist) - 0.03) / (poseEstimateData.tagCount);
 
     swerve.addVisionMeasurement(pose, poseEstimateData.timestampSeconds, standardDeviationScalar);
   }

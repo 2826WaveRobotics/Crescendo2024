@@ -267,14 +267,14 @@
                         "first"
                     ],
                     "type": "StopPoint",
-                    "uuid": "e117da5b-47a2-4392-8fee-6894d802cd2e"
+                    "uuid": "b4f0765e-c35d-46cc-b486-789dce486e42"
                 },
                 {
                     "scope": [
                         "last"
                     ],
                     "type": "StopPoint",
-                    "uuid": "6bb7b22a-b7f6-49a4-ad07-c6a45ed9626f"
+                    "uuid": "43bce919-a5e6-43e7-ba99-1cab68333018"
                 }
             ],
             "usesControlIntervalGuessing": true,

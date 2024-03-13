@@ -48,6 +48,10 @@ public class SwerveAlignmentController {
         return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
     }
 
+    public AlignmentMode getAlignmentMode() {
+        return alignmentMode;
+    }
+
     private Rotation2d getTargetAngle() {
         switch (alignmentMode) {
             case AllianceSpeaker:

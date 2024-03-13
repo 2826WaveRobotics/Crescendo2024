@@ -98,7 +98,6 @@ public class Controls {
         /*//////////////////////////*/
 
         Superstructure superstructure = Superstructure.getInstance();
-        // TODO: Crashes when climbing
         Trigger climbUp = operator.leftBumper();
         Trigger climbDown = operator.rightBumper();
         climbUp.onTrue(new InstantCommand(superstructure::setupClimb));
@@ -108,13 +107,8 @@ public class Controls {
         
         transportSubsystem.setDefaultCommand(new TeleopIntake(() -> -operator.getLeftY()));
     
-        operator.b().onTrue(new InstantCommand(() -> {
-            if(transportSubsystem.getCurrentState() == TransportState.Stopped) {
-                transportSubsystem.attemptTransitionToState(TransportState.IntakingNote);
-            } else {
-                transportSubsystem.attemptTransitionToState(TransportState.Stopped);
-            }
-        }));
+        operator.b().onTrue(new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote)));
+        operator.a().onTrue(new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.Stopped)));
 
         AutomaticLauncherControl launcherControl = AutomaticLauncherControl.getInstance();
         autoSpeakerAim.whileTrue(new RepeatCommand(new InstantCommand(launcherControl::autoAlign)));
@@ -122,7 +116,7 @@ public class Controls {
         BooleanSupplier testMode = operator.x();
 
         // Test angle mode
-        launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(45));
+        launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(25));
         operator.povUp().whileTrue(new RepeatCommand(new InstantCommand(() -> {
             if(!testMode.getAsBoolean()) return; // Test angle mode
             double launcherAngle = launcherSubsystem.launcherAngle + 0.15;
@@ -141,7 +135,7 @@ public class Controls {
         }))).onTrue(new InstantCommand(() -> {
             // Slow preset
             if(testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(50));
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(21));
             launcherSubsystem.launchRollersSlow();
         }));
 
@@ -161,6 +155,6 @@ public class Controls {
         }));
 
 
-        operator.y().onTrue(new InstantCommand(superstructure::launchNote));
+        operator.rightTrigger(0.2).onTrue(new InstantCommand(superstructure::launchNote));
     }
 }
