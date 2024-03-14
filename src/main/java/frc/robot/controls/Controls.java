@@ -153,7 +153,10 @@ public class Controls {
             launcherSubsystem.setLauncherSpeed(1540, false);
         }));
 
-        operator.rightTrigger(0.2).onTrue(new InstantCommand(superstructure::launchNote));
+        operator.rightTrigger(0.2).whileTrue(Commands.startEnd(
+            () -> Transport.getInstance().attemptTransitionToState(TransportState.LaunchingNote),
+            () -> Transport.getInstance().attemptTransitionToState(TransportState.Stopped)
+        ));
         operator.start().whileTrue(Commands.startEnd(
             () -> launcherSubsystem.setLauncherSpeed(-6800, false),
             () -> launcherSubsystem.setLauncherSpeed(0, false)

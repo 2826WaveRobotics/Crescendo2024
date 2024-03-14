@@ -4,6 +4,7 @@
 
 package frc.robot.commands.auto;
 
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.transport.LaunchNote;
 import frc.robot.commands.transport.SetLauncherAngle;
@@ -18,7 +19,8 @@ public class LaunchStartCommand extends SequentialCommandGroup {
     public LaunchStartCommand() {
         // addRequirements(Launcher.getInstance(), Transport.getInstance());
         addCommands(
-            new SetLauncherAngle(50),
+            new InstantCommand(() -> Launcher.getInstance().setLauncherSpeed(3700, true)),
+            new SetLauncherAngle(38),
             new LaunchNote()
         );
     }

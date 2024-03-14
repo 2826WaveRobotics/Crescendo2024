@@ -347,8 +347,8 @@ public final class Constants {
     public static final CANSparkMaxConfig motorConfig = new CANSparkMaxConfig(
       IdleMode.kBrake,
       // climbingSmartCurrentLimit, climbingSecondaryCurrentLimit,
-      7, 15,
-      0.2,
+      15, 20,
+      2.0,
       12.0,
       Usage.kAll
     ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)         // Position controller

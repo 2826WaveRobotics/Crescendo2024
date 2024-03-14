@@ -6,6 +6,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 
 import frc.robot.Constants;
@@ -21,6 +22,9 @@ public class TransportIOReal implements TransportIO {
   private SparkPIDController lowerTransportPIDController;
   private SparkPIDController backIntakePIDController;
 
+  private RelativeEncoder backIntakeMotorEncoder;
+  private RelativeEncoder frontIntakeMotorEncoder;
+
   public TransportIOReal() {
     frontIntakeMotor = new CANSparkMax(Constants.Intake.frontIntakeMotorCANID, CANSparkMax.MotorType.kBrushless);
     lowerTransportMotor = new CANSparkMax(Constants.Transport.lowerTransportMotorCANID, CANSparkMax.MotorType.kBrushless);
@@ -31,12 +35,15 @@ public class TransportIOReal implements TransportIO {
     lowerTransportPIDController = lowerTransportMotor.getPIDController();
     backIntakePIDController = backIntakeMotor.getPIDController();
     upperTransportPIDController = upperTransportMotor.getPIDController();
-    
+
     Constants.Intake.intakeMotorConfig.configure(backIntakeMotor, backIntakePIDController);
     Constants.Intake.intakeMotorConfig.configure(frontIntakeMotor, frontIntakePIDController);
 
     Constants.Transport.transportMotorConfig.configure(lowerTransportMotor, lowerTransportPIDController);
     Constants.Transport.transportMotorConfig.configure(upperTransportMotor, upperTransportPIDController);
+
+    frontIntakeMotorEncoder = frontIntakeMotor.getEncoder();
+    backIntakeMotorEncoder = backIntakeMotor.getEncoder();
 
     if(!Constants.enableNonEssentialShuffleboard) return;
     Shuffleboard.getTab("Notes").addNumber("Bottom transport current draw", () -> lowerTransportMotor.getOutputCurrent());
@@ -72,16 +79,29 @@ public class TransportIOReal implements TransportIO {
     double limitedTransportSpeed = transportSlewRateLimiter.calculate(transportSpeedMetersPerSecond);
     if(transportSpeedMetersPerSecond == 0.0) limitedTransportSpeed = 0.0;
 
-    double frontRPM = getIntakeMotorRPM(intakeSpeedMetersPerSecond, 25);
-    frontIntakePIDController.setReference(frontRPM, ControlType.kVelocity);
+    double double5GearRaio = 5.23 * 5.23;
+    double fiveAndThreeGearRaio = 5.23 * 2.89;
 
-    double lowerTransportRPM = getIntakeMotorRPM(limitedTransportSpeed, 15);
+    double minSpeed = (intakeSpeedMetersPerSecond != 0) ? 400 : 0;
+
+    // double frontIntakeRPM = Math.signum(intakeSpeedMetersPerSecond) * Math.max(Math.min(
+    //   getIntakeMotorRPM(Math.abs(intakeSpeedMetersPerSecond), double5GearRaio),
+    //   backIntakeMotorEncoder.getVelocity() / fiveAndThreeGearRaio * double5GearRaio
+    // ), minSpeed);
+    
+    double frontIntakeRPM = getIntakeMotorRPM(Math.abs(intakeSpeedMetersPerSecond), double5GearRaio);
+    frontIntakePIDController.setReference(frontIntakeRPM, ControlType.kVelocity);
+
+    double backIntakeRPM = Math.signum(intakeSpeedMetersPerSecond) * Math.max(Math.min(
+      getIntakeMotorRPM(Math.abs(intakeSpeedMetersPerSecond), fiveAndThreeGearRaio),
+      frontIntakeMotorEncoder.getVelocity() / double5GearRaio * fiveAndThreeGearRaio
+    ), minSpeed);
+    backIntakePIDController.setReference(backIntakeRPM, ControlType.kVelocity);
+
+    double lowerTransportRPM = getIntakeMotorRPM(limitedTransportSpeed, fiveAndThreeGearRaio);
     lowerTransportPIDController.setReference(-lowerTransportRPM, ControlType.kVelocity);
 
-    double backRPM = getIntakeMotorRPM(intakeSpeedMetersPerSecond, 15);
-    backIntakePIDController.setReference(backRPM, ControlType.kVelocity);
-
-    double upperTransportSpeed = getIntakeMotorRPM(limitedTransportSpeed, 25);
+    double upperTransportSpeed = getIntakeMotorRPM(limitedTransportSpeed, double5GearRaio);
     upperTransportPIDController.setReference(-upperTransportSpeed, ControlType.kVelocity);
   }
 }

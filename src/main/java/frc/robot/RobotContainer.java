@@ -92,7 +92,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("Launch 3 note", new SequentialCommandGroup(
       new ParallelCommandGroup(
         // TODO: Find real values
-        new SetLauncherAngle(35),
+        new SetLauncherAngle(50),
         new InstantCommand(() -> launcherSubsystem.setLauncherSpeed(3000, true))
       ),
       new LaunchNote()

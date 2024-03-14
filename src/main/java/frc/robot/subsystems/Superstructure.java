@@ -21,7 +21,6 @@ import frc.robot.commands.climber.RunClimberSideDistance;
 import frc.robot.commands.climber.RunClimberSideUntilStall;
 import frc.robot.commands.elevator.ElevatorCommands;
 import frc.robot.commands.transport.EjectNoteForTrap;
-import frc.robot.commands.transport.LaunchNote;
 import frc.robot.controls.SwerveAlignmentController;
 import frc.robot.controls.VibrationFeedback;
 import frc.robot.controls.VibrationFeedback.VibrationPatternType;
@@ -163,9 +162,6 @@ public class Superstructure extends SubsystemBase {
     }
 
     private Superstructure() {
-        updateNoteStateNotifier.startPeriodic(1 / NOTE_STATE_UPDATE_RATE);
-        updateNoteStateNotifier.setName("SuperstructureNoteState");
-        
         Transport transportSubsystem = Transport.getInstance();
 
         intakingNoteEvent.ifHigh(() -> VibrationFeedback.getInstance().runPattern(VibrationPatternType.IntakingNote));
@@ -182,22 +178,11 @@ public class Superstructure extends SubsystemBase {
             transportSubsystem.immediatelyUpdateSpeeds();
         });
 
+        updateNoteStateNotifier.setName("SuperstructureNoteState");
+        updateNoteStateNotifier.startPeriodic(1 / NOTE_STATE_UPDATE_RATE);
+
         if(!Constants.enableNonEssentialShuffleboard) return;
         Shuffleboard.getTab("Notes").addString("Superstructure note state", () -> currentState.toString());
-    }
-
-    /**
-     * Launches a note.
-     */
-    public void launchNote() {
-        new LaunchNote().schedule();
-    }
-
-    /**
-     * Ejects the current note for the trap.
-     */
-    public void ejectNoteForTrap() {
-        new EjectNoteForTrap().schedule();
     }
 
     Command scheduledClimbCommand = null;
@@ -253,7 +238,7 @@ public class Superstructure extends SubsystemBase {
                     ElevatorCommands.extendElevator(),
                     new ClimberFullyDown()
                 ),
-                new InstantCommand(this::ejectNoteForTrap),
+                new EjectNoteForTrap(),
                 new InstantCommand(() -> {
                     Climber.getInstance().useStallCurrentLimit();
                 })
