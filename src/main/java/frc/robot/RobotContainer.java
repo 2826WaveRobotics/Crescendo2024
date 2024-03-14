@@ -20,6 +20,8 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
@@ -28,6 +30,8 @@ import frc.robot.subsystems.transport.Transport.TransportState;
 import frc.robot.subsystems.vision.Limelight;
 import frc.robot.commands.auto.LaunchCloseCommand;
 import frc.robot.commands.auto.LaunchStartCommand;
+import frc.robot.commands.transport.LaunchNote;
+import frc.robot.commands.transport.SetLauncherAngle;
 import frc.robot.controls.Controls;
 
 /**
@@ -79,13 +83,46 @@ public class RobotContainer {
     Launcher launcherSubsystem = Launcher.getInstance();
     Transport transportSubsystem = Transport.getInstance();
 
+    // All autos
     NamedCommands.registerCommand("Launch close", new LaunchCloseCommand());
     NamedCommands.registerCommand("Launch start line", new LaunchStartCommand());
     NamedCommands.registerCommand("Enable intake", new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote)));
-    NamedCommands.registerCommand("Sweep launch", new InstantCommand(() -> {
-      launcherSubsystem.launchRollersSlow();
+
+    // 3 note
+    NamedCommands.registerCommand("Launch 3 note", new SequentialCommandGroup(
+      new ParallelCommandGroup(
+        // TODO: Find real values
+        new SetLauncherAngle(35),
+        new InstantCommand(() -> launcherSubsystem.setLauncherSpeed(3000, true))
+      ),
+      new LaunchNote()
+    ));
+
+    // Sweep auto
+    NamedCommands.registerCommand("Sweep transport", new InstantCommand(() -> {
+      launcherSubsystem.setLauncherSpeed(1200, true);
       transportSubsystem.attemptTransitionToState(TransportState.SweepTransport);
     }));
+    NamedCommands.registerCommand("Sweep launch", new SequentialCommandGroup(
+      new ParallelCommandGroup(
+        // TODO: Find real values
+        new SetLauncherAngle(28),
+        new InstantCommand(() -> launcherSubsystem.setLauncherSpeed(3300, true))
+      ),
+      new LaunchNote()
+    ));
+
+    // Center notes auto
+    NamedCommands.registerCommand("Center notes launch", new SequentialCommandGroup(
+      new ParallelCommandGroup(
+        // TODO: Find real values
+        new SetLauncherAngle(25),
+        new InstantCommand(() -> launcherSubsystem.setLauncherSpeed(4100, true))
+      ),
+      new LaunchNote()
+    ));
+    
+    // Mostly for testing
     NamedCommands.registerCommand("Launch rollers fast", new InstantCommand(launcherSubsystem::launchRollersFast));
     NamedCommands.registerCommand("Launch rollers slow", new InstantCommand(launcherSubsystem::launchRollersSlow));
   }

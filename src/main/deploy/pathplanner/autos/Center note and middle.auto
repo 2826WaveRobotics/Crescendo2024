@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.3295929431915283,
-      "y": 5.566775321960449
+      "x": 1.2809110879898071,
+      "y": 3.903995513916016
     },
-    "rotation": 1.2215344496477003e-28
+    "rotation": -45.000010025095996
   },
   "command": {
     "type": "sequential",
@@ -14,61 +14,43 @@
         {
           "type": "named",
           "data": {
-            "name": "Launch rollers fast"
+            "name": "Launch close"
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 0.5
+            "name": "Enable intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center note and middle.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch start line"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Enable intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center note and middle.2"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Launch close"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4 Note.1"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Launch close"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4 Note.2"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Launch close"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4 Note.3"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Launch close"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4 Note.4"
           }
         }
       ]

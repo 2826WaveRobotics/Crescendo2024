@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
 import java.util.HashMap;
+import java.util.function.Consumer;
+
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
@@ -146,6 +148,20 @@ public class Superstructure extends SubsystemBase {
         noteStateEventLoop.poll();
     }
 
+    /** Attempts to transition the transport to the given state, only if we are in a state it makes sense to in. */
+    private void attemptTransitionToState(TransportState state) {
+        Transport transportSubsystem = Transport.getInstance();
+        
+        // Do not transition if doing sweep transport or operator override
+        TransportState transportState = transportSubsystem.getCurrentState();
+        if (
+            transportState == TransportState.SweepTransport ||
+            transportState == TransportState.OperatorOverride
+        ) return;
+
+        transportSubsystem.attemptTransitionToState(state);
+    }
+
     private Superstructure() {
         updateNoteStateNotifier.startPeriodic(1 / NOTE_STATE_UPDATE_RATE);
         updateNoteStateNotifier.setName("SuperstructureNoteState");
@@ -154,15 +170,15 @@ public class Superstructure extends SubsystemBase {
 
         intakingNoteEvent.ifHigh(() -> VibrationFeedback.getInstance().runPattern(VibrationPatternType.IntakingNote));
         movingNoteEvent.ifHigh(() -> {
-            transportSubsystem.attemptTransitionToState(TransportState.MovingNote);
+            attemptTransitionToState(TransportState.MovingNote);
             transportSubsystem.immediatelyUpdateSpeeds();
         });
 
-        startEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.EjectingNote));
-        stopEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.Stopped));
+        startEjectNoteEvent.ifHigh(() -> attemptTransitionToState(TransportState.EjectingNote));
+        stopEjectNoteEvent.ifHigh(() -> attemptTransitionToState(TransportState.Stopped));
         
         stopNoteAtLauncherEvent.ifHigh(() -> {
-            transportSubsystem.attemptTransitionToState(TransportState.Stopped);
+            attemptTransitionToState(TransportState.Stopped);
             transportSubsystem.immediatelyUpdateSpeeds();
         });
 

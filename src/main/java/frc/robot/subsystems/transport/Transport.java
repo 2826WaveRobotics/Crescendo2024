@@ -145,7 +145,7 @@ public class Transport extends SubsystemBase {
     // Sweep transport transitions
     transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.SweepTransport));
     transitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.Stopped));
-    transitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.EjectingNote));
+    // transitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.EjectingNote));
 
     return transitions;
   }
@@ -203,7 +203,7 @@ public class Transport extends SubsystemBase {
           transportIO.setTransportSpeed(-Constants.Transport.ejectNoteSpeed, -Constants.Transport.ejectNoteSpeed);
           break;
         case SweepTransport:
-          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, Constants.Intake.intakeSpeed);
+          transportIO.setTransportSpeed(1.5, 0.8);
           break;
         case LaunchingNote:
           transportIO.setTransportSpeed(Constants.Transport.launchNoteTransportSpeed, 0.0);

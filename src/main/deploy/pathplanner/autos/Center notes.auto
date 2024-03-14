@@ -1,0 +1,79 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.2568179368972778,
+      "y": 5.5340399742126465
+    },
+    "rotation": -2.229561277629802e-28
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch close"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Enable intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center notes.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch start line"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Enable intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center notes.2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Center notes launch"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Enable intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center notes.3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Center notes launch"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": true
+}
