@@ -145,7 +145,6 @@ public class Transport extends SubsystemBase {
     // Sweep transport transitions
     transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.SweepTransport));
     transitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.Stopped));
-    // transitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.EjectingNote));
 
     return transitions;
   }
@@ -160,7 +159,6 @@ public class Transport extends SubsystemBase {
       transportState = newState;
     } else {
       if(transportState == newState) return;
-      System.out.println("Did not transition from " + transportState.toString() + " to " + newState.toString());
     }
   }
 
