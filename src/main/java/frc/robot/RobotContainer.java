@@ -71,6 +71,10 @@ public class RobotContainer {
       )
     )));
 
+    autoChooser.getSendableChooser().onChange((String auto) -> {
+      // TODO: Visualize where to line up robot
+    });
+
     Controls.getInstance().configureControls();
     
     LiveWindow.disableAllTelemetry();
