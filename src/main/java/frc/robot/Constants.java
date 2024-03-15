@@ -242,15 +242,15 @@ public final class Constants {
     /**
      * The DIO port of the through beam sensor detecting if notes are in the intake.
      */
-    public static final int intakeSensorDIOPort = 4;
+    public static final int intakeSensorDIOPort = 6;
     /**
      * The DIO port of the through beam sensor detecting if the note is in position.
      */
-    public static final int noteInPositionSensorDIOPort = 6;
+    public static final int noteInPositionSensorDIOPort = 2;
     /**
      * The DIO port of the through beam sensor detecting if the note is transitioning to the resting position.
      */
-    public static final int noteInTransitionSensorDIOPort = 2;
+    public static final int noteInTransitionSensorDIOPort = 4;
   }
 
   public static final class Elevator {

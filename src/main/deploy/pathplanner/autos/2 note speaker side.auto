@@ -1,0 +1,55 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.638638973236084,
+      "y": 4.483479022979736
+    },
+    "rotation": -59.743559720048786
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch close"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Enable intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "2 note speaker side.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "2 note speaker side.2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch start line"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "2 note speaker side.3"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": true
+}

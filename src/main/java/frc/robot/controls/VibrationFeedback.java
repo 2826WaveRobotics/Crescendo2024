@@ -44,18 +44,56 @@ public class VibrationFeedback {
         Both
     }
 
+    private double overrideLeft = 0;
+    private double overrideRight = 0;
+    private double currentLeftDriver = 0;
+    private double currentRightDriver = 0;
+    private double currentLeftOperator = 0;
+    private double currentRightOperator = 0;
+    public void setOverrideLeft(double override) {
+        overrideLeft = override;
+        Controls.getInstance().setDriverRumble(currentLeftDriver + override, currentRightDriver + overrideRight);
+        Controls.getInstance().setOperatorRumble(currentLeftOperator + override, currentRightOperator + overrideRight);
+    }
+    public void setOverrideRight(double override) {
+        overrideRight = override;
+        Controls.getInstance().setDriverRumble(currentLeftDriver + overrideLeft, currentRightDriver + override);
+        Controls.getInstance().setOperatorRumble(currentLeftOperator + overrideLeft, currentRightOperator + override);
+    }
+
     private class SetVibrationCommand extends InstantCommand {
         private static void setVibration(Controller controller, double left, double right) {
+            VibrationFeedback vibrationFeedback = VibrationFeedback.getInstance();
             switch (controller) {
                 case Driver:
-                    Controls.getInstance().setDriverRumble(left, right);
+                    Controls.getInstance().setDriverRumble(
+                        Math.min(left + vibrationFeedback.overrideLeft, 1),
+                        Math.min(right + vibrationFeedback.overrideRight, 1)
+                    );
+                    vibrationFeedback.currentLeftDriver = left;
+                    vibrationFeedback.currentRightDriver = right;
                     break;
                 case Operator:
-                    Controls.getInstance().setOperatorRumble(left, right);
+                    Controls.getInstance().setOperatorRumble(
+                        Math.min(left + vibrationFeedback.overrideLeft, 1),
+                        Math.min(right + vibrationFeedback.overrideRight, 1)
+                    );
+                    vibrationFeedback.currentLeftOperator = left;
+                    vibrationFeedback.currentRightOperator = right;
                     break;
                 case Both:
-                    Controls.getInstance().setDriverRumble(left, right);
-                    Controls.getInstance().setOperatorRumble(left, right);
+                    Controls.getInstance().setDriverRumble(
+                        Math.min(left + vibrationFeedback.overrideLeft, 1),
+                        Math.min(right + vibrationFeedback.overrideRight, 1)
+                    );
+                    vibrationFeedback.currentLeftDriver = left;
+                    vibrationFeedback.currentRightDriver = right;
+                    Controls.getInstance().setOperatorRumble(
+                        Math.min(left + vibrationFeedback.overrideLeft, 1),
+                        Math.min(right + vibrationFeedback.overrideRight, 1)
+                    );
+                    vibrationFeedback.currentLeftOperator = left;
+                    vibrationFeedback.currentRightOperator = right;
                     break;
             }
         }

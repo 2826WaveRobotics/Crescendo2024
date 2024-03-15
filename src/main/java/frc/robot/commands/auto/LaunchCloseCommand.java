@@ -6,6 +6,7 @@ package frc.robot.commands.auto;
 
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.transport.LaunchNote;
 import frc.robot.commands.transport.SetLauncherAngle;
 import frc.robot.subsystems.launcher.Launcher;
@@ -18,8 +19,9 @@ public class LaunchCloseCommand extends SequentialCommandGroup {
     public LaunchCloseCommand() {
         // addRequirements(Launcher.getInstance(), Transport.getInstance());
         addCommands(
-            new InstantCommand(() -> Launcher.getInstance().setLauncherSpeed(2880, true)),
-            new SetLauncherAngle(42.1),
+            new InstantCommand(() -> Launcher.getInstance().setLauncherSpeed(3560, true)),
+            new SetLauncherAngle(59.2),
+            new WaitCommand(0.25),
             new LaunchNote()
         );
     }

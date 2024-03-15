@@ -85,15 +85,26 @@ public class Superstructure extends SubsystemBase {
     private HashMap<Integer, NoteState> sensorStateMap = createSensorStateHashmap();
     private HashMap<Integer, NoteState> createSensorStateHashmap() {
         HashMap<Integer, NoteState> hashmap = new HashMap<>(8);
-        // [position, transition, intake] sensor order
+        // [intake, transition, position] sensor order
+        // Using bottom two
         hashmap.put(0b000, NoteState.NoNote);
-        hashmap.put(0b001, NoteState.IntakingNote);
-        hashmap.put(0b010, NoteState.MovingNote);
-        hashmap.put(0b011, NoteState.EjectingNote);
-        hashmap.put(0b100, NoteState.ReadyToLaunch); // Technically, launching
+        hashmap.put(0b001, NoteState.ReadyToLaunch);
+        hashmap.put(0b010, NoteState.MovingNote); // Physically impossible in theory
+        hashmap.put(0b011, NoteState.MovingNote);
+        hashmap.put(0b100, NoteState.IntakingNote);
         hashmap.put(0b101, NoteState.EjectingNote);
-        hashmap.put(0b110, NoteState.ReadyToLaunch);
+        hashmap.put(0b110, NoteState.MovingNote);
         hashmap.put(0b111, NoteState.EjectingNote);
+
+        // Using top two
+        // hashmap.put(0b000, NoteState.NoNote);
+        // hashmap.put(0b100, NoteState.IntakingNote);
+        // hashmap.put(0b010, NoteState.MovingNote);
+        // hashmap.put(0b110, NoteState.EjectingNote);
+        // hashmap.put(0b001, NoteState.ReadyToLaunch); // Technically, launching
+        // hashmap.put(0b101, NoteState.EjectingNote);
+        // hashmap.put(0b011, NoteState.ReadyToLaunch);
+        // hashmap.put(0b111, NoteState.EjectingNote);
         return hashmap;
     }
 
@@ -139,9 +150,9 @@ public class Superstructure extends SubsystemBase {
         noteSensorsSubsystem.updateSensorValues();
         
         currentState = sensorStateMap.get(
-            (noteSensorsSubsystem.getIntakeSensorActivated() ? 1 : 0) +
+            (noteSensorsSubsystem.getNoteInPositionSensorActivated() ? 1 : 0) +
             ((noteSensorsSubsystem.getNoteInTransitionSensorActivated() ? 1 : 0) << 1) +
-            ((noteSensorsSubsystem.getNoteInPositionSensorActivated() ? 1 : 0) << 2)
+            ((noteSensorsSubsystem.getIntakeSensorActivated() ? 1 : 0) << 2)
         );
 
         noteStateEventLoop.poll();
