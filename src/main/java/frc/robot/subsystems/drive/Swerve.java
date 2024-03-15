@@ -1,5 +1,7 @@
 package frc.robot.subsystems.drive;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -7,6 +9,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -86,6 +90,28 @@ public class Swerve extends SubsystemBase {
   private SwerveModule[] swerveModules;
 
   private Field2d field;
+  public void selectedAutoChanged(String auto) {
+    try {
+      Pose2d startPose = PathPlannerAuto.getStaringPoseFromAutoFile(auto);
+      field.getObject("Auto start").setPose(startPose);
+
+      List<PathPlannerPath> paths = PathPlannerAuto.getPathGroupFromAutoFile(auto);
+      List<Pose2d> pathPoses = new ArrayList<>();
+      for (PathPlannerPath path : paths) {
+        for(Pose2d pose : path.getPathPoses()) {
+          pathPoses.add(pose);
+        }
+      }
+      field.getObject("Path poses").setPoses(pathPoses);
+    } catch(RuntimeException e) {
+      field.getObject("Auto start").setPoses(new Pose2d[0]);
+      field.getObject("Path poses").setPoses(new Pose2d[0]);
+    }
+  }
+  public void autoStart() {
+    field.getObject("Auto start").setPoses(new Pose2d[0]);
+    field.getObject("Path poses").setPoses(new Pose2d[0]);
+  }
 
   /**
    * The system identification routine used to tune the swerve modules.

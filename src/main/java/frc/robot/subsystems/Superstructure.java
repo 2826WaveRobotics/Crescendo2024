@@ -213,6 +213,7 @@ public class Superstructure extends SubsystemBase {
 
         // Reset the odometry to face the current gyro angle
         Swerve.getInstance().resetRotation();
+        Swerve.getInstance().autoStart();
 
         // Reset the transport state
         Transport.getInstance().resetState();

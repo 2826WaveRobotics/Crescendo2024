@@ -71,9 +71,7 @@ public class RobotContainer {
       )
     )));
 
-    autoChooser.getSendableChooser().onChange((String auto) -> {
-      // TODO: Visualize where to line up robot
-    });
+    autoChooser.getSendableChooser().onChange(swerveSubsystem::selectedAutoChanged);
 
     Controls.getInstance().configureControls();
     
