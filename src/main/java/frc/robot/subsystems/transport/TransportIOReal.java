@@ -89,7 +89,7 @@ public class TransportIOReal implements TransportIO {
     //   backIntakeMotorEncoder.getVelocity() / fiveAndThreeGearRaio * double5GearRaio
     // ), minSpeed);
     
-    double frontIntakeRPM = getIntakeMotorRPM(Math.abs(intakeSpeedMetersPerSecond), double5GearRaio);
+    double frontIntakeRPM = getIntakeMotorRPM(intakeSpeedMetersPerSecond, double5GearRaio);
     frontIntakePIDController.setReference(frontIntakeRPM, ControlType.kVelocity);
 
     double backIntakeRPM = Math.signum(intakeSpeedMetersPerSecond) * Math.max(Math.min(
