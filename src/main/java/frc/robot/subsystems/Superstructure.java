@@ -207,7 +207,7 @@ public class Superstructure extends SubsystemBase {
                 // new RetractElevator(),
                 // new AngleElevatorDown()
             // ),
-            new ClimberFullyDown()
+            // new ClimberFullyDown()
         );
         scheduledClimbCommand.schedule();
 

@@ -121,7 +121,7 @@ public class Controls {
             double launcherAngle = launcherSubsystem.launcherAngle + 0.15;
             launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(launcherAngle));
         }))).onTrue(new InstantCommand(() -> {
-            // Close speaker preset
+            // Podium speaker preset
             if(testMode.getAsBoolean()) return; // Test angle mode
             launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(42.1));
             launcherSubsystem.setLauncherSpeed(2880, true);
@@ -141,7 +141,12 @@ public class Controls {
         operator.povRight().whileTrue(new RepeatCommand(new InstantCommand(() -> {
             if(!testMode.getAsBoolean()) return; // Test angle mode
             launcherSubsystem.setLauncherSpeed(launcherSubsystem.topRollerSpeed + 20, true);
-        })));
+        }))).onTrue(new InstantCommand(() -> {
+            // Close speaker preset
+            if(testMode.getAsBoolean()) return; // Test angle mode
+            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(59.95));
+            launcherSubsystem.setLauncherSpeed(3160, true);
+        }));
 
         operator.povLeft().whileTrue(new RepeatCommand(new InstantCommand(() -> {
             if(!testMode.getAsBoolean()) return; // Test angle mode

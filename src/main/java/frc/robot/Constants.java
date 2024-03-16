@@ -34,7 +34,7 @@ public final class Constants {
    */
   public static final double triggerDeadband = 0.03;
 
-  public static final boolean enableNonEssentialShuffleboard = true;
+  public static final boolean enableNonEssentialShuffleboard = false;
 
   public static final double fieldLengthMeters = Units.feetToMeters(54 + 1/12);
 

@@ -1,11 +1,17 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.HttpCamera;
+import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.controls.SwerveAlignmentController;
@@ -51,6 +57,11 @@ public class Limelight extends SubsystemBase {
 
   private Limelight(LimelightIO limelightIO) {
     this.limelightIO = limelightIO;
+
+    if(!DriverStation.isFMSAttached()) {
+      var limelightFeed = new HttpCamera("limelight", "http://limelight.local:5800/stream.mjpg", HttpCameraKind.kMJPGStreamer);
+      CameraServer.startAutomaticCapture(limelightFeed);
+    }
   }
 
   private void updateOdometryPoseFromVisionMeasurements() {
