@@ -23,7 +23,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -51,12 +50,6 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser;
 
   private StringPublisher autoDataPublisher = null;
-  // Temporary test hack
-  private Notifier autoDataNotifier = new Notifier(() -> {
-    if(autoDataPublisher != null && (DriverStation.isFMSAttached() || DriverStation.isEnabled())) {
-      autoDataPublisher.close();
-    }
-  });
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
@@ -92,8 +85,6 @@ public class RobotContainer {
     Controls.getInstance().configureControls();
     
     LiveWindow.disableAllTelemetry();
-
-    autoDataNotifier.startPeriodic(0.5);
   }
 
   /**
@@ -145,6 +136,13 @@ public class RobotContainer {
     // Mostly for testing
     NamedCommands.registerCommand("Launch rollers fast", new InstantCommand(launcherSubsystem::launchRollersFast));
     NamedCommands.registerCommand("Launch rollers slow", new InstantCommand(launcherSubsystem::launchRollersSlow));
+  }
+
+  public void updateAutoPublisher() {
+    if(autoDataPublisher != null && (DriverStation.isFMSAttached() || DriverStation.isEnabled())) {
+      autoDataPublisher.close();
+      autoDataPublisher = null;
+    }
   }
 
   /**

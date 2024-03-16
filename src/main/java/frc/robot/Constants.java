@@ -354,6 +354,6 @@ public final class Constants {
     ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)         // Position controller
      .configurePIDSlot(1, 1e-7, 0.0, 0.0, 1. / 11000.); // Velocity controller
 
-    public static final double fullUpRotations = 160;
+    public static final double fullUpRotations = 100;
   }
 }

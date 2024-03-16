@@ -104,7 +104,7 @@ public class AutomaticLauncherControl {
     double speed = (1 - xfrac) * (1 - yfrac) * p1.speed + xfrac * (1 - yfrac) * p2.speed + (1 - xfrac) * yfrac * p3.speed + xfrac * yfrac * p4.speed;
     double angle = (1 - xfrac) * (1 - yfrac) * p1.angleDegrees + xfrac * (1 - yfrac) * p2.angleDegrees + (1 - xfrac) * yfrac * p3.angleDegrees + xfrac * yfrac * p4.angleDegrees;
 
-    return new LauncherState(speed, angle);
+    return new LauncherState(speed, angle * 0.9);
   }
 
   /**
