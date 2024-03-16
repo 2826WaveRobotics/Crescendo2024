@@ -7,17 +7,21 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -49,6 +53,7 @@ public class RobotContainer {
     Swerve swerveSubsystem = Swerve.getInstance();
     
     registerAutoCommands();
+    publishAutoData();
 
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -127,6 +132,49 @@ public class RobotContainer {
     // Mostly for testing
     NamedCommands.registerCommand("Launch rollers fast", new InstantCommand(launcherSubsystem::launchRollersFast));
     NamedCommands.registerCommand("Launch rollers slow", new InstantCommand(launcherSubsystem::launchRollersSlow));
+  }
+
+  /**
+   * Publishes the autonomous data to NetworkTables so our auto dashboard can display them.
+   */
+  private void publishAutoData() {
+    StringBuilder jsonData = new StringBuilder();
+    jsonData.append("{\"autoChoices\": [");
+    for (String choice : AutoBuilder.getAllAutoNames()) {
+      jsonData.append("{\"name\": \"").append(choice).append("\", \"poses\": [");
+      List<Pose2d> poses = new ArrayList<>();
+
+      for (PathPlannerPath path : PathPlannerAuto.getPathGroupFromAutoFile(choice)) {
+        path.preventFlipping = true;
+        poses.addAll(path.getPathPoses());
+      }
+      
+      try {
+        poses.set(0, PathPlannerAuto.getStaringPoseFromAutoFile(choice));
+      } catch(RuntimeException e) {
+        // Do nothing
+      }
+      
+      for (Pose2d pose : poses) {
+        jsonData
+          .append("{\"x\": ")
+          .append(pose.getTranslation().getX())
+          .append(", \"y\": ")
+          .append(pose.getTranslation().getY())
+          .append(", \"rot\": ")
+          .append(pose.getRotation().getRadians())
+          .append("},");
+      }
+      jsonData.deleteCharAt(jsonData.length() - 1);
+      jsonData.append("]},");
+    }
+    jsonData.deleteCharAt(jsonData.length() - 1);
+    jsonData.append("]}");
+    NetworkTableInstance.getDefault()
+      .getTable("2826AutoDashboard")
+      .getStringTopic("AutoData")
+      .publish()
+      .accept(jsonData.toString());
   }
 
   /**
