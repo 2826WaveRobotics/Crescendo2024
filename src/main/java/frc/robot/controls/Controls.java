@@ -2,14 +2,18 @@ package frc.robot.controls;
 
 import java.util.function.BooleanSupplier;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.TeleopIntake;
 import frc.robot.commands.control.PathfindToAmpAndLaunch;
@@ -91,6 +95,19 @@ public class Controls {
 
         driver.y().whileTrue(new PathfindToSpeakerAndLaunch());
         driver.b().whileTrue(new PathfindToAmpAndLaunch());
+        driver.a().onTrue(new InstantCommand(() -> {
+            if(DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
+                swerveSubsystem.setPose(new Pose2d(
+                    new Translation2d(1.37, 5.55),
+                    new Rotation2d()
+                ));
+            } else {
+                swerveSubsystem.setPose(new Pose2d(
+                    new Translation2d(Constants.fieldLengthMeters - 1.37, 5.55),
+                    Rotation2d.fromDegrees(180)
+                ));
+            }
+        }));
 
         /*//////////////////////////*/
         /*    Operator Controls     */
