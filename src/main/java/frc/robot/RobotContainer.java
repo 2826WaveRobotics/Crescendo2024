@@ -150,7 +150,9 @@ public class RobotContainer {
       }
       
       try {
-        poses.set(0, PathPlannerAuto.getStaringPoseFromAutoFile(choice));
+        Pose2d startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(choice);
+        if(poses.isEmpty()) poses.add(startingPose);
+        else poses.set(0, startingPose);
       } catch(RuntimeException e) {
         // Do nothing
       }
@@ -165,7 +167,7 @@ public class RobotContainer {
           .append(pose.getRotation().getRadians())
           .append("},");
       }
-      jsonData.deleteCharAt(jsonData.length() - 1);
+      if(!poses.isEmpty()) jsonData.deleteCharAt(jsonData.length() - 1);
       jsonData.append("]},");
     }
     jsonData.deleteCharAt(jsonData.length() - 1);
