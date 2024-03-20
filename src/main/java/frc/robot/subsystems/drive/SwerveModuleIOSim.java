@@ -1,13 +1,15 @@
 package frc.robot.subsystems.drive;
 
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.REVPhysicsSim;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
+import java.util.OptionalDouble;
+import java.util.Queue;
 
+import com.revrobotics.REVLibError;
+
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.simulation.EncoderSim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import frc.lib.config.SwerveModuleConstants;
 import frc.robot.Constants;
 
@@ -16,46 +18,91 @@ import frc.robot.Constants;
  * This isn't a real implementation, although it eventually probably should be.
  */
 public class SwerveModuleIOSim implements SwerveModuleIO {
-  protected final CANSparkMax driveSparkMax;
-  protected final CANSparkMax turnSparkMax;
+  protected final FlywheelSim driveMotor;
+  protected final FlywheelSim turnMotor;
 
-  private final SparkPIDController drivePIDController;
-  private final SparkPIDController turnPIDController;
-
-  private final RelativeEncoder driveEncoder;
-  private final RelativeEncoder turnRelativeEncoder;
-
+  // private final Queue<Double> timestampQueue;
+  // private final Queue<Double> drivePositionQueue;
+  // private final Queue<Double> turnPositionQueue;
+  
   public SwerveModuleIOSim(SwerveModuleConstants moduleConstants) {
-    driveSparkMax = new CANSparkMax(moduleConstants.driveMotorID, MotorType.kBrushless);
-    turnSparkMax = new CANSparkMax(moduleConstants.angleMotorID, MotorType.kBrushless);
+    driveMotor = new FlywheelSim(DCMotor.getNeoVortex(1), Constants.Swerve.driveGearRatio, 0.025);
+    turnMotor = new FlywheelSim(DCMotor.getNEO(1), Constants.Swerve.angleGearRatio, 0.004096955);
 
-    driveEncoder = driveSparkMax.getEncoder();
-    turnRelativeEncoder = turnSparkMax.getEncoder();
+    // timestampQueue = SparkMaxOdometryThread.getInstance().makeTimestampQueue();
 
-    drivePIDController = driveSparkMax.getPIDController();
-    turnPIDController = turnSparkMax.getPIDController();
+    // drivePositionQueue = SparkMaxOdometryThread.getInstance().registerSignal(
+    //   () -> {
+    //     double value = driveEncoder.getPosition();
+    //     if (driveMotor.getLastError() == REVLibError.kOk) {
+    //       return OptionalDouble.of(value);
+    //     } else {
+    //       return OptionalDouble.empty();
+    //     }
+    //   }
+    // );
+    // turnPositionQueue = SparkMaxOdometryThread.getInstance().registerSignal(
+    //   () -> {
+    //     double value = turnRelativeEncoder.getPosition();
+    //     if (driveMotor.getLastError() == REVLibError.kOk) {
+    //       return OptionalDouble.of(value);
+    //     } else {
+    //       return OptionalDouble.empty();
+    //     }
+    //   }
+    // );
 
-    Constants.Swerve.driveConfig.configure(driveSparkMax, drivePIDController, false);
-    Constants.Swerve.angleConfig.configure(turnSparkMax, turnPIDController, false);
+  }
+  
+  @Override
+  public void updateInputs(SwerveModuleIOInputs inputs) {
+    // inputs.drivePositionRad = Units.rotationsToRadians(driveEncoder.getPosition()) / Constants.Swerve.driveGearRatio;
+    // inputs.driveVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(driveEncoder.getVelocity()) / Constants.Swerve.driveGearRatio;
+    // inputs.driveCurrentAmps = driveMotor.getOutputCurrent();
 
-    turnPIDController.setPositionPIDWrappingEnabled(true);
-    turnPIDController.setPositionPIDWrappingMinInput(0.0);
-    turnPIDController.setPositionPIDWrappingMaxInput(Constants.Swerve.angleGearRatio);
+    // inputs.turnPosition = Rotation2d.fromRotations(turnRelativeEncoder.getPosition() / Constants.Swerve.angleGearRatio);
 
-    driveEncoder.setPosition(0.0);
-    driveEncoder.setMeasurementPeriod(10);
-    driveEncoder.setAverageDepth(2);
+    // inputs.turnReportedAbsolutePosition = inputs.turnPosition;
+    // inputs.turnAbsolutePosition = inputs.turnPosition;
+    
+    // inputs.turnVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(turnRelativeEncoder.getVelocity()) / Constants.Swerve.angleGearRatio;
+    // inputs.turnCurrentAmps = turnMotor.getOutputCurrent();
 
-    turnRelativeEncoder.setMeasurementPeriod(10);
-    turnRelativeEncoder.setAverageDepth(2);
+    // inputs.odometryTimestamps = timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+    // inputs.odometryDrivePositionsRad = drivePositionQueue.stream()
+    //   .mapToDouble((Double value) -> Units.rotationsToRadians(value) / Constants.Swerve.driveGearRatio)
+    //   .toArray();
+    // inputs.odometryTurnPositions = turnPositionQueue.stream()
+    //   .map((Double value) -> Rotation2d.fromRotations(value / Constants.Swerve.angleGearRatio))
+    //   .toArray(Rotation2d[]::new);
+    
+    // timestampQueue.clear();
+    // drivePositionQueue.clear();
+    // turnPositionQueue.clear();
+  }
 
-    driveSparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, (int)(1000.0 / SwerveModule.ODOMETRY_FREQUENCY));
-    turnSparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, (int)(1000.0 / SwerveModule.ODOMETRY_FREQUENCY));
+  @Override
+  public void setDriveVelocity(double rpm) {
 
-    driveSparkMax.burnFlash();
-    turnSparkMax.burnFlash();
+  }
 
-    REVPhysicsSim.getInstance().addSparkMax(this.driveSparkMax, DCMotor.getNeoVortex(1));
-    REVPhysicsSim.getInstance().addSparkMax(this.turnSparkMax, DCMotor.getNeoVortex(1));
+  @Override
+  public void setTurnAngle(Rotation2d angle) {
+
+  }
+
+  @Override
+  public void setDriveBrakeMode(boolean enable) {
+  
+  }
+
+  @Override
+  public void setTurnBrakeMode(boolean enable) {
+  
+  }
+
+  @Override
+  public void setCharacterizationDriveVoltage(double voltage) {
+  
   }
 }

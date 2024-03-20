@@ -11,9 +11,8 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-import com.revrobotics.REVPhysicsSim;
-
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -74,7 +73,7 @@ public class Robot extends LoggedRobot {
 
       case REPLAY:
         // Replaying a log, set up replay source
-        setUseTiming(false); // Run as fast as possible
+        // setUseTiming(false); // Run as fast as possible
         String logPath = LogFileUtil.findReplayLog();
         Logger.setReplaySource(new WPILOGReader(logPath));
         Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
@@ -109,6 +108,9 @@ public class Robot extends LoggedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    robotContainer.updateAutoPublisher();
+    
+    setNetworkTablesFlushEnabled(!DriverStation.isFMSAttached());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -137,8 +139,8 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    Climber.getInstance().setLeftSpeed(MathUtil.applyDeadband(Controls.getInstance().operator.getLeftX(), 0.15) * 5000);
-    Climber.getInstance().setRightSpeed(MathUtil.applyDeadband(Controls.getInstance().operator.getRightX(), 0.15) * 5000);
+    Climber.getInstance().setLeftSpeed(MathUtil.applyDeadband(Controls.getInstance().operator.getLeftX(), 0.15) * 5600);
+    Climber.getInstance().setRightSpeed(MathUtil.applyDeadband(Controls.getInstance().operator.getRightX(), 0.15) * 5600);
   }
 
   @Override
@@ -168,6 +170,5 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void simulationPeriodic() {
-    REVPhysicsSim.getInstance().run();
   }
 }

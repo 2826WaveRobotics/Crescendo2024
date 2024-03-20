@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.3295929431915283,
-      "y": 5.566775321960449
+      "x": 0.6198021173477173,
+      "y": 6.627720355987549
     },
-    "rotation": 1.2215344496477003e-28
+    "rotation": 61.58992778780597
   },
   "command": {
     "type": "sequential",
@@ -14,66 +14,48 @@
         {
           "type": "named",
           "data": {
-            "name": "Launch rollers fast"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.5
+            "name": "Launch close"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Launch close"
+            "name": "Enable intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "4 Note.1"
+            "pathName": "Speaker side and center and top front.1"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Launch close"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4 Note.2"
+            "name": "Launch start line"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Launch close"
+            "name": "Enable intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "4 Note.3"
+            "pathName": "Speaker side and center and top front.2"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Launch close"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4 Note.4"
+            "name": "Launch start line"
           }
         }
       ]
     }
   },
-  "folder": null,
+  "folder": "CIR autos",
   "choreoAuto": true
 }

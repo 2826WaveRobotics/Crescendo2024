@@ -1,0 +1,85 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.2415462732315063,
+      "y": 5.579137325286865
+    },
+    "rotation": 2.698973591973099e-27
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch close"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Enable intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4 note speaker center.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch start line"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Enable intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4 note speaker center.2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch start line"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Enable intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4 note speaker center.3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch start line"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4 note speaker center.4"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "CIR autos",
+  "choreoAuto": true
+}

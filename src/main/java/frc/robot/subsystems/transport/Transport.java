@@ -2,6 +2,7 @@ package frc.robot.subsystems.transport;
 
 import java.util.HashSet;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -145,7 +146,6 @@ public class Transport extends SubsystemBase {
     // Sweep transport transitions
     transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.SweepTransport));
     transitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.Stopped));
-    transitions.add(new TransportStatePair(TransportState.SweepTransport, TransportState.EjectingNote));
 
     return transitions;
   }
@@ -160,7 +160,6 @@ public class Transport extends SubsystemBase {
       transportState = newState;
     } else {
       if(transportState == newState) return;
-      System.out.println("Did not transition from " + transportState.toString() + " to " + newState.toString());
     }
   }
 
@@ -197,13 +196,13 @@ public class Transport extends SubsystemBase {
           transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, Constants.Intake.intakeSpeed);
           break;
         case MovingNote:
-          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed / 2., 0.);
+          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, 0.);
           break;
         case EjectingNote:
           transportIO.setTransportSpeed(-Constants.Transport.ejectNoteSpeed, -Constants.Transport.ejectNoteSpeed);
           break;
         case SweepTransport:
-          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, Constants.Intake.intakeSpeed);
+          transportIO.setTransportSpeed(1.5, 0.8);
           break;
         case LaunchingNote:
           transportIO.setTransportSpeed(Constants.Transport.launchNoteTransportSpeed, 0.0);

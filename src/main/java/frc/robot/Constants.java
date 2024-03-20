@@ -5,7 +5,6 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import frc.lib.config.SwerveModuleConstants;
@@ -35,7 +34,7 @@ public final class Constants {
    */
   public static final double triggerDeadband = 0.03;
 
-  public static final boolean enableNonEssentialShuffleboard = true;
+  public static final boolean enableNonEssentialShuffleboard = false;
 
   public static final double fieldLengthMeters = Units.feetToMeters(54 + 1/12);
 
@@ -243,15 +242,15 @@ public final class Constants {
     /**
      * The DIO port of the through beam sensor detecting if notes are in the intake.
      */
-    public static final int intakeSensorDIOPort = 4;
+    public static final int intakeSensorDIOPort = 6;
     /**
      * The DIO port of the through beam sensor detecting if the note is in position.
      */
-    public static final int noteInPositionSensorDIOPort = 6;
+    public static final int noteInPositionSensorDIOPort = 2;
     /**
      * The DIO port of the through beam sensor detecting if the note is transitioning to the resting position.
      */
-    public static final int noteInTransitionSensorDIOPort = 2;
+    public static final int noteInTransitionSensorDIOPort = 4;
   }
 
   public static final class Elevator {
@@ -348,13 +347,13 @@ public final class Constants {
     public static final CANSparkMaxConfig motorConfig = new CANSparkMaxConfig(
       IdleMode.kBrake,
       // climbingSmartCurrentLimit, climbingSecondaryCurrentLimit,
-      7, 15,
-      0.2,
+      15, 20,
+      2.0,
       12.0,
       Usage.kAll
     ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)         // Position controller
      .configurePIDSlot(1, 1e-7, 0.0, 0.0, 1. / 11000.); // Velocity controller
 
-    public static final double fullUpRotations = 160;
+    public static final double fullUpRotations = 100;
   }
 }

@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
 import java.util.HashMap;
+import java.util.function.Consumer;
+
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
@@ -19,7 +21,6 @@ import frc.robot.commands.climber.RunClimberSideDistance;
 import frc.robot.commands.climber.RunClimberSideUntilStall;
 import frc.robot.commands.elevator.ElevatorCommands;
 import frc.robot.commands.transport.EjectNoteForTrap;
-import frc.robot.commands.transport.LaunchNote;
 import frc.robot.controls.SwerveAlignmentController;
 import frc.robot.controls.VibrationFeedback;
 import frc.robot.controls.VibrationFeedback.VibrationPatternType;
@@ -84,15 +85,26 @@ public class Superstructure extends SubsystemBase {
     private HashMap<Integer, NoteState> sensorStateMap = createSensorStateHashmap();
     private HashMap<Integer, NoteState> createSensorStateHashmap() {
         HashMap<Integer, NoteState> hashmap = new HashMap<>(8);
-        // [position, transition, intake] sensor order
+        // [intake, transition, position] sensor order
+        // Using bottom two
         hashmap.put(0b000, NoteState.NoNote);
-        hashmap.put(0b001, NoteState.IntakingNote);
-        hashmap.put(0b010, NoteState.MovingNote);
-        hashmap.put(0b011, NoteState.EjectingNote);
-        hashmap.put(0b100, NoteState.ReadyToLaunch); // Technically, launching
+        hashmap.put(0b001, NoteState.ReadyToLaunch);
+        hashmap.put(0b010, NoteState.MovingNote); // Physically impossible in theory
+        hashmap.put(0b011, NoteState.MovingNote);
+        hashmap.put(0b100, NoteState.IntakingNote);
         hashmap.put(0b101, NoteState.EjectingNote);
-        hashmap.put(0b110, NoteState.ReadyToLaunch);
+        hashmap.put(0b110, NoteState.MovingNote);
         hashmap.put(0b111, NoteState.EjectingNote);
+
+        // Using top two
+        // hashmap.put(0b000, NoteState.NoNote);
+        // hashmap.put(0b100, NoteState.IntakingNote);
+        // hashmap.put(0b010, NoteState.MovingNote);
+        // hashmap.put(0b110, NoteState.EjectingNote);
+        // hashmap.put(0b001, NoteState.ReadyToLaunch); // Technically, launching
+        // hashmap.put(0b101, NoteState.EjectingNote);
+        // hashmap.put(0b011, NoteState.ReadyToLaunch);
+        // hashmap.put(0b111, NoteState.EjectingNote);
         return hashmap;
     }
 
@@ -138,50 +150,50 @@ public class Superstructure extends SubsystemBase {
         noteSensorsSubsystem.updateSensorValues();
         
         currentState = sensorStateMap.get(
-            (noteSensorsSubsystem.getIntakeSensorActivated() ? 1 : 0) +
+            (noteSensorsSubsystem.getNoteInPositionSensorActivated() ? 1 : 0) +
             ((noteSensorsSubsystem.getNoteInTransitionSensorActivated() ? 1 : 0) << 1) +
-            ((noteSensorsSubsystem.getNoteInPositionSensorActivated() ? 1 : 0) << 2)
+            ((noteSensorsSubsystem.getIntakeSensorActivated() ? 1 : 0) << 2)
         );
 
         noteStateEventLoop.poll();
     }
 
-    private Superstructure() {
-        updateNoteStateNotifier.startPeriodic(1 / NOTE_STATE_UPDATE_RATE);
-        updateNoteStateNotifier.setName("SuperstructureNoteState");
+    /** Attempts to transition the transport to the given state, only if we are in a state it makes sense to in. */
+    private void attemptTransitionToState(TransportState state) {
+        Transport transportSubsystem = Transport.getInstance();
         
+        // Do not transition if doing sweep transport or operator override
+        TransportState transportState = transportSubsystem.getCurrentState();
+        if (
+            transportState == TransportState.SweepTransport ||
+            transportState == TransportState.OperatorOverride
+        ) return;
+
+        transportSubsystem.attemptTransitionToState(state);
+    }
+
+    private Superstructure() {
         Transport transportSubsystem = Transport.getInstance();
 
         intakingNoteEvent.ifHigh(() -> VibrationFeedback.getInstance().runPattern(VibrationPatternType.IntakingNote));
         movingNoteEvent.ifHigh(() -> {
-            transportSubsystem.attemptTransitionToState(TransportState.MovingNote);
+            attemptTransitionToState(TransportState.MovingNote);
             transportSubsystem.immediatelyUpdateSpeeds();
         });
 
-        startEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.EjectingNote));
-        stopEjectNoteEvent.ifHigh(() -> transportSubsystem.attemptTransitionToState(TransportState.Stopped));
+        startEjectNoteEvent.ifHigh(() -> attemptTransitionToState(TransportState.EjectingNote));
+        stopEjectNoteEvent.ifHigh(() -> attemptTransitionToState(TransportState.Stopped));
         
         stopNoteAtLauncherEvent.ifHigh(() -> {
-            transportSubsystem.attemptTransitionToState(TransportState.Stopped);
+            attemptTransitionToState(TransportState.Stopped);
             transportSubsystem.immediatelyUpdateSpeeds();
         });
+
+        updateNoteStateNotifier.setName("SuperstructureNoteState");
+        updateNoteStateNotifier.startPeriodic(1 / NOTE_STATE_UPDATE_RATE);
 
         if(!Constants.enableNonEssentialShuffleboard) return;
         Shuffleboard.getTab("Notes").addString("Superstructure note state", () -> currentState.toString());
-    }
-
-    /**
-     * Launches a note.
-     */
-    public void launchNote() {
-        new LaunchNote().schedule();
-    }
-
-    /**
-     * Ejects the current note for the trap.
-     */
-    public void ejectNoteForTrap() {
-        new EjectNoteForTrap().schedule();
     }
 
     Command scheduledClimbCommand = null;
@@ -195,12 +207,13 @@ public class Superstructure extends SubsystemBase {
                 // new RetractElevator(),
                 // new AngleElevatorDown()
             // ),
-            new ClimberFullyDown()
+            // new ClimberFullyDown()
         );
         scheduledClimbCommand.schedule();
 
         // Reset the odometry to face the current gyro angle
         Swerve.getInstance().resetRotation();
+        Swerve.getInstance().autoStart();
 
         // Reset the transport state
         Transport.getInstance().resetState();
@@ -237,7 +250,7 @@ public class Superstructure extends SubsystemBase {
                     ElevatorCommands.extendElevator(),
                     new ClimberFullyDown()
                 ),
-                new InstantCommand(this::ejectNoteForTrap),
+                new EjectNoteForTrap(),
                 new InstantCommand(() -> {
                     Climber.getInstance().useStallCurrentLimit();
                 })

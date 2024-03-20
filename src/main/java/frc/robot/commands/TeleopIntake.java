@@ -4,6 +4,7 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.controls.VibrationFeedback;
 import frc.robot.subsystems.transport.Transport;
 import frc.robot.subsystems.transport.Transport.TransportState;
 
@@ -22,12 +23,15 @@ public class TeleopIntake extends Command {
     public void execute() {
         if(DriverStation.isAutonomous()) return;
 
+        Transport transport = Transport.getInstance();
+        TransportState transportState = transport.getCurrentState();
+        VibrationFeedback.getInstance().setOperatorOverrideLeft(transportState == TransportState.IntakingNote ? 0.6 : 0);
+        VibrationFeedback.getInstance().setOperatorOverrideRight(transportState == TransportState.MovingNote ? 0.6 : 0);
+
         double intakeSpeed = MathUtil.applyDeadband(intakeOverride.getAsDouble(), 0.25);
 
         if(lastSetSpeed != intakeSpeed) {
             lastSetSpeed = intakeSpeed;
-
-            Transport transport = Transport.getInstance();
 
             if(intakeSpeed == 0) {
                 transport.attemptTransitionToState(TransportState.Stopped);

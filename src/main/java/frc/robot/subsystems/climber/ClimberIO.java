@@ -10,6 +10,9 @@ public interface ClimberIO {
     public double leftClimberCurrentDrawAmps = 0;
     public double rightClimberCurrentDrawAmps = 0;
 
+    public double leftClimberSpeedRPM = 0;
+    public double rightClimberSpeedRPM = 0;
+
     public double leftPosition = 0;
     public double rightPosition = 0;
   }

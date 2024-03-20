@@ -1,5 +1,7 @@
 package frc.robot.subsystems.drive;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -7,6 +9,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -23,7 +27,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -86,6 +90,28 @@ public class Swerve extends SubsystemBase {
   private SwerveModule[] swerveModules;
 
   private Field2d field;
+  public void selectedAutoChanged(String auto) {
+    try {
+      Pose2d startPose = PathPlannerAuto.getStaringPoseFromAutoFile(auto);
+      field.getObject("Auto start").setPose(startPose);
+
+      List<PathPlannerPath> paths = PathPlannerAuto.getPathGroupFromAutoFile(auto);
+      List<Pose2d> pathPoses = new ArrayList<>();
+      for (PathPlannerPath path : paths) {
+        for(Pose2d pose : path.getPathPoses()) {
+          pathPoses.add(pose);
+        }
+      }
+      field.getObject("Path poses").setPoses(pathPoses);
+    } catch(RuntimeException e) {
+      field.getObject("Auto start").setPoses(new Pose2d[0]);
+      field.getObject("Path poses").setPoses(new Pose2d[0]);
+    }
+  }
+  public void autoStart() {
+    field.getObject("Auto start").setPoses(new Pose2d[0]);
+    field.getObject("Path poses").setPoses(new Pose2d[0]);
+  }
 
   /**
    * The system identification routine used to tune the swerve modules.
@@ -341,25 +367,34 @@ public class Swerve extends SubsystemBase {
     return gyroInputs.yawPosition;
   }
 
+  Tracer timeTracer = new Tracer();
+
   @Override
   public void periodic() {
+    double startTime = Logger.getRealTimestamp();
+    timeTracer.clearEpochs();
+
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
+    timeTracer.addEpoch("Gyro updates");
     for (SwerveModule module : swerveModules) {
       module.updateInputs();
     }
+    timeTracer.addEpoch("Module input updates");
     odometryLock.unlock();
 
     Logger.processInputs("Drive/Gyro", gyroInputs);
     for (SwerveModule module : swerveModules) {
       module.periodic();
     }
+    timeTracer.addEpoch("Module periodic");
 
     // Stop moving when disabled
     if (DriverStation.isDisabled()) {
       for (SwerveModule module : swerveModules) {
         module.stop();
       }
+      timeTracer.addEpoch("Module stop");
     }
 
     // Log empty setpoint states when disabled
@@ -398,6 +433,13 @@ public class Swerve extends SubsystemBase {
 
       // Apply update
       swerveOdometry.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+    }
+    
+    timeTracer.addEpoch("Odometry updates");
+
+    if(Logger.getRealTimestamp() - startTime > 10000) { // More than 0.01 seconds
+      System.out.println("Swerve time took over 0.01 seconds: " + ((Logger.getRealTimestamp() - startTime) / 1000000) + "s");
+      timeTracer.printEpochs();
     }
 
     field.setRobotPose(getPose());

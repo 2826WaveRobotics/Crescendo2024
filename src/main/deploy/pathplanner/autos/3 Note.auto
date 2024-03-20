@@ -1,0 +1,61 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.2415462732315063,
+      "y": 5.579137325286865
+    },
+    "rotation": -1.3025435825842895e-23
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch close"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Enable intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3 Note.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch 3 note"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3 Note.2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch 3 note"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3 Note.3"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "CIR autos",
+  "choreoAuto": true
+}
