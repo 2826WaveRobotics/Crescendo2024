@@ -76,6 +76,7 @@ public class ClimberIOReal implements ClimberIO {
     currentlyControllingSpeedRight = false;
     rightPIDController.setReference(position, ControlType.kPosition, 0);
   }
+  
   /**
    * Sets the left motor position in rotations, where 0 is the resting position and positive numbers are upward.
    * @param position

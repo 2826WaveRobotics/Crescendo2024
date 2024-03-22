@@ -215,7 +215,6 @@ public class Swerve extends SubsystemBase {
       Shuffleboard.getTab("Notes").addString("Odometry position", () -> ("(" + getPose().getX() + ", " + getPose().getY() + ")"));
     }
 
-
     // Set up custom logging to add the current path to a field 2d widget
     PathPlannerLogging.setLogActivePathCallback((poses) -> field.getObject("path").setPoses(poses));
   }

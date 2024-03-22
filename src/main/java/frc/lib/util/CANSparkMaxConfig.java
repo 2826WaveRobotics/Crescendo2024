@@ -84,6 +84,7 @@ public class CANSparkMaxConfig {
         this.usage = usage;
     }
 
+    
     /**
      * Adds a PID slot to this Spark Max's configuration.
      * @param slot
@@ -117,7 +118,7 @@ public class CANSparkMaxConfig {
         CANSparkMaxUtil.setCANSparkMaxBusUsage(spark, usage);
         spark.setSmartCurrentLimit(smartCurrentLimit);
         spark.setSecondaryCurrentLimit(secondaryCurrentLimit);
-        spark.setClosedLoopRampRate(closedLoopRampRate);
+        // spark.setClosedLoopRampRate(closedLoopRampRate);
 
         spark.setIdleMode(idleMode);
 
