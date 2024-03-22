@@ -12,8 +12,8 @@ public class ClimberFullyUp extends ParallelCommandGroup {
         Climber climber = Climber.getInstance();
         addRequirements(climber);
         addCommands(
-            new SetClimberSidePosition(climber::setLeftPosition, climber::getLeftPosition, climber::getLeftMotorStallingBottom, Constants.Climber.fullUpRotations)
-            // new SetClimberSidePosition(climber::setRightPosition, climber::getRightPosition, climber::getRightMotorStallingBottom, Constants.Climber.fullUpRotations)
+            new SetClimberSidePosition(climber::setLeftPosition, climber::getLeftPosition, climber::getLeftMotorStallingBottom, Constants.Climber.fullUpRotations),
+            new SetClimberSidePosition(climber::setRightPosition, climber::getRightPosition, climber::getRightMotorStallingBottom, Constants.Climber.fullUpRotations)
         );
     }
 }

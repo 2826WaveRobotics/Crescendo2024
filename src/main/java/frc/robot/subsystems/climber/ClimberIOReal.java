@@ -94,6 +94,9 @@ public class ClimberIOReal implements ClimberIO {
 
     inputs.leftPosition = leftClimberEncoder.getPosition();
     inputs.rightPosition = rightClimberEncoder.getPosition();
+
+    inputs.leftClimberSpeedRPM = leftClimberEncoder.getVelocity();
+    inputs.rightClimberSpeedRPM = rightClimberEncoder.getVelocity();
   }
 
   @Override

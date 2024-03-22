@@ -2,16 +2,21 @@ package frc.robot.controls;
 
 import java.util.function.BooleanSupplier;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.TeleopIntake;
+import frc.robot.commands.climber.ClimberFullyUp;
 import frc.robot.commands.control.PathfindToAmpAndLaunch;
 import frc.robot.commands.control.PathfindToSpeakerAndLaunch;
 import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
@@ -57,7 +62,9 @@ public class Controls {
      * Configures the controls for the robot. This is where we bind commands to buttons and add joystick actions.
      */
     public void configureControls() {
-    Swerve swerveSubsystem = Swerve.getInstance();
+        System.out.println("Configure controls");
+        
+        Swerve swerveSubsystem = Swerve.getInstance();
         Launcher launcherSubsystem = Launcher.getInstance();
         Transport transportSubsystem = Transport.getInstance();
         
@@ -89,20 +96,33 @@ public class Controls {
         Trigger autoSpeakerAim = driver.rightBumper();
         autoSpeakerAim.onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.AllianceSpeaker)));
 
-        driver.y().whileTrue(new PathfindToSpeakerAndLaunch());
-        driver.b().whileTrue(new PathfindToAmpAndLaunch());
+        // driver.y().whileTrue(new PathfindToSpeakerAndLaunch());
+        // driver.b().whileTrue(new PathfindToAmpAndLaunch());
+        driver.a().onTrue(new InstantCommand(() -> {
+            if(DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
+                swerveSubsystem.setPose(new Pose2d(
+                    new Translation2d(1.37, 5.55),
+                    new Rotation2d()
+                ));
+            } else {
+                swerveSubsystem.setPose(new Pose2d(
+                    new Translation2d(Constants.fieldLengthMeters - 1.37, 5.55),
+                    Rotation2d.fromDegrees(180)
+                ));
+            }
+        }));
 
         /*//////////////////////////*/
         /*    Operator Controls     */
         /*//////////////////////////*/
 
         Superstructure superstructure = Superstructure.getInstance();
-        Trigger climbUp = operator.leftBumper();
-        Trigger climbDown = operator.rightBumper();
-        climbUp.onTrue(new InstantCommand(superstructure::setupClimb));
-        climbUp.onFalse(new InstantCommand(superstructure::climb));
-        climbDown.onTrue(new InstantCommand(superstructure::unclimbStart));
-        climbDown.onFalse(new InstantCommand(superstructure::unclimbEnd));
+        // Trigger climbUp = operator.leftBumper();
+        // Trigger climbDown = operator.rightBumper();
+        // climbUp.onTrue(new InstantCommand(superstructure::setupClimb));
+        // climbUp.onFalse(new InstantCommand(superstructure::climb));
+        // climbDown.onTrue(new InstantCommand(superstructure::unclimbStart));
+        // climbDown.onFalse(new InstantCommand(superstructure::unclimbEnd));
         
         transportSubsystem.setDefaultCommand(new TeleopIntake(() -> -operator.getLeftY()));
     
@@ -168,5 +188,7 @@ public class Controls {
             () -> launcherSubsystem.setLauncherSpeed(-6800, false),
             () -> launcherSubsystem.setLauncherSpeed(0, false)
         ));
+
+        operator.y().onTrue(new ClimberFullyUp());
     }
 }

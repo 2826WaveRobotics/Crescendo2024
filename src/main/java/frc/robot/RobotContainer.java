@@ -21,6 +21,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -46,6 +48,8 @@ import frc.robot.controls.Controls;
  */
 public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser;
+
+  private StringPublisher autoDataPublisher = null;
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
@@ -134,10 +138,19 @@ public class RobotContainer {
     NamedCommands.registerCommand("Launch rollers slow", new InstantCommand(launcherSubsystem::launchRollersSlow));
   }
 
+  public void updateAutoPublisher() {
+    if(autoDataPublisher != null && (DriverStation.isFMSAttached() || DriverStation.isEnabled())) {
+      autoDataPublisher.close();
+      autoDataPublisher = null;
+    }
+  }
+
   /**
    * Publishes the autonomous data to NetworkTables so our auto dashboard can display them.
    */
   private void publishAutoData() {
+    if(DriverStation.isFMSAttached()) return; // Do not send auto data when connected to FMS
+
     StringBuilder jsonData = new StringBuilder();
     jsonData.append("{\"autoChoices\": [");
     for (String choice : AutoBuilder.getAllAutoNames()) {
@@ -150,7 +163,9 @@ public class RobotContainer {
       }
       
       try {
-        poses.set(0, PathPlannerAuto.getStaringPoseFromAutoFile(choice));
+        Pose2d startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(choice);
+        if(poses.isEmpty()) poses.add(startingPose);
+        else poses.set(0, startingPose);
       } catch(RuntimeException e) {
         // Do nothing
       }
@@ -165,16 +180,17 @@ public class RobotContainer {
           .append(pose.getRotation().getRadians())
           .append("},");
       }
-      jsonData.deleteCharAt(jsonData.length() - 1);
+      if(!poses.isEmpty()) jsonData.deleteCharAt(jsonData.length() - 1);
       jsonData.append("]},");
     }
     jsonData.deleteCharAt(jsonData.length() - 1);
     jsonData.append("]}");
-    NetworkTableInstance.getDefault()
+    autoDataPublisher = NetworkTableInstance.getDefault()
       .getTable("2826AutoDashboard")
       .getStringTopic("AutoData")
-      .publish()
-      .accept(jsonData.toString());
+      .publish();
+
+    autoDataPublisher.accept(jsonData.toString());
   }
 
   /**
