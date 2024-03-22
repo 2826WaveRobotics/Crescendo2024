@@ -4,7 +4,7 @@ Driver:
     Left bumper: Use robot-centric driving
     Right bumper:
       Auto align to alliance speaker (until rotation stick is next moved)
-      Automatically configure launchewr angle and speed based on current position (runs continuously while held)
+      Automatically configure launcher angle and speed based on current position (runs continuously while held)
 
     Left joystick X: Swerve Strafe
     Left joystick Y: Swerve Velocity

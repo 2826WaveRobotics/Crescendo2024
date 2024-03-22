@@ -23,9 +23,9 @@ public class PathfindToAmpAndLaunch extends SequentialCommandGroup {
 
         // Since AutoBuilder is configured, we can use it to build pathfinding commands
         Command pathfindingCommand = AutoBuilder.pathfindThenFollowPath(
-                path,
-                Constants.Swerve.pathfindingConstraints,
-                1.0 // Rotation delay distance in meters. This is how far the robot should travel before attempting to rotate.
+            path,
+            Constants.Swerve.pathfindingConstraints,
+            0.1 // Rotation delay distance in meters. This is how far the robot should travel before attempting to rotate.
         );
 
         SwerveAlignmentController.getInstance().reset();

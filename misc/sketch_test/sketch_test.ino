@@ -29,7 +29,8 @@ enum Alliance {
   allianceCount
 };
 
-LightState state = teleopStaticState;
+// LightState state = teleopStaticState;
+LightState state = autoState;
 Alliance alliance = blueAlliance;
 uint8_t robotSpeed = 0;
 
@@ -45,9 +46,11 @@ void onRecieveI2CData(int bytesRead) {
   // Our messages consist of 3 bytes: the light state, the alliance we're on, and the robot speed from 0 to 255.
   if(Wire.available() < 3) return;
   
-  uint8_t lightState = Wire.read();
+  // uint8_t lightState = Wire.read();
+  uint8_t lightState = 2;
   uint8_t allianceValue = Wire.read();
   uint8_t speed = Wire.read();
+  
 
   // Values for light state must be between 0 and (lightStateCount - 1)
   if(lightState >= lightStateCount) return;
