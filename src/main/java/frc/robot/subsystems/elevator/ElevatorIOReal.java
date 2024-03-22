@@ -52,11 +52,6 @@ public class ElevatorIOReal implements ElevatorIO, AutoCloseable {
 
         Constants.Elevator.positionMotorConfig.configure(elevatorExtensionMotor, elevatorExtensionPIDController);
         Constants.Elevator.angleMotorConfig.configure(elevatorAngleMotor, elevatorAnglePIDController);
-
-        Shuffleboard.getTab("Sensor readouts").addNumber("DIO voltage", RobotController::getVoltage5V);
-        Shuffleboard.getTab("Sensor readouts").addBoolean("Intake sensor", this::getIntakeSensorActivated);
-        Shuffleboard.getTab("Sensor readouts").addBoolean("Note in transition sensor", this::getNoteInTransitionSensorActivated);
-        Shuffleboard.getTab("Sensor readouts").addBoolean("Note in position sensor", this::getNoteInPositionSensorActivated);
     }
 
     /**
