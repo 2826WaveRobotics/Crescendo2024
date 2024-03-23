@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="plot" style="width: 100%; height: calc(100vh - 16px);"></div>
+    <script>
+        const limelightWebSocketAddress = "ws://172.172.0.1:5806";
+        const limelightWebSocket = new WebSocket(limelightWebSocketAddress);
+
+        const poseStoreCount = 150;
+        const poses = new Array(poseStoreCount);
+
+        let pointsCollected = 0;
+        const plotElement = document.getElementById('plot');
+        Plotly.plot(plotElement, [
+            {
+                y: [],
+                mode: 'lines+markers', 
+                marker: {color: 'blue', size: 8 },
+                line: { width: 4 },
+                name: 'Tag distance (Meters)'
+            },
+            {
+                y: [],
+                mode: 'lines+markers', 
+                marker: {color: 'pink', size: 8 },
+                line: { width: 4 },
+                name: 'Mean X'
+            },
+            {
+                y: [],
+                mode: 'lines+markers',
+                marker: {color: 'lightgray', size: 6 },
+                line: { width: 3 },
+                name: 'X Standard Deviation x1000'
+            },
+            {
+                y: [],
+                mode: 'lines+markers',
+                marker: {color: 'black', size: 6 },
+                line: { width: 4 },
+                name: 'X Rolling Average STD x1000'
+            },
+            {
+                y: [],
+                mode: 'lines+markers', 
+                marker: {color: 'yellow', size: 6 },
+                line: { width: 3 },
+                name: 'X Range x100'
+            }
+        ], {
+            title: 'Standard Deviation of Limelight Pose',
+            xaxis: {
+                title: 'Time',
+                showgrid: false,
+                zeroline: false
+            },
+            yaxis: {
+                title: 'Value',
+                showline: false,
+                range: [0, 20]
+            }
+        });
+
+        let standardDeviationHistory = [];
+        let smoothStandardDeviationFrame = 50;
+
+        let addToPlotFrequency = 2; // Only display every N updates on the graph
+        let i = 0;
+        limelightWebSocket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            const botpose = data["Results"]["botpose_wpiblue"];
+            if(botpose.reduce((a, b) => a + b) === 0) return;
+
+            poses.push(botpose);
+            pointsCollected++;
+            if(poses.length > poseStoreCount) {
+                poses.shift();
+            }
+
+            if(i++ % addToPlotFrequency === 0) {
+                const y = poses.map(pose => pose[0]);
+                
+                const mean = y.reduce((a, b) => a + b) / y.length;
+                const variance = y.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / y.length;
+                let standardDeviation = Math.sqrt(variance);
+                if(pointsCollected < poseStoreCount) standardDeviation = 0;
+
+                standardDeviationHistory.push(standardDeviation);
+                if(standardDeviationHistory.length > smoothStandardDeviationFrame) {
+                    standardDeviationHistory.shift();
+                }
+
+                const smoothStandardDeviation = standardDeviationHistory.reduce((a, b) => a + b) / standardDeviationHistory.length;
+
+                const range = Math.max(...y) - Math.min(...y);
+
+                Plotly.extendTraces(plotElement, {
+                    y: [[data["Results"]["botpose_avgdist"]], [mean], [standardDeviation * 1000], [smoothStandardDeviation * 1000], [range * 100]]
+                }, [0, 1, 2, 3, 4], poseStoreCount / addToPlotFrequency);
+            }
+        }
+    </script>
+</body>
+</html>
