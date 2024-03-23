@@ -173,11 +173,11 @@ public class RobotContainer {
       for (Pose2d pose : poses) {
         jsonData
           .append("{\"x\": ")
-          .append(pose.getTranslation().getX())
+          .append(Math.round(pose.getTranslation().getX() * 1000) / 1000.0)
           .append(", \"y\": ")
-          .append(pose.getTranslation().getY())
+          .append(Math.round(pose.getTranslation().getY() * 1000) / 1000.0)
           .append(", \"rot\": ")
-          .append(pose.getRotation().getRadians())
+          .append(Math.round(pose.getRotation().getRadians() * 1000) / 1000.0)
           .append("},");
       }
       if(!poses.isEmpty()) jsonData.deleteCharAt(jsonData.length() - 1);
