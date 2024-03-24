@@ -1,5 +1,6 @@
 package frc.robot.controls;
 
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -9,6 +10,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -16,11 +18,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.TeleopIntake;
-import frc.robot.commands.climber.ClimberFullyUp;
+import frc.robot.commands.climber.ClimberControls;
 import frc.robot.commands.control.PathfindToAmpAndLaunch;
 import frc.robot.commands.control.PathfindToSpeakerAndLaunch;
 import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
 import frc.robot.subsystems.transport.Transport;
@@ -78,6 +81,7 @@ public class Controls {
                 swerveSubsystem,
                 () ->  driver.getLeftX(),
                 () -> -driver.getLeftY(),
+                driver.leftTrigger(0.2),
                 () -> -driver.getRightX(),
                 () -> !driver.leftBumper().getAsBoolean()
             )
@@ -96,8 +100,11 @@ public class Controls {
         Trigger autoSpeakerAim = driver.rightBumper();
         autoSpeakerAim.onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.AllianceSpeaker)));
 
-        // driver.y().whileTrue(new PathfindToSpeakerAndLaunch());
-        // driver.b().whileTrue(new PathfindToAmpAndLaunch());
+        // We use DeferredCommands because for some reason it partially fixes performance issues caused
+        // by these pathfinding commands. It's not an ideal solution, but it works for now.
+        driver.y().whileTrue(new DeferredCommand(PathfindToSpeakerAndLaunch::new, Set.of()));
+        driver.b().whileTrue(new DeferredCommand(PathfindToAmpAndLaunch::new, Set.of()));
+        
         driver.a().onTrue(new InstantCommand(() -> {
             if(DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
                 swerveSubsystem.setPose(new Pose2d(
@@ -115,14 +122,6 @@ public class Controls {
         /*//////////////////////////*/
         /*    Operator Controls     */
         /*//////////////////////////*/
-
-        Superstructure superstructure = Superstructure.getInstance();
-        // Trigger climbUp = operator.leftBumper();
-        // Trigger climbDown = operator.rightBumper();
-        // climbUp.onTrue(new InstantCommand(superstructure::setupClimb));
-        // climbUp.onFalse(new InstantCommand(superstructure::climb));
-        // climbDown.onTrue(new InstantCommand(superstructure::unclimbStart));
-        // climbDown.onFalse(new InstantCommand(superstructure::unclimbEnd));
         
         transportSubsystem.setDefaultCommand(new TeleopIntake(() -> -operator.getLeftY()));
     
@@ -189,6 +188,11 @@ public class Controls {
             () -> launcherSubsystem.setLauncherSpeed(0, false)
         ));
 
-        operator.y().onTrue(new ClimberFullyUp());
+        operator.y().onTrue(new InstantCommand(() -> Superstructure.getInstance().climbersUp()));
+        Climber.getInstance().setDefaultCommand(new ClimberControls(
+            operator.leftBumper(),
+            operator.rightBumper(),
+            operator.x()
+        ));
     }
 }

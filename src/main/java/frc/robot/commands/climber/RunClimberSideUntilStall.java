@@ -16,7 +16,7 @@ public class RunClimberSideUntilStall extends Command {
         this.setSideVelocity = setSideVelocity;
     }
 
-    Debouncer debouncer = new Debouncer(0.25, DebounceType.kRising);
+    Debouncer debouncer = new Debouncer(0.1, DebounceType.kRising);
 
     @Override
     public boolean isFinished() {

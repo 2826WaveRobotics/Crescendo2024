@@ -138,10 +138,7 @@ public class Robot extends LoggedRobot {
   
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {
-    Climber.getInstance().setLeftSpeed(MathUtil.applyDeadband(Controls.getInstance().operator.getLeftX(), 0.15) * 5600);
-    Climber.getInstance().setRightSpeed(MathUtil.applyDeadband(Controls.getInstance().operator.getRightX(), 0.15) * 5600);
-  }
+  public void teleopPeriodic() {}
 
   @Override
   public void teleopInit() {

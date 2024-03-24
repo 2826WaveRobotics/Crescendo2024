@@ -179,7 +179,7 @@ public final class Constants {
       100,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 0.000175);
+    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 1 / 5700.);
 
     public static CANSparkMaxConfig angleConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,
@@ -225,7 +225,7 @@ public final class Constants {
       0.25,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 0.000175);
+    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 1 / 11000.);
     
     /**
      * The transport wheel radius, in meters.
@@ -253,61 +253,6 @@ public final class Constants {
     public static final int noteInTransitionSensorDIOPort = 4;
   }
 
-  public static final class Elevator {
-    public static final int positionMotorCANID = 10;
-    public static final int angleMotorCANID = 44;
-
-    public static final CANSparkMaxConfig positionMotorConfig = new CANSparkMaxConfig(
-      IdleMode.kBrake,
-      10, 15,
-      100,
-      12.0,
-      CANSparkMaxUtil.Usage.kPositionOnly
-    ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)        // Position controller
-     .configurePIDSlot(1, 1e-6, 0.0, 0.0, 0.000175); // Velocity controller
-
-    public static final CANSparkMaxConfig angleMotorConfig = new CANSparkMaxConfig(
-      IdleMode.kBrake,
-      8, 10,
-      100,
-      12.0,
-      CANSparkMaxUtil.Usage.kPositionOnly
-    ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)        // Position controller
-     .configurePIDSlot(1, 1e-6, 0.0, 0.0, 0.000175); // Velocity controller
-    
-    /**
-     * The number of rotations on the elevator extension motor required to fully extend the elevator. 
-     */
-    public static final double rotationsForFullExtension = 65.57;
-    /**
-     * The total extension height of the elevator, in meters.
-     */
-    public static final double totalElevatorExtensionHeight = 1.016;
-
-    /**
-     * The target height of the elevator when it's fully extended, in meters.
-     */
-    public static final double elevatorExtendedHeight = 0.9;
-
-    /**
-     * The angle of the elevator when it's tilted upward.
-     */
-    public static final Rotation2d elevatorUpAngle = Rotation2d.fromDegrees(90);
-
-    /**
-     * The DIO port of the elevator angle through-bore absolute encoder.
-     */
-    public static final int elevatorAbsoluteEncoderDIOPort = 8;
-    /**
-     * The angle offset of the elevator absolute encoder.
-     */
-    public static final double elevatorAbsoluteEncoderOffset = 0;
-    /**
-     * If we should invert the elevator absolute encoder.
-     */
-    public static final boolean invertAngleAbsoluteEncoder = false;
-  }
-  
   public static final class Transport {
     public static final int upperTransportMotorCANID = 57;
     public static final int lowerTransportMotorCANID = 54;
@@ -341,18 +286,22 @@ public final class Constants {
 
     public static final int climbingSmartCurrentLimit = 10;
     public static final int climbingSecondaryCurrentLimit = 15;
-    public static final int stallSmartCurrentLimit = 5;
-    public static final int stallSecondaryCurrentLimit = 10;
+    public static final int resetSmartCurrentLimit = 2;
+    public static final int resetSecondaryCurrentLimit = 2;
+
+    /**
+     * The speed to run the climber motors at when climbing.
+     */
+    public static final double climberMotorSpeed = 4000;
 
     public static final CANSparkMaxConfig motorConfig = new CANSparkMaxConfig(
       IdleMode.kBrake,
-      // climbingSmartCurrentLimit, climbingSecondaryCurrentLimit,
-      15, 20,
-      2.0,
+      resetSmartCurrentLimit, resetSecondaryCurrentLimit,
+      (1 / 0.2) * (5676 / climberMotorSpeed), // 0.2 second acceleration to the climbing speed
       12.0,
       Usage.kAll
     ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)         // Position controller
-     .configurePIDSlot(1, 1e-7, 0.0, 0.0, 1. / 11000.); // Velocity controller
+     .configurePIDSlot(1, 1e-7, 0.0, 0.0, 1. / 5600.); // Velocity controller
 
     public static final double fullUpRotations = 100;
   }

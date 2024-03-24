@@ -97,6 +97,7 @@ public class LauncherIOReal implements LauncherIO {
   public void updateInputs(LauncherIOInputs inputs) {
     inputs.absoluteLauncherAngle = getAbsoluteLauncherAngle();
     inputs.launcherRelativeConchAngle = getLauncherConchAngle();
+    inputs.launcherAngleVeocityRPM = angleLauncherEncoder.getVelocity();
   }
 
   @Override

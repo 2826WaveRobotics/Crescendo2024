@@ -4,6 +4,8 @@
 
 package frc.robot.commands.transport;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -11,12 +13,9 @@ import frc.robot.subsystems.launcher.Launcher;
 
 /**
  * A command that sets the launcher angle and finishes when it's at the target angle.  
- * TODO: Currently, this command runs for 0.25 seconds and finishes.
- * This could eventually be replaced with finishing when the launcher is at the target angle, but this is far more consistent for now.
  */
 public class SetLauncherAngle extends Command {
   private double angle;
-  private double m_startTime;
 
   /**
    * Creates a new SetLauncherAngle.
@@ -30,13 +29,13 @@ public class SetLauncherAngle extends Command {
   @Override
   public void initialize() {
     Launcher.getInstance().setLauncherAngle(Rotation2d.fromDegrees(angle));
-    m_startTime = Timer.getFPGATimestamp();
   }
+
+  Debouncer stopMovingDebouncer = new Debouncer(0.1, DebounceType.kRising);
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    double currentTime = Timer.getFPGATimestamp();
-    return ((currentTime - m_startTime) > 0.25);
+    return stopMovingDebouncer.calculate(Launcher.getInstance().getAngleVelocityRPM() < 60);
   }
 }

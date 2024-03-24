@@ -130,6 +130,7 @@ public class VibrationFeedback {
 
     public enum VibrationPatternType {
         IntakingNote,
+        ClimberSideDown,
 
         SixtySecondWarning,
         TwentySecondWarning
@@ -144,7 +145,12 @@ public class VibrationFeedback {
                     new VibrationPulse(Controller.Operator, 0.5, 0.5)
                 ).schedule();
                 break;
-            
+            case ClimberSideDown:
+                new SequentialCommandGroup(
+                    new VibrationPulse(Controller.Both, 0.5, 0.5),
+                    new VibrationPulse(Controller.Both, 0.5, 0.5)
+                ).schedule();
+                break;
             case SixtySecondWarning:
                 new SequentialCommandGroup(
                     new VibrationPulse(Controller.Both, 0.5, 0.5, 0.3, 0.1),

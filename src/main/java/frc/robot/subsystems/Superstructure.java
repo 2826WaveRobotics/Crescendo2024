@@ -9,22 +9,15 @@ import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants;
-import frc.robot.commands.climber.ClimberFullyDown;
+import frc.robot.commands.climber.ResetClimbers;
 import frc.robot.commands.climber.ClimberFullyUp;
-import frc.robot.commands.climber.RunClimberSideDistance;
-import frc.robot.commands.climber.RunClimberSideUntilStall;
-import frc.robot.commands.elevator.ElevatorCommands;
-import frc.robot.commands.transport.EjectNoteForTrap;
 import frc.robot.controls.SwerveAlignmentController;
 import frc.robot.controls.VibrationFeedback;
 import frc.robot.controls.VibrationFeedback.VibrationPatternType;
-import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.noteSensors.NoteSensors;
 import frc.robot.subsystems.transport.Transport;
@@ -196,19 +189,13 @@ public class Superstructure extends SubsystemBase {
         Shuffleboard.getTab("Notes").addString("Superstructure note state", () -> currentState.toString());
     }
 
-    Command scheduledClimbCommand = null;
+    public Command scheduledClimbCommand = null;
 
     public void resetSubsystemsForAuto() {
         // Reset climber
         if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
 
-        scheduledClimbCommand = new ParallelCommandGroup(
-            // new SequentialCommandGroup(
-                // new RetractElevator(),
-                // new AngleElevatorDown()
-            // ),
-            // new ClimberFullyDown()
-        );
+        scheduledClimbCommand = new ResetClimbers();
         scheduledClimbCommand.schedule();
 
         // Reset the odometry to face the current gyro angle
@@ -228,71 +215,13 @@ public class Superstructure extends SubsystemBase {
         SwerveAlignmentController.getInstance().reset();
     }
 
-    public void setupClimb() {
+    public void climbersUp() {
         if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
 
         scheduledClimbCommand = new SequentialCommandGroup(
             new WaitUntilCommand(() -> getNoteState() != NoteState.IntakingNote),
-            new ParallelCommandGroup(
-                // ElevatorCommands.angleElevatorUp(),
-                new ClimberFullyUp()
-            )
+            new ClimberFullyUp()
         );
-        scheduledClimbCommand.schedule();
-    }
-    public void climb() {
-        if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
-
-        if(getNoteState() == NoteState.MovingNote || getNoteState() == NoteState.ReadyToLaunch) {
-            // Trap sequence
-            scheduledClimbCommand = new SequentialCommandGroup(
-                new ParallelCommandGroup(
-                    ElevatorCommands.extendElevator(),
-                    new ClimberFullyDown()
-                ),
-                new EjectNoteForTrap(),
-                new InstantCommand(() -> {
-                    Climber.getInstance().useStallCurrentLimit();
-                })
-            );
-        } else {
-            // Non-trap sequence
-            Climber climber = Climber.getInstance();
-            scheduledClimbCommand = new SequentialCommandGroup(
-                new ParallelCommandGroup(
-                    new RunClimberSideUntilStall(climber::setLeftSpeed, climber::getLeftMotorStallingClimb),
-                    new RunClimberSideUntilStall(climber::setRightSpeed, climber::getRightMotorStallingClimb)
-                ),
-                new ParallelCommandGroup(
-                    new RunClimberSideDistance(climber::setLeftPosition, climber::getLeftPosition, -15),
-                    new RunClimberSideDistance(climber::setRightPosition, climber::getRightPosition, -15)
-                ),
-                new InstantCommand(() -> {
-                    Climber.getInstance().useStallCurrentLimit();
-                })
-            );
-        }
-        scheduledClimbCommand.schedule();
-    }
-
-    public void unclimbStart() {
-        if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
-        
-        Climber.getInstance().useClimbingCurrentLimit();
-
-        scheduledClimbCommand = new SequentialCommandGroup(
-            new ParallelCommandGroup(
-                ElevatorCommands.retractElevator(),
-                new ClimberFullyUp()
-            ),
-            ElevatorCommands.angleElevatorDown()
-        );
-        scheduledClimbCommand.schedule();
-    }
-    public void unclimbEnd() {
-        if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
-        
-        scheduledClimbCommand = new ClimberFullyDown();
         scheduledClimbCommand.schedule();
     }
 }

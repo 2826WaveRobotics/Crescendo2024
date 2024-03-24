@@ -106,6 +106,10 @@ public class Launcher extends SubsystemBase {
     topRollerSpeed = speed;
   }
 
+  public double getAngleVelocityRPM() {
+    return inputs.launcherAngleVeocityRPM;
+  }
+
   @Override
   public void periodic() {
     launcherIO.updateInputs(inputs);

@@ -33,6 +33,7 @@ public class DriveCommands {
       Swerve swerve,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
+      BooleanSupplier reduceSpeedSupplier,
       DoubleSupplier omegaSupplier,
       BooleanSupplier fieldRelativeSupplier) {
     return new InstantCommand(
@@ -45,7 +46,9 @@ public class DriveCommands {
         double omegaValue = omegaRateLimiter.calculate(omegaSupplier.getAsDouble());
 
         // Apply deadband
-        double linearMagnitude = MathUtil.applyDeadband(Math.hypot(xValue, yValue), Constants.Swerve.stickDeadband);
+        double linearMagnitude =
+          MathUtil.applyDeadband(Math.hypot(xValue, yValue), Constants.Swerve.stickDeadband) *
+          (reduceSpeedSupplier.getAsBoolean() ? (1 / 4.) : 1.0);
         Rotation2d linearDirection = new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
         double omega = MathUtil.applyDeadband(omegaValue, Constants.Swerve.stickDeadband);
 

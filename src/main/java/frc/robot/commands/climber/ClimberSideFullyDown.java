@@ -22,7 +22,7 @@ public class ClimberSideFullyDown extends SequentialCommandGroup {
         addCommands(
             new SetClimberSidePosition(setPosition, getPostion, sideStalling, 0.3),
             new RunClimberSideUntilStall(setVelocity, sideStalling),
-            new InstantCommand(() -> VibrationFeedback.getInstance().runPattern(VibrationPatternType.IntakingNote))
+            new InstantCommand(() -> VibrationFeedback.getInstance().runPattern(VibrationPatternType.ClimberSideDown))
         );
     }
 }
