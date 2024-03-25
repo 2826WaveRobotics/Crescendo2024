@@ -1,5 +1,7 @@
 package frc.robot.subsystems.vision;
 
+import java.util.Map;
+
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
@@ -9,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -19,6 +22,7 @@ import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.vision.LimelightIO.LimelightIOInputsLogged;
 import frc.lib.LimelightHelpers;
+import frc.lib.util.ShuffleboardContent;
 
 public class Limelight extends SubsystemBase {
   private static Limelight instance = null;
@@ -99,5 +103,18 @@ public class Limelight extends SubsystemBase {
     limelightIO.updateInputs(inputs);
 
     updateOdometryPoseFromVisionMeasurements();
+  }
+
+  public void initiaize() {
+    ShuffleboardContent.competitionTab.addCamera("Intake feed", "Intake Limelight", "http://limelight.local:5800/stream.mjpg")
+      .withPosition(0, 0)
+      .withSize(6, 4)
+      .withProperties(Map.of("Show Crosshair", false, "Show Controls", false));
+    
+    // Forward the Limelight camera ports
+    // More information: https://docs.limelightvision.io/docs/docs-limelight/getting-started/best-practices#event-preparation-checklist
+    for (int port = 5800; port <= 5807; port++) {
+      PortForwarder.add(port, "limelight.local", port);
+    }
   }
 }

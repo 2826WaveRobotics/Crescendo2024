@@ -30,5 +30,7 @@ public class ClimberControls extends InstantCommand {
             climber.setLeftSpeed ((moveLeft .getAsBoolean() ? 1 : 0) * speed);
             climber.setRightSpeed((moveRight.getAsBoolean() ? 1 : 0) * speed);
         });
+
+        addRequirements(Climber.getInstance());
     }
 }

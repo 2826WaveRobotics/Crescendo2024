@@ -5,10 +5,13 @@ import java.util.Map;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.SwerveModule;
 
 public class ShuffleboardContent {
+    public static final ShuffleboardTab competitionTab = Shuffleboard.getTab("Competition");
+
     public static void initSwerveModuleShuffleboard(SwerveModule module) {
         if(!Constants.enableNonEssentialShuffleboard) return;
         

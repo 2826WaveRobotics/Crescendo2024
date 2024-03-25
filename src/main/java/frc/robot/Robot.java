@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.AutoLogOutputManager;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -20,6 +21,7 @@ import frc.robot.controls.Controls;
 import frc.robot.controls.VibrationFeedback;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.vision.Limelight;
 
 
 /**
@@ -87,11 +89,7 @@ public class Robot extends LoggedRobot {
     // autonomous chooser on the dashboard, and do anything else required for initialization.
     robotContainer = new RobotContainer();
     
-    // Forward the Limelight camera ports
-    // More information: https://docs.limelightvision.io/docs/docs-limelight/getting-started/best-practices#event-preparation-checklist
-    for (int port = 5800; port <= 5807; port++) {
-      PortForwarder.add(port, "limelight.local", port);
-    }
+    Limelight.getInstance().initiaize();
   }
 
   /**

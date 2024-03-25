@@ -31,11 +31,11 @@ import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.util.LocalADStarAK;
+import frc.lib.util.ShuffleboardContent;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.Limelight;
 
@@ -209,7 +209,9 @@ public class Swerve extends SubsystemBase {
         this));
 
     field = new Field2d();
-    SmartDashboard.putData("Field", field);
+    ShuffleboardContent.competitionTab.add("Field", field)
+      .withPosition(6, 0)
+      .withSize(7, 4);
 
     if(Constants.enableNonEssentialShuffleboard) {
       Shuffleboard.getTab("Notes").addString("Odometry position", () -> ("(" + getPose().getX() + ", " + getPose().getY() + ")"));
