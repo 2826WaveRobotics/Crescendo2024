@@ -1,7 +1,10 @@
 package frc.robot.controls;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -22,6 +25,8 @@ public class VibrationFeedback {
     public void teleopInit() {
         matchTimer.reset();
         matchTimer.start();
+
+        reset();
     }
     public void teleopExit() {
         matchTimer.stop();
@@ -44,29 +49,74 @@ public class VibrationFeedback {
         Both
     }
 
-    private double driverOverrideLeft = 0;
-    private double driverOverrideRight = 0;
-    private double operatorOverrideLeft = 0;
-    private double operatorOverrideRight = 0;
+    private double driverAddLeft = 0;
+    private double driverAddRight = 0;
+    private double operatorAddLeft = 0;
+    private double operatorAddRight = 0;
+
     private double currentLeftDriver = 0;
     private double currentRightDriver = 0;
     private double currentLeftOperator = 0;
     private double currentRightOperator = 0;
-    public void setDriverOverrideLeft(double override) {
-        driverOverrideLeft = override;
-        Controls.getInstance().setDriverRumble(currentLeftDriver + override, currentRightDriver + driverOverrideRight);
+
+    /**
+     * Resets all rumble values to 0.
+     */
+    public void reset() {
+        driverAddLeft = 0;
+        driverAddRight = 0;
+        operatorAddLeft = 0;
+        operatorAddRight = 0;
+
+        currentLeftDriver = 0;
+        currentRightDriver = 0;
+        currentLeftOperator = 0;
+        currentRightOperator = 0;
     }
-    public void setDriverOverrideRight(double override) {
-        driverOverrideRight = override;
-        Controls.getInstance().setDriverRumble(currentLeftDriver + driverOverrideLeft, currentRightDriver + override);
+
+    private EventLoop turnOffRumbleFailsafeEventLoop = new EventLoop();
+    private BooleanEvent turnOffDriverRumbleFailsafe =
+        new BooleanEvent(turnOffRumbleFailsafeEventLoop, () -> currentLeftDriver != 0 || currentRightDriver != 0)
+        .debounce(5., DebounceType.kRising)
+        .rising();
+    private BooleanEvent turnOffOperatorRumbleFailsafe =
+        new BooleanEvent(turnOffRumbleFailsafeEventLoop, () -> currentLeftOperator != 0 || currentRightOperator != 0)
+        .debounce(5., DebounceType.kRising)
+        .rising();
+
+    /**
+     * Updates the rumble values based on the current rumble values and the added rumble values.
+     */
+    public void update() {
+        // If the driver or operator rumbles have been on for too long, something might have went wrong.
+        // This isn't a critical error, but it would be incredibly annoying for the driver and operator
+        // if their controllers were constantly rumbling.
+        turnOffRumbleFailsafeEventLoop.poll();
+        if(turnOffDriverRumbleFailsafe.getAsBoolean()) {
+            currentLeftDriver = 0;
+            currentRightDriver = 0;
+        }
+        if(turnOffOperatorRumbleFailsafe.getAsBoolean()) {
+            currentLeftOperator = 0;
+            currentRightOperator = 0;
+        }
+
+        // WPILib clamps rumble values to 0-1, so we don't need to do it here
+        Controls.getInstance().setDriverRumble(currentLeftDriver + driverAddLeft,currentRightDriver + driverAddRight);
+        Controls.getInstance().setOperatorRumble(currentLeftOperator + operatorAddLeft,currentRightOperator + operatorAddRight);
     }
-    public void setOperatorOverrideLeft(double override) {
-        operatorOverrideLeft = override;
-        Controls.getInstance().setOperatorRumble(currentLeftOperator + override, currentRightOperator + operatorOverrideRight);
+
+    public void setDriverAddLeft(double override) {
+        driverAddLeft = override;
     }
-    public void setOperatorOverrideRight(double override) {
-        operatorOverrideRight = override;
-        Controls.getInstance().setOperatorRumble(currentLeftOperator + operatorOverrideLeft, currentRightOperator + override);
+    public void setDriverAddRight(double override) {
+        driverAddRight = override;
+    }
+    public void setOperatorAddLeft(double override) {
+        operatorAddLeft = override;
+    }
+    public void setOperatorAddRight(double override) {
+        operatorAddRight = override;
     }
 
     private class SetVibrationCommand extends InstantCommand {
@@ -74,32 +124,16 @@ public class VibrationFeedback {
             VibrationFeedback vibrationFeedback = VibrationFeedback.getInstance();
             switch (controller) {
                 case Driver:
-                    Controls.getInstance().setDriverRumble(
-                        Math.min(left + vibrationFeedback.driverOverrideLeft, 1),
-                        Math.min(right + vibrationFeedback.driverOverrideRight, 1)
-                    );
                     vibrationFeedback.currentLeftDriver = left;
                     vibrationFeedback.currentRightDriver = right;
                     break;
                 case Operator:
-                    Controls.getInstance().setOperatorRumble(
-                        Math.min(left + vibrationFeedback.operatorOverrideLeft, 1),
-                        Math.min(right + vibrationFeedback.operatorOverrideRight, 1)
-                    );
                     vibrationFeedback.currentLeftOperator = left;
                     vibrationFeedback.currentRightOperator = right;
                     break;
                 case Both:
-                    Controls.getInstance().setDriverRumble(
-                        Math.min(left + vibrationFeedback.driverOverrideLeft, 1),
-                        Math.min(right + vibrationFeedback.driverOverrideRight, 1)
-                    );
                     vibrationFeedback.currentLeftDriver = left;
                     vibrationFeedback.currentRightDriver = right;
-                    Controls.getInstance().setOperatorRumble(
-                        Math.min(left + vibrationFeedback.operatorOverrideLeft, 1),
-                        Math.min(right + vibrationFeedback.operatorOverrideRight, 1)
-                    );
                     vibrationFeedback.currentLeftOperator = left;
                     vibrationFeedback.currentRightOperator = right;
                     break;

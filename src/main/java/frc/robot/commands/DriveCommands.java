@@ -45,12 +45,12 @@ public class DriveCommands {
         double yValue = yVelocityRateLimiter.calculate(ySupplier.getAsDouble());
         double omegaValue = omegaRateLimiter.calculate(omegaSupplier.getAsDouble());
 
+        double speedMultiplier = (reduceSpeedSupplier.getAsBoolean() ? (1 / 3.) : 1.0);
+
         // Apply deadband
-        double linearMagnitude =
-          MathUtil.applyDeadband(Math.hypot(xValue, yValue), Constants.Swerve.stickDeadband) *
-          (reduceSpeedSupplier.getAsBoolean() ? (1 / 4.) : 1.0);
+        double linearMagnitude = MathUtil.applyDeadband(Math.hypot(xValue, yValue), Constants.Swerve.stickDeadband) * speedMultiplier;
         Rotation2d linearDirection = new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-        double omega = MathUtil.applyDeadband(omegaValue, Constants.Swerve.stickDeadband);
+        double omega = MathUtil.applyDeadband(omegaValue, Constants.Swerve.stickDeadband) * speedMultiplier;
 
         // Square values while preserving sign on omega
         linearMagnitude = linearMagnitude * linearMagnitude;

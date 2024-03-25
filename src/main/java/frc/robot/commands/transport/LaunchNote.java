@@ -10,6 +10,7 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.NoteState;
 import frc.robot.subsystems.transport.Transport;
 import frc.robot.subsystems.transport.Transport.TransportState;
+import frc.robot.visualization.NoteVisualizer;
 
 /**
  * A command that runs the launcher and upper launch roller for 0.75 seconds.
@@ -20,6 +21,7 @@ public class LaunchNote extends Command {
   /** Creates a new LaunchNote. */
   public LaunchNote() {
     if(Superstructure.getInstance().getNoteState() != NoteState.ReadyToLaunch) cancel();
+    NoteVisualizer.shoot().schedule(); // TODO: This is a bad way to do this, but it's a quick fix for now.
   }
 
   // Called when the command is initially scheduled.

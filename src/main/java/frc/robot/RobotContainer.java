@@ -9,6 +9,7 @@ package frc.robot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -34,6 +35,7 @@ import frc.robot.subsystems.launcher.Launcher;
 import frc.robot.subsystems.transport.Transport;
 import frc.robot.subsystems.transport.Transport.TransportState;
 import frc.robot.subsystems.vision.Limelight;
+import frc.lib.util.ShuffleboardContent;
 import frc.robot.commands.auto.LaunchCloseCommand;
 import frc.robot.commands.auto.LaunchStartCommand;
 import frc.robot.commands.transport.LaunchNote;
@@ -51,10 +53,14 @@ public class RobotContainer {
 
   private StringPublisher autoDataPublisher = null;
 
+  /** The swerve subsystem. Only used over Swerver.getInstance() to let AdvantageKit know it should scan this class for AutoLog methods. */
+  private Swerve swerveSubsystem = Swerve.getInstance();
+  /** The launcher subsystem. Only used over Launcher.getInstance() to let AdvantageKit know it should scan this class for AutoLog methods. */
+  private Launcher launcherSubsystem = Launcher.getInstance();
+
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
     Limelight.getInstance();
-    Swerve swerveSubsystem = Swerve.getInstance();
     
     registerAutoCommands();
     publishAutoData();
@@ -82,6 +88,10 @@ public class RobotContainer {
 
     autoChooser.getSendableChooser().onChange(swerveSubsystem::selectedAutoChanged);
 
+    ShuffleboardContent.competitionTab.add("Auto to run", autoChooser.getSendableChooser())
+      .withPosition(1, 5)
+      .withSize(3, 1);
+
     Controls.getInstance().configureControls();
     
     LiveWindow.disableAllTelemetry();
@@ -91,7 +101,6 @@ public class RobotContainer {
    * Registers the NamedCommands used for PathPlanner auto commands.
    */
   private void registerAutoCommands() {
-    Launcher launcherSubsystem = Launcher.getInstance();
     Transport transportSubsystem = Transport.getInstance();
 
     // All autos

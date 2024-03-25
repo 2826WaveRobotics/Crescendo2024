@@ -10,16 +10,14 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import org.littletonrobotics.urcl.URCL;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.controls.Controls;
 import frc.robot.controls.VibrationFeedback;
 import frc.robot.subsystems.Superstructure;
-import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.vision.Limelight;
 
 
 /**
@@ -45,6 +43,7 @@ public class Robot extends LoggedRobot {
    * initialization code.
    */
   @Override
+  @SuppressWarnings("unused") // Suppress dead code warnings since Java thinks BuildConstants values will be static.
   public void robotInit() {
     Logger.recordMetadata("ProjectName", "Crescendo2024"); // Set a metadata value
 
@@ -55,9 +54,19 @@ public class Robot extends LoggedRobot {
       BuildConstants.GIT_SHA +
       " on " + 
       BuildConstants.GIT_BRANCH +
-      (BuildConstants.DIRTY == 1 ? "*" : "") // Add a "*" if the build is dirty. TODO: Fix warnings here since DIRTY is recognized as readonly even though it shouldn't be.
+      (BuildConstants.DIRTY == 1 ? "*" : "")
     );
     Logger.recordMetadata("BuiltOn", BuildConstants.BUILD_DATE); // Set a metadata value
+    if(DriverStation.isFMSAttached()) {
+      // Note: This won't record metadata if the robot is turned on before we're connected to the FMS.
+      Logger.recordMetadata("EventName", DriverStation.getEventName());
+      Logger.recordMetadata("GameSpecificMessage", DriverStation.getGameSpecificMessage());
+      Logger.recordMetadata("MatchNumber", Integer.toString(DriverStation.getMatchNumber()));
+      Logger.recordMetadata("MatchType", DriverStation.getMatchType().toString());
+      Logger.recordMetadata("ReplayNumber", Integer.toString(DriverStation.getReplayNumber()));
+      Logger.recordMetadata("Alliance", DriverStation.getAlliance().orElse(DriverStation.Alliance.Red).toString());
+      Logger.recordMetadata("AllianceLocation", Integer.toString(DriverStation.getLocation().orElse(-1)));
+    }
 
     switch (Constants.currentMode) {
       case REAL:
@@ -80,6 +89,8 @@ public class Robot extends LoggedRobot {
         break;
     }
 
+    Logger.registerURCL(URCL.startExternal());
+    
     // Logger.disableDeterministicTimestamps() // See "Deterministic Timestamps" in the "Understanding Data Flow" page
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
 
@@ -87,11 +98,9 @@ public class Robot extends LoggedRobot {
     // autonomous chooser on the dashboard, and do anything else required for initialization.
     robotContainer = new RobotContainer();
     
-    // Forward the Limelight camera ports
-    // More information: https://docs.limelightvision.io/docs/docs-limelight/getting-started/best-practices#event-preparation-checklist
-    for (int port = 5800; port <= 5807; port++) {
-      PortForwarder.add(port, "limelight.local", port);
-    }
+    Limelight.getInstance().initiaize();
+
+    CommandScheduler.getInstance().getDefaultButtonLoop().bind(VibrationFeedback.getInstance()::update);
   }
 
   /**
@@ -111,11 +120,17 @@ public class Robot extends LoggedRobot {
     robotContainer.updateAutoPublisher();
     
     setNetworkTablesFlushEnabled(!DriverStation.isFMSAttached());
+
+    Logger.recordOutput("JVMStats/FreeMemory", Runtime.getRuntime().freeMemory());
+    Logger.recordOutput("JVMStats/TotalMemory", Runtime.getRuntime().totalMemory());
+    Logger.recordOutput("JVMStats/UsedMemory", Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    VibrationFeedback.getInstance().reset();
+  }
 
   @Override
   public void disabledPeriodic() {}
