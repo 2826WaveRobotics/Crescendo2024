@@ -9,17 +9,21 @@
         "sidebar": {
           "width": 300,
           "expanded": [
-            "/AdvantageKit",
             "/AdvantageKit/RealOutputs/RobotPeriodic",
-            "/AdvantageKit/RealOutputs"
+            "/AdvantageKit/RealOutputs",
+            "/AdvantageKit"
           ]
         },
         "tabs": {
-          "selected": 5,
+          "selected": 6,
           "tabs": [
             {
               "type": 0,
-              "path": "../docs/INDEX.md"
+              "path": "../docs/CUSTOM-ASSETS.md"
+            },
+            {
+              "type": 12,
+              "title": "Metadata"
             },
             {
               "type": 5,
@@ -148,14 +152,14 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  5.145255135730502,
-                  5.919176634947963,
-                  -9.756961065302779
+                  0.3391566501968849,
+                  9.129830259596812,
+                  12.538613387006649
                 ],
                 "cameraTarget": [
-                  0.8911380795431662,
-                  -1.6344195738831826,
-                  2.02348715159064
+                  0.5195015512581979,
+                  0.20521362850350217,
+                  -0.005863004940586614
                 ]
               },
               "title": "3D Field"

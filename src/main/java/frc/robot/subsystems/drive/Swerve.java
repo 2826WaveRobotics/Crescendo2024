@@ -13,6 +13,7 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 
@@ -38,6 +39,7 @@ import frc.lib.util.LocalADStarAK;
 import frc.lib.util.ShuffleboardContent;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.Limelight;
+import frc.robot.visualization.NoteVisualizer;
 
 public class Swerve extends SubsystemBase {
   private static Swerve instance = null;
@@ -161,7 +163,6 @@ public class Swerve extends SubsystemBase {
     
     resetRotation();
 
-    // utility used to build auto paths
     AutoBuilder.configureHolonomic(
       this::getPose, // Robot pose supplier
       this::setPose, // Method to reset odometry (will be called if your auto has a starting pose)
@@ -169,10 +170,10 @@ public class Swerve extends SubsystemBase {
       this::driveVelocity, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
       new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
         // We don't need to pass PID constants, so we don't for now.
-        // new PIDConstants(5, 0, 0), // Translation PID constants
-        // new PIDConstants(5, 0, 0), // Rotation PID constants
+        new PIDConstants(5, 0, 0), // Translation PID constants
+        new PIDConstants(5, 0, 0), // Rotation PID constants
         Constants.Swerve.maxSpeed, // Max module speed, in m/s
-        Constants.Swerve.wheelBase, // Drive base radius in meters. Distance from robot center to furthest module.
+        Math.sqrt(Constants.Swerve.wheelBase * Constants.Swerve.wheelBase + Constants.Swerve.trackWidth * Constants.Swerve.trackWidth), // Drive base radius in meters. Distance from robot center to furthest module.
         new ReplanningConfig(true, true) // Default path replanning config. See the API for the options here
       ),
       // Boolean supplier that controls when the path will be mirrored for the red alliance
@@ -216,6 +217,8 @@ public class Swerve extends SubsystemBase {
     if(Constants.enableNonEssentialShuffleboard) {
       Shuffleboard.getTab("Notes").addString("Odometry position", () -> ("(" + getPose().getX() + ", " + getPose().getY() + ")"));
     }
+
+    NoteVisualizer.setRobotPoseSupplier(this::getPose);
 
     // Set up custom logging to add the current path to a field 2d widget
     PathPlannerLogging.setLogActivePathCallback((poses) -> field.getObject("path").setPoses(poses));
