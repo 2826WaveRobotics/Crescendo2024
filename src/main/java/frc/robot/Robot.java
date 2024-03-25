@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import org.littletonrobotics.junction.AutoLogOutputManager;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -12,15 +11,11 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.controls.Controls;
 import frc.robot.controls.VibrationFeedback;
 import frc.robot.subsystems.Superstructure;
-import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.vision.Limelight;
 
 
@@ -90,6 +85,8 @@ public class Robot extends LoggedRobot {
     robotContainer = new RobotContainer();
     
     Limelight.getInstance().initiaize();
+
+    CommandScheduler.getInstance().getDefaultButtonLoop().bind(VibrationFeedback.getInstance()::update);
   }
 
   /**
@@ -117,7 +114,9 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    VibrationFeedback.getInstance().reset();
+  }
 
   @Override
   public void disabledPeriodic() {}

@@ -43,7 +43,7 @@ public class Controls {
     
     /* Controllers */
     private final CommandXboxController driver = new CommandXboxController(0);
-    public final CommandXboxController operator = new CommandXboxController(1);
+    private final CommandXboxController operator = new CommandXboxController(1);
 
     private Controls() {
         // This is a singleton class.
@@ -65,8 +65,6 @@ public class Controls {
      * Configures the controls for the robot. This is where we bind commands to buttons and add joystick actions.
      */
     public void configureControls() {
-        System.out.println("Configure controls");
-        
         Swerve swerveSubsystem = Swerve.getInstance();
         Launcher launcherSubsystem = Launcher.getInstance();
         Transport transportSubsystem = Transport.getInstance();
@@ -76,6 +74,7 @@ public class Controls {
         /*//////////////////////////*/
         /*     Driver Controls      */
         /*//////////////////////////*/
+        BooleanSupplier fieldRelative = driver.leftBumper();
         swerveSubsystem.setDefaultCommand(
             DriveCommands.joystickDrive(
                 swerveSubsystem,
@@ -83,7 +82,7 @@ public class Controls {
                 () -> -driver.getLeftY(),
                 driver.leftTrigger(0.2),
                 () -> -driver.getRightX(),
-                () -> !driver.leftBumper().getAsBoolean()
+                () -> !fieldRelative.getAsBoolean()
             )
         );
 

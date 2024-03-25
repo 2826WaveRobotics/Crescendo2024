@@ -10,14 +10,12 @@
           "width": 300,
           "expanded": [
             "/AdvantageKit",
-            "/AdvantageKit/RealOutputs",
             "/AdvantageKit/RealOutputs/RobotPeriodic",
-            "/AdvantageKit/RealOutputs/LoggedRobot",
-            "/AdvantageKit/RealOutputs/Drive"
+            "/AdvantageKit/RealOutputs"
           ]
         },
         "tabs": {
-          "selected": 7,
+          "selected": 5,
           "tabs": [
             {
               "type": 0,
@@ -150,14 +148,14 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  4.085824851150884,
-                  10.389354434796138,
-                  -12.368102742559628
+                  5.145255135730502,
+                  5.919176634947963,
+                  -9.756961065302779
                 ],
                 "cameraTarget": [
-                  0.9934887943923799,
-                  -0.778982283699431,
-                  1.3496181099908708
+                  0.8911380795431662,
+                  -1.6344195738831826,
+                  2.02348715159064
                 ]
               },
               "title": "3D Field"
@@ -186,7 +184,10 @@
                   ]
                 },
                 "right": {
-                  "lockedRange": null,
+                  "lockedRange": [
+                    0,
+                    20
+                  ],
                   "unitConversion": {
                     "type": null,
                     "factor": 1
@@ -218,6 +219,11 @@
               "title": "Loop time debug"
             },
             {
+              "type": 3,
+              "field": "NT:/AdvantageKit/RealOutputs/Console",
+              "title": "Console"
+            },
+            {
               "type": 1,
               "legendHeight": 0.3,
               "legends": {
@@ -230,12 +236,12 @@
                   "fields": [
                     {
                       "key": "NT:/AdvantageKit/RealOutputs/JVMStats/TotalMemory",
-                      "color": "#e5b31b",
+                      "color": "#2b66a2",
                       "show": true
                     },
                     {
                       "key": "NT:/AdvantageKit/RealOutputs/JVMStats/UsedMemory",
-                      "color": "#af2437",
+                      "color": "#e5b31b",
                       "show": true
                     }
                   ]
@@ -244,7 +250,7 @@
                   "fields": [
                     {
                       "key": "NT:/AdvantageKit/RealOutputs/LoggedRobot/GCCounts",
-                      "color": "#2b66a2",
+                      "color": "#af2437",
                       "show": true
                     }
                   ]

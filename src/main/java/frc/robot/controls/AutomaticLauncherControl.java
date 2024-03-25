@@ -67,7 +67,7 @@ public class AutomaticLauncherControl {
         launcherStateGrid.add(new LauncherState(speed, angle));
       }
     } catch(IOException ioException) {
-      System.out.println("WARNING: IO exception while reading automatic launcher control file: " + ioException.getLocalizedMessage());
+      DriverStation.reportWarning("WARNING: IO exception while reading automatic launcher control file: " + ioException.getLocalizedMessage(), false);
     }
   }
 

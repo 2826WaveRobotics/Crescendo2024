@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import java.util.HashMap;
-import java.util.function.Consumer;
 
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.Notifier;
@@ -88,16 +87,6 @@ public class Superstructure extends SubsystemBase {
         hashmap.put(0b101, NoteState.EjectingNote);
         hashmap.put(0b110, NoteState.MovingNote);
         hashmap.put(0b111, NoteState.EjectingNote);
-
-        // Using top two
-        // hashmap.put(0b000, NoteState.NoNote);
-        // hashmap.put(0b100, NoteState.IntakingNote);
-        // hashmap.put(0b010, NoteState.MovingNote);
-        // hashmap.put(0b110, NoteState.EjectingNote);
-        // hashmap.put(0b001, NoteState.ReadyToLaunch); // Technically, launching
-        // hashmap.put(0b101, NoteState.EjectingNote);
-        // hashmap.put(0b011, NoteState.ReadyToLaunch);
-        // hashmap.put(0b111, NoteState.EjectingNote);
         return hashmap;
     }
 

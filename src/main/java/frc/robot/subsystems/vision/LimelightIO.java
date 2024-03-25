@@ -3,10 +3,10 @@ package frc.robot.subsystems.vision;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 
-import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.lib.LimelightHelpers;
 
 public interface LimelightIO {
@@ -36,7 +36,7 @@ public interface LimelightIO {
         oos.writeObject(new SerializablePoseEstimate(poseEstimateData));
         table.put("PoseEstimateData", bos.toByteArray());
       } catch (java.io.IOException e) {
-        System.out.println("Error writing LimelightIOInputsLogged to log: " + e);
+        DriverStation.reportWarning("Error writing LimelightIOInputsLogged to log: " + e, false);
       }
     }
   
@@ -50,7 +50,7 @@ public interface LimelightIO {
           poseEstimateData = poseEstimate.poseEstimate;
         }
       } catch (java.io.IOException | ClassNotFoundException e) {
-        System.out.println("Error reading LimelightIOInputsLogged from log: " + e);
+        DriverStation.reportWarning("Error reading LimelightIOInputsLogged from log: " + e, false);
       }
     }
   
