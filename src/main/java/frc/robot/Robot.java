@@ -109,6 +109,10 @@ public class Robot extends LoggedRobot {
     robotContainer.updateAutoPublisher();
     
     setNetworkTablesFlushEnabled(!DriverStation.isFMSAttached());
+
+    Logger.recordOutput("JVMStats/FreeMemory", Runtime.getRuntime().freeMemory());
+    Logger.recordOutput("JVMStats/TotalMemory", Runtime.getRuntime().totalMemory());
+    Logger.recordOutput("JVMStats/UsedMemory", Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
