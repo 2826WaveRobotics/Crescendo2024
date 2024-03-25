@@ -25,6 +25,8 @@ public class LauncherIOReal implements LauncherIO {
   private final SparkPIDController bottomLaunchRollerPIDController;
   private final SparkPIDController anglePIDController;
 
+  private final RelativeEncoder topRollerEncoder;
+
   public LauncherIOReal() {
     // Instantiate member variables and necessary code
     topRollerMotor = new CANSparkMax(Constants.Launcher.topRollerCANID, CANSparkMax.MotorType.kBrushless);
@@ -65,7 +67,9 @@ public class LauncherIOReal implements LauncherIO {
     angleLauncherMotor.burnFlash();
     
     angleLauncherEncoder = angleLauncherMotor.getEncoder();
-    absoluteAngleLauncherEncoder = new DutyCycleEncoder(0);
+    absoluteAngleLauncherEncoder = new DutyCycleEncoder(Constants.Launcher.absoluteEncoderDIOPort);
+
+    topRollerEncoder = topRollerMotor.getEncoder();
 
     resetToAbsolute();
   }
@@ -98,6 +102,7 @@ public class LauncherIOReal implements LauncherIO {
     inputs.absoluteLauncherAngle = getAbsoluteLauncherAngle();
     inputs.launcherRelativeConchAngle = getLauncherConchAngle();
     inputs.launcherAngleVeocityRPM = angleLauncherEncoder.getVelocity();
+    inputs.speedRPM = topRollerEncoder.getVelocity();
   }
 
   @Override

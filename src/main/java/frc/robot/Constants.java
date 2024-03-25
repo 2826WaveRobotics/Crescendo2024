@@ -34,9 +34,9 @@ public final class Constants {
    */
   public static final double triggerDeadband = 0.03;
 
-  public static final boolean enableNonEssentialShuffleboard = false;
+  public static final boolean enableNonEssentialShuffleboard = true;
 
-  public static final double fieldLengthMeters = Units.feetToMeters(54 + 1/12);
+  public static final double fieldLengthMeters = Units.feetToMeters(54. + 1./12);
 
   public static final class Swerve {
     public static final double stickDeadband = 0.1;
@@ -167,10 +167,11 @@ public final class Constants {
   }
 
   public static final class Launcher {
+    public static final int absoluteEncoderDIOPort = 0;
+
     public static final int topRollerCANID = 59;
     public static final int bottomRollerCANID = 52;
     public static final int angleMotorCANID = 27;
-    public static final int angleMotorID = 0;
 
     public static CANSparkMaxConfig rollerConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kCoast,
@@ -284,8 +285,8 @@ public final class Constants {
     public static final int leftClimberMotorCANID = 55;
     public static final int rightClimberMotorCANID = 56;
 
-    public static final int climbingSmartCurrentLimit = 10;
-    public static final int climbingSecondaryCurrentLimit = 15;
+    public static final int climbingSmartCurrentLimit = 30;
+    public static final int climbingSecondaryCurrentLimit = 35;
     public static final int resetSmartCurrentLimit = 2;
     public static final int resetSecondaryCurrentLimit = 2;
 

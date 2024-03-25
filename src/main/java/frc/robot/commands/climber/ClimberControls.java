@@ -20,15 +20,22 @@ public class ClimberControls extends InstantCommand {
             
             double speed = invertControls.getAsBoolean() ? -Constants.Climber.climberMotorSpeed : Constants.Climber.climberMotorSpeed;
 
+            boolean climbing = moveLeft.getAsBoolean() || moveRight.getAsBoolean();
+
+            if(climbing) {
+                Climber.getInstance().useClimbingCurrentLimit();
+            } else {
+                Climber.getInstance().useResetCurrentLimit();
+            }
+
             Command scheduledClimbCommand = Superstructure.getInstance().scheduledClimbCommand;
-            if(
-                (moveLeft.getAsBoolean() || moveRight.getAsBoolean()) &&
-                scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()
-            ) scheduledClimbCommand.cancel();
+            if(climbing && scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
 
             Climber climber = Climber.getInstance();
             climber.setLeftSpeed ((moveLeft .getAsBoolean() ? 1 : 0) * speed);
             climber.setRightSpeed((moveRight.getAsBoolean() ? 1 : 0) * speed);
         });
+
+        addRequirements(Climber.getInstance());
     }
 }

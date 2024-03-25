@@ -33,10 +33,10 @@ Operator:
 
     Left joystick vertical: Override intake and transport speed
 
-    D-pad up: Speaker preset
+    D-pad up: Podium preset
     D-pad down: Slow preset
     D-pad left: Amp preset
-    D-pad right:
+    D-pad right: Close speaker preset
 
     Start: Retrieve note from launcher (runs launchers at 100% power backward; can be dangerous)
     Back:

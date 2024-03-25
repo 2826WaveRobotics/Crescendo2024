@@ -18,6 +18,7 @@ import frc.robot.commands.climber.ClimberFullyUp;
 import frc.robot.controls.SwerveAlignmentController;
 import frc.robot.controls.VibrationFeedback;
 import frc.robot.controls.VibrationFeedback.VibrationPatternType;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.noteSensors.NoteSensors;
 import frc.robot.subsystems.transport.Transport;
@@ -206,6 +207,8 @@ public class Superstructure extends SubsystemBase {
         Transport.getInstance().resetState();
 
         SwerveAlignmentController.getInstance().reset();
+
+        Climber.getInstance().useResetCurrentLimit();
     }
     
     public void resetSubsystemsForTeleop() {

@@ -10,6 +10,7 @@ public interface LauncherIO {
     public Rotation2d absoluteLauncherAngle = new Rotation2d();
     public Rotation2d launcherRelativeConchAngle = new Rotation2d();
     public double launcherAngleVeocityRPM = 0;
+    public double speedRPM = 0;
   }
 
   /** Runs the launch rollers at the specified speed in RPM. */

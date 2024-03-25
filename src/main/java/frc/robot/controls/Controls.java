@@ -12,7 +12,9 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
@@ -21,6 +23,8 @@ import frc.robot.commands.TeleopIntake;
 import frc.robot.commands.climber.ClimberControls;
 import frc.robot.commands.control.PathfindToAmpAndLaunch;
 import frc.robot.commands.control.PathfindToSpeakerAndLaunch;
+import frc.robot.commands.transport.SetLauncherAngle;
+import frc.robot.commands.transport.SetLauncherSpeed;
 import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.climber.Climber;
@@ -65,8 +69,6 @@ public class Controls {
      * Configures the controls for the robot. This is where we bind commands to buttons and add joystick actions.
      */
     public void configureControls() {
-        System.out.println("Configure controls");
-        
         Swerve swerveSubsystem = Swerve.getInstance();
         Launcher launcherSubsystem = Launcher.getInstance();
         Transport transportSubsystem = Transport.getInstance();
@@ -164,7 +166,7 @@ public class Controls {
             // Close speaker preset
             if(testMode.getAsBoolean()) return; // Test angle mode
             launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(59.95));
-            launcherSubsystem.setLauncherSpeed(3160, true);
+            launcherSubsystem.setLauncherSpeed(4500, true);
         }));
 
         operator.povLeft().whileTrue(new RepeatCommand(new InstantCommand(() -> {
@@ -180,6 +182,18 @@ public class Controls {
         operator.rightTrigger(0.2).whileTrue(new RepeatCommand(new InstantCommand(
             () -> Transport.getInstance().attemptTransitionToState(TransportState.LaunchingNote)
         ))).onFalse(new InstantCommand(
+            () -> Transport.getInstance().attemptTransitionToState(TransportState.Stopped)
+        ));
+        
+        operator.leftTrigger(0.2).onTrue(new SequentialCommandGroup(
+            new ParallelCommandGroup(
+                new SetLauncherAngle(287),
+                new SetLauncherSpeed(0, false)
+            ),
+            new InstantCommand(
+                () -> Transport.getInstance().attemptTransitionToState(TransportState.LaunchingNote)
+            )
+        )).onFalse(new InstantCommand(
             () -> Transport.getInstance().attemptTransitionToState(TransportState.Stopped)
         ));
         

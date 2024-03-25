@@ -110,12 +110,18 @@ public class Launcher extends SubsystemBase {
     return inputs.launcherAngleVeocityRPM;
   }
 
+  public double getSpeedRPM() {
+    return inputs.speedRPM;
+  }
+
   @Override
   public void periodic() {
     launcherIO.updateInputs(inputs);
     launcherIO.runRollers(topRollerSpeed, bottomRollerSpeed);
 
-    SmartDashboard.putNumber("Absolute launcher angle", inputs.absoluteLauncherAngle.getDegrees());
+    if(Constants.enableNonEssentialShuffleboard) {
+      SmartDashboard.putNumber("Absolute launcher angle", inputs.absoluteLauncherAngle.getDegrees());
+    }
     
     if(Constants.enableNonEssentialShuffleboard) {
       SmartDashboard.putNumber("LauncherSpeed", topRollerSpeed);
