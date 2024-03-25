@@ -438,10 +438,12 @@ public class Swerve extends SubsystemBase {
     
     timeTracer.addEpoch("Odometry updates");
 
-    if(Logger.getRealTimestamp() - startTime > 10000) { // More than 0.01 seconds
+    double executionTime = Logger.getRealTimestamp() - startTime;
+    if(executionTime > 10000) { // More than 0.01 seconds
       System.out.println("Swerve time took over 0.01 seconds: " + ((Logger.getRealTimestamp() - startTime) / 1000000) + "s");
       timeTracer.printEpochs();
     }
+    Logger.recordOutput("Drive/ExecutionTimeMS", executionTime * 0.001);
 
     field.setRobotPose(getPose());
   }
