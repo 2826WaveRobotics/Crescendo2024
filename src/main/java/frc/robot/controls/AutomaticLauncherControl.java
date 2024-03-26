@@ -10,8 +10,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import frc.robot.Constants;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
 
@@ -107,14 +109,74 @@ public class AutomaticLauncherControl {
     return new LauncherState(speed, angle * 0.9);
   }
 
+  private interface SearchCondition {
+    boolean get(int position);
+  }
+
+  private static int search(SearchCondition value, int lowerBound, int upperBound) {
+    int mid;
+    while(lowerBound <= upperBound) {
+      mid = (lowerBound + upperBound) >>> 1;
+
+      if(value.get(mid)) lowerBound = mid + 1;
+      else if(lowerBound == mid) return mid;
+      else upperBound = mid;
+    }
+    return -lowerBound;
+  }
+
   private LauncherState getLauncherStateMathematicalModel() {
     // https://en.wikipedia.org/wiki/Projectile_motion#Angle_%CE%B8_required_to_hit_coordinate_(x,_y)
+    // We find the "ideal" angle and speed by using the lowest speed that allows us to get to the target
+    
+    Swerve swerve = Swerve.getInstance();
+    double lookaheadDistance = swerve.getRobotSpeed() * 0.2; // 0.2 is abritrary; let's say it takes 200ms to adjust the launcher
+    Pose2d pose = swerve.getPose().transformBy(new Transform2d(lookaheadDistance, 0.0, new Rotation2d()));
+    Translation2d currentTranslation = pose.getTranslation();
 
-    // TODO
-    return new LauncherState(0.0, 0.0);
+    double speakerInward = -0.1;
+    boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
+    Translation2d allianceSpeakerTranslation = isBlueAlliance ? new Translation2d(speakerInward, 5.55) : new Translation2d(Constants.fieldLengthMeters - speakerInward, 5.55);
+
+    // Project the position of the robot and speaker into a 2D plane, with the robot at (0, 0)
+    double robotDistance = currentTranslation.getDistance(allianceSpeakerTranslation); // x
+    double speakerHeight = 1.98; // y
+
+    double g = 9.81; // Gravitational constant
+    int minimumSpeedRPM = search(
+      (int rpm) -> {
+        // Convert RPM to meters per second
+        double speed = 
+          rpm / 60. * // Revoluions per second
+          Math.PI * Constants.Launcher.wheelRadiusMeters * 2; // Circumferences per second
+        
+        return Math.pow(speed, 4) - g*(g*robotDistance*robotDistance + 2*speakerHeight*speed*speed) >= 0;
+      },
+      2500, 5600
+    );
+
+    double usedSpeedRPM = minimumSpeedRPM + 50.;
+
+    // Convert RPM to meters per second
+    double speed = 
+      usedSpeedRPM / 60. * // Revoluions per second
+      Math.PI * Constants.Launcher.wheelRadiusMeters * 2; // Circumferences per second
+    
+    double angleRadians = Math.atan(
+      (
+        speed*speed +
+        Math.sqrt(
+          Math.pow(speed, 4) -
+          g*(g*robotDistance*robotDistance + 2*speakerHeight*speed*speed)
+        )
+      ) /
+      (g * robotDistance)
+    );
+
+    return new LauncherState(usedSpeedRPM, Units.radiansToDegrees(angleRadians));
   }
   
-  public static enum LauncherControlType {
+  public enum LauncherControlType {
     LookupTable,
     MathematicalModel
   }
@@ -122,8 +184,18 @@ public class AutomaticLauncherControl {
   /**
    * Automatically adjusts the launcher angle and speed based on the robot's position and a predefined lookup table.
    */
-  public void autoAlign(LauncherControlType controlType) {
-    LauncherState state = getLauncherStateLookupTable();
+  public void autoAlign() {
+    LauncherControlType controlType = LauncherControlType.MathematicalModel;
+    LauncherState state;
+    switch(controlType) {
+      case MathematicalModel:
+        state = getLauncherStateMathematicalModel();
+        break;
+      case LookupTable:
+      default:
+        state = getLauncherStateLookupTable();
+        break;
+    }
     
     // SmartDashboard.putString("Automatic launcher control value", "[" + state.speed + ", " + state.angleDegrees + "]");
     

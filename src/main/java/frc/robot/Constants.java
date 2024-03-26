@@ -173,6 +173,8 @@ public final class Constants {
     public static final int bottomRollerCANID = 52;
     public static final int angleMotorCANID = 27;
 
+    public static final double wheelRadiusMeters = Units.inchesToMeters(2);
+
     public static CANSparkMaxConfig rollerConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kCoast,
       30,
@@ -216,29 +218,6 @@ public final class Constants {
     public static final boolean invertAngle = false;
   }
 
-  public static final class Intake {
-    public static final int frontIntakeMotorCANID = 46;
-    public static final int backIntakeMotorCANID = 4;
-
-    public static final CANSparkMaxConfig intakeMotorConfig = new CANSparkMaxConfig(
-      IdleMode.kCoast,
-      10, 15,
-      0.25,
-      12.0,
-      CANSparkMaxUtil.Usage.kPositionOnly
-    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 1 / 11000.);
-    
-    /**
-     * The transport wheel radius, in meters.
-     */
-    public static final double wheelRadius = Units.inchesToMeters(1.0);
-
-    /**
-     * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at), in meters per second.
-     */
-    public static final double intakeSpeed = 1.0;
-  }
-
   public static final class NoteSensors {
     /**
      * The DIO port of the through beam sensor detecting if notes are in the intake.
@@ -255,8 +234,12 @@ public final class Constants {
   }
 
   public static final class Transport {
-    public static final int upperTransportMotorCANID = 57;
-    public static final int lowerTransportMotorCANID = 54;
+    public static final int topTransportMotorCANID = 57;
+    public static final int bottomTransportMotorCANID = 54;
+
+    public static final double rollerDiameterMeters = Units.inchesToMeters(1.525);
+
+    public static final double transportGearRatio = 2.89;
 
     public static final CANSparkMaxConfig transportMotorConfig = new CANSparkMaxConfig(
       IdleMode.kCoast,
@@ -264,21 +247,21 @@ public final class Constants {
       0.0, // We manually use a slew rate limiter so we can stop instantly.
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 1. / 11000.);
+    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 1. / 5700.);
 
     /**
      * The speed that notes are moved into the launcher to shoot, in meters per second.
      */
     public static final double launchNoteTransportSpeed = 1.7;
     /**
-     * The speed that notes are moved out of the transport for putting them into the trap, in meters per second.
-     */
-    public static final double trapEjectSpeed = 0.5;
-    /**
      * The speed to move notes when ejecting.  
      * Notes are ejected when we have more than 1 note in the transport at a time.
      */
     public static final double ejectNoteSpeed = 0.5;
+    /**
+     * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at), in meters per second.
+     */
+    public static final double intakeSpeed = 1.0;
   }
 
   public static final class Climber {
