@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkPIDController;
 
+import edu.wpi.first.math.controller.PIDController;
 import frc.lib.util.CANSparkMaxUtil.Usage;
 
 public class CANSparkMaxConfig {
@@ -84,7 +85,6 @@ public class CANSparkMaxConfig {
         this.usage = usage;
     }
 
-    
     /**
      * Adds a PID slot to this Spark Max's configuration.
      * @param slot
@@ -96,6 +96,17 @@ public class CANSparkMaxConfig {
     public CANSparkMaxConfig configurePIDSlot(int slot, double p, double i, double d, double f) {
         pidConfigurations.add(new PIDValues(slot, p, i, d, f));
         return this;
+    }
+
+    /**
+     * Gets the PID controller for the given slot.  
+     * This is useful for configuring simulation models.
+     * @param slot
+     * @return
+     */
+    public PIDController getPIDController(int slot) {
+        PIDValues values = pidConfigurations.get(slot);
+        return new PIDController(values.p, values.i, values.d, values.f);
     }
 
     /**

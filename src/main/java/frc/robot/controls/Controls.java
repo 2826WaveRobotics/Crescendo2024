@@ -186,10 +186,11 @@ public class Controls {
             () -> Transport.getInstance().attemptTransitionToState(TransportState.Stopped)
         ));
         
+        // Lob shot
         operator.leftTrigger(0.2).onTrue(new SequentialCommandGroup(
             new ParallelCommandGroup(
-                new SetLauncherAngle(287),
-                new SetLauncherSpeed(0, false)
+                new SetLauncherAngle(60.0),
+                new SetLauncherSpeed(5000, false)
             ),
             new InstantCommand(
                 () -> Transport.getInstance().attemptTransitionToState(TransportState.LaunchingNote)

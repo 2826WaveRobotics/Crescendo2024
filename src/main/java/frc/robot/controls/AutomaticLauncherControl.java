@@ -125,6 +125,11 @@ public class AutomaticLauncherControl {
     return -lowerBound;
   }
 
+  private double RPMToLinarSpeed(int rpm) {
+    return rpm / 60. * // Revoluions per second
+      Math.PI * Constants.Launcher.wheelRadiusMeters * 2; // Circumferences per second
+  }
+
   private LauncherState getLauncherStateMathematicalModel() {
     // https://en.wikipedia.org/wiki/Projectile_motion#Angle_%CE%B8_required_to_hit_coordinate_(x,_y)
     // We find the "ideal" angle and speed by using the lowest speed that allows us to get to the target
@@ -146,21 +151,16 @@ public class AutomaticLauncherControl {
     int minimumSpeedRPM = search(
       (int rpm) -> {
         // Convert RPM to meters per second
-        double speed = 
-          rpm / 60. * // Revoluions per second
-          Math.PI * Constants.Launcher.wheelRadiusMeters * 2; // Circumferences per second
-        
+        double speed = RPMToLinarSpeed(rpm);
         return Math.pow(speed, 4) - g*(g*robotDistance*robotDistance + 2*speakerHeight*speed*speed) >= 0;
       },
       2500, 5600
     );
 
-    double usedSpeedRPM = minimumSpeedRPM + 50.;
+    int usedSpeedRPM = minimumSpeedRPM + 50;
 
     // Convert RPM to meters per second
-    double speed = 
-      usedSpeedRPM / 60. * // Revoluions per second
-      Math.PI * Constants.Launcher.wheelRadiusMeters * 2; // Circumferences per second
+    double speed = RPMToLinarSpeed(usedSpeedRPM);
     
     double angleRadians = Math.atan(
       (

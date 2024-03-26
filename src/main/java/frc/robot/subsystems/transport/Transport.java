@@ -188,29 +188,31 @@ public class Transport extends SubsystemBase {
 
   /** Immediately updates the transport motors with the new speeds. Used to reduce latency. */
   public void immediatelyUpdateSpeeds() {
-    if (transportState == TransportState.OperatorOverride) {
-      transportIO.setTransportSpeed(operatorOverrideSpeedMetersPerSecond, operatorOverrideSpeedMetersPerSecond);
-    } else {
-      switch(transportState) {
-        case IntakingNote:
-          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, Constants.Intake.intakeSpeed);
-          break;
-        case MovingNote:
-          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, 0.);
-          break;
-        case EjectingNote:
-          transportIO.setTransportSpeed(-Constants.Transport.ejectNoteSpeed, -Constants.Transport.ejectNoteSpeed);
-          break;
-        case SweepTransport:
-          transportIO.setTransportSpeed(1.5, 0.8);
-          break;
-        case LaunchingNote:
-          transportIO.setTransportSpeed(Constants.Transport.launchNoteTransportSpeed, 0.0);
-          break;
-        default:
-          transportIO.setTransportSpeed(0., 0.);
-          break;
-      }
-    }
+    // DO NOT KEEP, USE CODE ON THETA
+    // ACCEPT INCOMING WHEN MERGING
+    // if (transportState == TransportState.OperatorOverride) {
+    //   transportIO.setTransportSpeed(operatorOverrideSpeedMetersPerSecond, operatorOverrideSpeedMetersPerSecond);
+    // } else {
+    //   switch(transportState) {
+    //     case IntakingNote:
+    //       transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, Constants.Intake.);
+    //       break;
+    //     case MovingNote:
+    //       transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, 0.);
+    //       break;
+    //     case EjectingNote:
+    //       transportIO.setTransportSpeed(-Constants.Transport.ejectNoteSpeed, -Constants.Transport.ejectNoteSpeed);
+    //       break;
+    //     case SweepTransport:
+    //       transportIO.setTransportSpeed(1.5, 0.8);
+    //       break;
+    //     case LaunchingNote:
+    //       transportIO.setTransportSpeed(Constants.Transport.launchNoteTransportSpeed, 0.0);
+    //       break;
+    //     default:
+    //       transportIO.setTransportSpeed(0., 0.);
+    //       break;
+    //   }
+    // }
   }
 }
