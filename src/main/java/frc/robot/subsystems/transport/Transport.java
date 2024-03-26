@@ -189,26 +189,26 @@ public class Transport extends SubsystemBase {
   /** Immediately updates the transport motors with the new speeds. Used to reduce latency. */
   public void immediatelyUpdateSpeeds() {
     if (transportState == TransportState.OperatorOverride) {
-      transportIO.setTransportSpeed(operatorOverrideSpeedMetersPerSecond, operatorOverrideSpeedMetersPerSecond);
+      transportIO.setTransportSpeed(operatorOverrideSpeedMetersPerSecond);
     } else {
       switch(transportState) {
         case IntakingNote:
-          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, Constants.Intake.intakeSpeed);
+          transportIO.setTransportSpeed(Constants.Transport.intakeSpeed);
           break;
         case MovingNote:
-          transportIO.setTransportSpeed(Constants.Intake.intakeSpeed, 0.);
+          transportIO.setTransportSpeed(Constants.Transport.intakeSpeed * 0.75);
           break;
         case EjectingNote:
-          transportIO.setTransportSpeed(-Constants.Transport.ejectNoteSpeed, -Constants.Transport.ejectNoteSpeed);
+          transportIO.setTransportSpeed(-Constants.Transport.ejectNoteSpeed);
           break;
         case SweepTransport:
-          transportIO.setTransportSpeed(1.5, 0.8);
+          transportIO.setTransportSpeed(1.5);
           break;
         case LaunchingNote:
-          transportIO.setTransportSpeed(Constants.Transport.launchNoteTransportSpeed, 0.0);
+          transportIO.setTransportSpeed(Constants.Transport.launchNoteTransportSpeed);
           break;
         default:
-          transportIO.setTransportSpeed(0., 0.);
+          transportIO.setTransportSpeed(0.);
           break;
       }
     }

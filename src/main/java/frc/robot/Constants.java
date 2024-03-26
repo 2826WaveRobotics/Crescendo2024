@@ -234,7 +234,7 @@ public final class Constants {
   }
 
   public static final class Transport {
-    public static final int topTransportMotorCANID = 57;
+    public static final int topTransportMotorCANID = 45;
     public static final int bottomTransportMotorCANID = 54;
 
     public static final double rollerDiameterMeters = Units.inchesToMeters(1.525);

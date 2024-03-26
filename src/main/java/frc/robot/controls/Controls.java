@@ -137,7 +137,7 @@ public class Controls {
         BooleanSupplier testMode = operator.x();
 
         // Test angle mode
-        launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(25));
+        // launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(25));
         operator.povUp().whileTrue(new RepeatCommand(new InstantCommand(() -> {
             if(!testMode.getAsBoolean()) return; // Test angle mode
             double launcherAngle = launcherSubsystem.launcherAngle + 0.15;
