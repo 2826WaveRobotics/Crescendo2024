@@ -5,16 +5,11 @@ import java.util.Queue;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.revrobotics.REVLibError;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import frc.lib.config.SwerveModuleConstants;
 import frc.robot.Constants;
@@ -104,15 +99,14 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
     // Update the simulation
     if(usingPID) {
       double driveAppliedVolts =
-        feedforward.calculate(driveVelocityReference)
-        + driveController.calculate(inputs.driveVelocityRadPerSec, driveVelocityReference);
+        feedforward.calculate(driveVelocityReference) +
+        driveController.calculate(inputs.driveVelocityRadPerSec, driveVelocityReference);
         
       driveAppliedVolts = MathUtil.clamp(driveAppliedVolts, -12.0, 12.0);
       driveMotor.setInputVoltage(driveAppliedVolts);
 
-      turnMotor.setInputVoltage(
-        turnController.calculate(turnPosition, turnAngleReference)
-      );
+      double turnAppliedVolts = MathUtil.clamp(turnController.calculate(turnPosition, turnAngleReference), -12.0, 12.0);
+      turnMotor.setInputVoltage(turnAppliedVolts);
     }
     driveMotor.update(0.02);
     turnMotor.update(0.02);

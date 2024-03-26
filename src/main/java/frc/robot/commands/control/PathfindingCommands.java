@@ -8,35 +8,47 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
+import frc.robot.commands.DriveCommands;
 import frc.robot.commands.transport.LaunchNote;
 import frc.robot.commands.transport.SetLauncherAngle;
+import frc.robot.commands.transport.SetLauncherSpeed;
 import frc.robot.controls.SwerveAlignmentController;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
 
-public class PathfindToAmpAndLaunch extends SequentialCommandGroup {
-    public PathfindToAmpAndLaunch() {
-        addRequirements(Swerve.getInstance(), Launcher.getInstance());
+public class PathfindingCommands {
+    private static Command pathfind(String pathName, Command... afterPathfindCommands) {
+        var commandGroup = new SequentialCommandGroup();
 
-        // Load the path we want to pathfind to and follow
-        PathPlannerPath path = PathPlannerPath.fromPathFile("Internal_AmpLineup");
+        commandGroup.addRequirements(Swerve.getInstance(), Launcher.getInstance());
 
         // Since AutoBuilder is configured, we can use it to build pathfinding commands
         Command pathfindingCommand = AutoBuilder.pathfindThenFollowPath(
-            path,
+            PathPlannerPath.fromPathFile(pathName),
             Constants.Swerve.pathfindingConstraints,
             0.1 // Rotation delay distance in meters. This is how far the robot should travel before attempting to rotate.
         );
-
-        SwerveAlignmentController.getInstance().reset();
         
-        addCommands(
+        commandGroup.addCommands(
+            new InstantCommand(() -> SwerveAlignmentController.getInstance().reset()),
+            new InstantCommand(() -> DriveCommands.setPathfinding(true)),
             new ParallelCommandGroup(
                 new SetLauncherAngle(65),
-                new InstantCommand(() -> Launcher.getInstance().setLauncherSpeed(1500, false)),
+                new SetLauncherSpeed(1500, false),
                 pathfindingCommand
             ),
-            new LaunchNote()
+            new InstantCommand(() -> DriveCommands.setPathfinding(false))
         );
+        commandGroup.addCommands(afterPathfindCommands);
+
+        return commandGroup.finallyDo(() -> DriveCommands.setPathfinding(false));
+    }
+
+    public static Command pathfindToAmpAndLaunch() {
+        return pathfind("Internal_AmpLineup", new LaunchNote());
+    }
+    
+    public static Command pathfindToSpeakerAndLaunch() {
+        return pathfind("Internal_SpeakerLineup", new LaunchNote());
     }
 }

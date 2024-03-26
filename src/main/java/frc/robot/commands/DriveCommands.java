@@ -26,6 +26,11 @@ public class DriveCommands {
   private static SlewRateLimiter yVelocityRateLimiter = new SlewRateLimiter(3.0);
   private static SlewRateLimiter omegaRateLimiter = new SlewRateLimiter(3.0);
 
+  private static boolean pathfinding = false;
+  public static void setPathfinding(boolean pathfinding) {
+    DriveCommands.pathfinding = pathfinding;
+  }
+
   /**
    * Field relative drive command using two joysticks (controlling linear and angular velocities).
    */
@@ -51,6 +56,14 @@ public class DriveCommands {
         double linearMagnitude = MathUtil.applyDeadband(Math.hypot(xValue, yValue), Constants.Swerve.stickDeadband) * speedMultiplier;
         Rotation2d linearDirection = new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
         double omega = MathUtil.applyDeadband(omegaValue, Constants.Swerve.stickDeadband) * speedMultiplier;
+
+        // If we're pathfinding, don't control the drivetrain unless we manually override it.
+        // This is mostly a failsafe -- ideally, the driver wouldn't stop pathfinding with joysticks
+        // since the command will still be running.
+        if (pathfinding && linearMagnitude == 0 && omega == 0) {
+          return;
+        }
+        pathfinding = false;
 
         // Square values while preserving sign on omega
         linearMagnitude = linearMagnitude * linearMagnitude;

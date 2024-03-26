@@ -1,17 +1,19 @@
 {
   "hubs": [
     {
-      "x": -8,
-      "y": 32,
-      "width": 1936,
-      "height": 1056,
+      "x": -1608,
+      "y": 96,
+      "width": 1616,
+      "height": 876,
       "state": {
         "sidebar": {
-          "width": 300,
+          "width": 284,
           "expanded": [
             "/AdvantageKit/RealOutputs/RobotPeriodic",
+            "/AdvantageKit",
             "/AdvantageKit/RealOutputs",
-            "/AdvantageKit"
+            "/AdvantageKit/DriverStation",
+            "/AdvantageKit/RealOutputs/Odometry"
           ]
         },
         "tabs": {
@@ -19,7 +21,7 @@
           "tabs": [
             {
               "type": 0,
-              "path": "../docs/CUSTOM-ASSETS.md"
+              "path": "../docs/INDEX.md"
             },
             {
               "type": 12,
@@ -133,6 +135,18 @@
                 [],
                 [
                   {
+                    "type": "Red Ghost",
+                    "key": "NT:/AdvantageKit/RealOutputs/Odometry/LimelightPoseEstimate",
+                    "sourceTypeIndex": 1,
+                    "sourceType": "Pose2d"
+                  },
+                  {
+                    "type": "Mechanism (Robot)",
+                    "key": "NT:/AdvantageKit/RealOutputs/Launcher/Mechanism",
+                    "sourceTypeIndex": 8,
+                    "sourceType": "Mechanism2d"
+                  },
+                  {
                     "type": "Robot",
                     "key": "NT:/AdvantageKit/RealOutputs/Odometry/Robot",
                     "sourceTypeIndex": 1,
@@ -143,23 +157,23 @@
               "options": {
                 "field": "2024 Field",
                 "alliance": "blue",
-                "robot": "Duck Bot",
+                "robot": "Crab Bot",
                 "unitDistance": "meters",
                 "unitRotation": "radians"
               },
               "configHidden": false,
               "visualizer": {
                 "cameraIndex": -1,
-                "orbitFov": 50,
+                "orbitFov": 60,
                 "cameraPosition": [
-                  0.3391566501968849,
-                  9.129830259596812,
-                  12.538613387006649
+                  3.796423644711928,
+                  5.731028263391765,
+                  -9.155318149194798
                 ],
                 "cameraTarget": [
-                  0.5195015512581979,
-                  0.20521362850350217,
-                  -0.005863004940586614
+                  1.7447780533923372,
+                  1.080698655161253,
+                  0.9568006616100991
                 ]
               },
               "title": "3D Field"
@@ -275,6 +289,169 @@
                 }
               },
               "title": "Memory debug"
+            },
+            {
+              "type": 1,
+              "legendHeight": 0.3,
+              "legends": {
+                "left": {
+                  "lockedRange": null,
+                  "unitConversion": {
+                    "type": null,
+                    "factor": 1
+                  },
+                  "fields": [
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/0",
+                      "color": "#2b66a2",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/1",
+                      "color": "#e5b31b",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/2",
+                      "color": "#af2437",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/3",
+                      "color": "#80588e",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/5",
+                      "color": "#e48b32",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/6",
+                      "color": "#aacaee",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/7",
+                      "color": "#c0b487",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/8",
+                      "color": "#858584",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/9",
+                      "color": "#3b875a",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/10",
+                      "color": "#d993aa",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/11",
+                      "color": "#eb987e",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/12",
+                      "color": "#5d4f92",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/13",
+                      "color": "#a64b6b",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/14",
+                      "color": "#dbd345",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/15",
+                      "color": "#7e331f",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/16",
+                      "color": "#96b637",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/17",
+                      "color": "#5f4528",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/18",
+                      "color": "#d36134",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/19",
+                      "color": "#2e3b28",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/20",
+                      "color": "#c0b487",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/21",
+                      "color": "#dbd345",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/22",
+                      "color": "#3b875a",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/ChannelCurrent/23",
+                      "color": "#2b66a2",
+                      "show": true
+                    }
+                  ]
+                },
+                "discrete": {
+                  "fields": []
+                },
+                "right": {
+                  "lockedRange": null,
+                  "unitConversion": {
+                    "type": null,
+                    "factor": 1
+                  },
+                  "fields": [
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/Voltage",
+                      "color": "#d993aa",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/TotalCurrent",
+                      "color": "#e48b32",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/TotalPower",
+                      "color": "#7e331f",
+                      "show": true
+                    },
+                    {
+                      "key": "NT:/AdvantageKit/PowerDistribution/TotalEnergy",
+                      "color": "#d993aa",
+                      "show": true
+                    }
+                  ]
+                }
+              },
+              "title": "Power utilization"
             }
           ]
         }
