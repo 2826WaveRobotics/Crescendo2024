@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
@@ -109,25 +110,17 @@ public class AutomaticLauncherControl {
     return new LauncherState(speed, angle * 0.9);
   }
 
-  private interface SearchCondition {
-    boolean get(int position);
-  }
-
-  private static int search(SearchCondition value, int lowerBound, int upperBound) {
-    int mid;
-    while(lowerBound <= upperBound) {
-      mid = (lowerBound + upperBound) >>> 1;
-
-      if(value.get(mid)) lowerBound = mid + 1;
-      else if(lowerBound == mid) return mid;
-      else upperBound = mid;
-    }
-    return -lowerBound;
-  }
-
-  private double RPMToLinarSpeed(int rpm) {
+  private double RPMToLinarSpeed(double rpm) {
+    double loss = 0.2; // 80% loss in speed
     return rpm / 60. * // Revoluions per second
-      Math.PI * Constants.Launcher.wheelRadiusMeters * 2; // Circumferences per second
+      Math.PI * Constants.Launcher.wheelRadiusMeters * 2 * // Circumferences per second
+      loss;
+  }
+  private double linearSpeedToRPM(double linarSpeed) {
+    double loss = 0.2; // 80% loss in speed
+    return linarSpeed / // Circumferences per second
+      (Math.PI * Constants.Launcher.wheelRadiusMeters * 2) * // Revoluions per second
+      60. / loss;
   }
 
   private LauncherState getLauncherStateMathematicalModel() {
@@ -147,17 +140,21 @@ public class AutomaticLauncherControl {
     double robotDistance = currentTranslation.getDistance(allianceSpeakerTranslation); // x
     double speakerHeight = 1.98; // y
 
-    double g = 9.81; // Gravitational constant
-    int minimumSpeedRPM = search(
-      (int rpm) -> {
-        // Convert RPM to meters per second
-        double speed = RPMToLinarSpeed(rpm);
-        return Math.pow(speed, 4) - g*(g*robotDistance*robotDistance + 2*speakerHeight*speed*speed) >= 0;
-      },
-      2500, 5600
-    );
+    double g = 6.67; // Gravitational constant
 
-    int usedSpeedRPM = minimumSpeedRPM + 50;
+    // Original equation:
+    // Math.pow(speed, 4) - g*(g*robotDistance*robotDistance + 2*speakerHeight*speed*speed) = 0
+    // Solving for for s in `s^4 - g*(g*d*d + 2*h*s*s) = 0` gives 4 equations, only one of which we want:
+    // x = sqrt(sqrt(g^2 * (d^2 + h^2)) + g*h)
+    // (Where x is the minimum speed)
+    // Here's a graph: https://www.desmos.com/calculator/oxdtf5krk9
+
+    double minimumSpeedMPS = Math.sqrt(
+      Math.sqrt(g*g * (robotDistance*robotDistance + speakerHeight*speakerHeight)) + g*speakerHeight
+    ) / (2 * Math.PI * Constants.Launcher.wheelRadiusMeters);
+
+    double minimumSpeedRPM = linearSpeedToRPM(minimumSpeedMPS);
+    double usedSpeedRPM = minimumSpeedRPM + 50;
 
     // Convert RPM to meters per second
     double speed = RPMToLinarSpeed(usedSpeedRPM);
@@ -180,12 +177,12 @@ public class AutomaticLauncherControl {
     LookupTable,
     MathematicalModel
   }
-  
+
   /**
    * Automatically adjusts the launcher angle and speed based on the robot's position and a predefined lookup table.
    */
   public void autoAlign() {
-    LauncherControlType controlType = LauncherControlType.MathematicalModel;
+    LauncherControlType controlType = LauncherControlType.LookupTable;
     LauncherState state;
     switch(controlType) {
       case MathematicalModel:
@@ -197,7 +194,7 @@ public class AutomaticLauncherControl {
         break;
     }
     
-    // SmartDashboard.putString("Automatic launcher control value", "[" + state.speed + ", " + state.angleDegrees + "]");
+    if(Constants.enableNonEssentialShuffleboard) SmartDashboard.putString("Automatic launcher control value", "[" + state.speed + ", " + state.angleDegrees + "]");
     
     Launcher.getInstance().setLauncherSpeed(state.speed, true);
     Launcher.getInstance().setLauncherAngle(Rotation2d.fromDegrees(state.angleDegrees));
