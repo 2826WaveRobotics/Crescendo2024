@@ -92,7 +92,7 @@ public class Robot extends LoggedRobot {
         break;
     }
 
-    Logger.registerURCL(URCL.startExternal());
+    // Logger.registerURCL(URCL.startExternal());
     
     // Logger.disableDeterministicTimestamps() // See "Deterministic Timestamps" in the "Understanding Data Flow" page
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
@@ -119,7 +119,10 @@ public class Robot extends LoggedRobot {
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
+    double startTime = Logger.getRealTimestamp();
     CommandScheduler.getInstance().run();
+    Logger.recordOutput("LoggedRobot/CommandSchedulerTime", (Logger.getRealTimestamp() - startTime) / 1000);
+
     robotContainer.updateAutoPublisher();
     
     setNetworkTablesFlushEnabled(!DriverStation.isFMSAttached());

@@ -4,6 +4,7 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
 import frc.robot.controls.VibrationFeedback;
 import frc.robot.subsystems.transport.Transport;
 import frc.robot.subsystems.transport.Transport.TransportState;
@@ -37,7 +38,7 @@ public class TeleopIntake extends Command {
                 transport.attemptTransitionToState(TransportState.Stopped);
             } else {
                 transport.attemptTransitionToState(TransportState.OperatorOverride);
-                transport.setOperatorOverrideSpeedMetersPerSecond(intakeSpeed);
+                transport.setOperatorOverrideSpeedMetersPerSecond(intakeSpeed * Constants.Transport.intakeSpeed);
             }
         }
     }

@@ -100,8 +100,15 @@ public class ClimberIOReal implements ClimberIO {
     inputs.rightClimberSpeedRPM = rightClimberEncoder.getVelocity();
   }
 
+  int smartLimit = 0;
+  int secondaryLimit = 0;
+
   @Override
   public void useCurrentLimits(int smartLimit, int secondaryLimit) {
+    if(this.smartLimit == smartLimit && this.secondaryLimit == secondaryLimit) return;
+    this.smartLimit = smartLimit;
+    this.secondaryLimit = secondaryLimit;
+    
     leftClimberMotor.setSmartCurrentLimit(smartLimit);
     rightClimberMotor.setSmartCurrentLimit(smartLimit);
     leftClimberMotor.setSecondaryCurrentLimit(secondaryLimit);

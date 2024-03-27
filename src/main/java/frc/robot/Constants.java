@@ -18,7 +18,7 @@ public final class Constants {
    * This _must_ be changed before running simulations or on the real robot.  
    * There may be a better way to do this, but we need to differentiate between replays and normal simulations which doesn't seem possible.
    */
-  public static final Mode currentMode = Mode.SIM;
+  public static final Mode currentMode = Mode.REAL;
   /** A situation that the robot is currently running in: real, simulation, or replay. */
   public enum Mode {
     /** Running on a real robot. */
@@ -124,7 +124,7 @@ public final class Constants {
       public static final int driveMotorID = 21;
       public static final int angleMotorID = 22;
       public static final int canCoderID = 23;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(119.355);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(106.78);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -252,7 +252,7 @@ public final class Constants {
     /**
      * The speed that notes are moved into the launcher to shoot, in meters per second.
      */
-    public static final double launchNoteTransportSpeed = 1.7;
+    public static final double launchNoteTransportSpeed = 6.0;
     /**
      * The speed to move notes when ejecting.  
      * Notes are ejected when we have more than 1 note in the transport at a time.
