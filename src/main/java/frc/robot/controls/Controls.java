@@ -204,7 +204,7 @@ public class Controls {
         ));
 
         operator.y().onTrue(new InstantCommand(() -> Superstructure.getInstance().climbersUp()));
-        Climber.getInstance().setDefaultCommand(new ClimberControls(
+        Climber.getInstance().setDefaultCommand(ClimberControls.teleopControls(
             operator.leftBumper(),
             operator.rightBumper(),
             operator.x()

@@ -243,11 +243,11 @@ public final class Constants {
 
     public static final CANSparkMaxConfig transportMotorConfig = new CANSparkMaxConfig(
       IdleMode.kCoast,
-      10, 15,
+      20, 25,
       0.0, // We manually use a slew rate limiter so we can stop instantly.
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 1. / 5700.);
+    ).configurePIDSlot(0, 1e-4, 0.0, 0.0, 1. / 5700.);
 
     /**
      * The speed that notes are moved into the launcher to shoot, in meters per second.
@@ -261,7 +261,7 @@ public final class Constants {
     /**
      * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at), in meters per second.
      */
-    public static final double intakeSpeed = 1.0;
+    public static final double intakeSpeed = 5.0;
   }
 
   public static final class Climber {

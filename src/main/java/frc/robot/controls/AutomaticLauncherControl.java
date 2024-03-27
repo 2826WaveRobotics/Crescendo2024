@@ -185,7 +185,7 @@ public class AutomaticLauncherControl {
    * Automatically adjusts the launcher angle and speed based on the robot's position and a predefined lookup table.
    */
   public void autoAlign() {
-    LauncherControlType controlType = LauncherControlType.MathematicalModel;
+    LauncherControlType controlType = LauncherControlType.LookupTable;
     LauncherState state;
     switch(controlType) {
       case MathematicalModel:

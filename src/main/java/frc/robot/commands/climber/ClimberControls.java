@@ -9,13 +9,13 @@ import frc.robot.Constants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.climber.Climber;
 
-public class ClimberControls extends InstantCommand {
-    public ClimberControls(
+public class ClimberControls {
+    public static Command teleopControls(
         BooleanSupplier moveLeft,
         BooleanSupplier moveRight,
         BooleanSupplier invertControls
     ) {
-        super(() -> {
+        return new InstantCommand(() -> {
             if(!DriverStation.isTeleop()) return;
             
             double speed = invertControls.getAsBoolean() ? -Constants.Climber.climberMotorSpeed : Constants.Climber.climberMotorSpeed;
@@ -34,8 +34,6 @@ public class ClimberControls extends InstantCommand {
             Climber climber = Climber.getInstance();
             climber.setLeftSpeed ((moveLeft .getAsBoolean() ? 1 : 0) * speed);
             climber.setRightSpeed((moveRight.getAsBoolean() ? 1 : 0) * speed);
-        });
-
-        addRequirements(Climber.getInstance());
+        }, Climber.getInstance());
     }
 }
