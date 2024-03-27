@@ -18,7 +18,7 @@ public final class Constants {
    * This _must_ be changed before running simulations or on the real robot.  
    * There may be a better way to do this, but we need to differentiate between replays and normal simulations which doesn't seem possible.
    */
-  public static final Mode currentMode = Mode.REAL;
+  public static final Mode currentMode = Mode.SIM;
   /** A situation that the robot is currently running in: real, simulation, or replay. */
   public enum Mode {
     /** Running on a real robot. */
@@ -58,7 +58,7 @@ public final class Constants {
     public static final String[] moduleNames = {"frontLeft", "frontRight", "backLeft", "backRight"};
 
     /** The constraints to use while pathfinding. This doesn't apply to the paths followed at the end. */
-    public static final PathConstraints pathfindingConstraints = new PathConstraints(3.4, 6.0, Units.degreesToRadians(540), Units.degreesToRadians(720));;
+    public static final PathConstraints pathfindingConstraints = new PathConstraints(3.4, 6.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
     public static final double trackingAngleControllerP = 7.5;
     public static final double trackingAngleControllerI = 0.0;
     public static final double trackingAngleControllerD = 0.0;

@@ -7,6 +7,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.visualization.LauncherVisualizer;
 
 // List class features here, including any motors, sensors, and functionality:
 // 2 Launcher motors to score notes
@@ -41,7 +42,7 @@ public class Launcher extends SubsystemBase {
    * The current target launcher angle.
    */
   @AutoLogOutput(key = "Launcher/TargetAngle")
-  public double launcherAngle = 45;
+  public double launcherAngle = 45; // TODO: Change to a Rotation2d
   @AutoLogOutput(key = "Launcher/TopRollerSpeed")
   public double topRollerSpeed = 1200;
   @AutoLogOutput(key = "Launcher/BottomRollerSpeed")
@@ -123,6 +124,8 @@ public class Launcher extends SubsystemBase {
   public void periodic() {
     launcherIO.updateInputs(inputs);
     launcherIO.runRollers(topRollerSpeed, bottomRollerSpeed);
+
+    LauncherVisualizer.getInstance().update();
 
     if(Constants.enableNonEssentialShuffleboard) {
       SmartDashboard.putNumber("Absolute launcher angle", inputs.absoluteLauncherAngle.getDegrees());

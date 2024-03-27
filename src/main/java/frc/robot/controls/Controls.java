@@ -21,8 +21,7 @@ import frc.robot.Constants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.TeleopIntake;
 import frc.robot.commands.climber.ClimberControls;
-import frc.robot.commands.control.PathfindToAmpAndLaunch;
-import frc.robot.commands.control.PathfindToSpeakerAndLaunch;
+import frc.robot.commands.control.PathfindingCommands;
 import frc.robot.commands.transport.SetLauncherAngle;
 import frc.robot.commands.transport.SetLauncherSpeed;
 import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
@@ -103,10 +102,8 @@ public class Controls {
         Trigger autoSpeakerAim = driver.rightBumper();
         autoSpeakerAim.onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.AllianceSpeaker)));
 
-        // We use DeferredCommands because for some reason it partially fixes performance issues caused
-        // by these pathfinding commands. It's not an ideal solution, but it works for now.
-        driver.y().whileTrue(new DeferredCommand(PathfindToSpeakerAndLaunch::new, Set.of()));
-        driver.b().whileTrue(new DeferredCommand(PathfindToAmpAndLaunch::new, Set.of()));
+        driver.y().whileTrue(PathfindingCommands.pathfindToSpeakerAndLaunch());
+        driver.b().whileTrue(PathfindingCommands.pathfindToAmpAndLaunch());
         
         driver.a().onTrue(new InstantCommand(() -> {
             if(DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
@@ -186,10 +183,11 @@ public class Controls {
             () -> Transport.getInstance().attemptTransitionToState(TransportState.Stopped)
         ));
         
+        // Lob shot
         operator.leftTrigger(0.2).onTrue(new SequentialCommandGroup(
             new ParallelCommandGroup(
-                new SetLauncherAngle(287),
-                new SetLauncherSpeed(0, false)
+                new SetLauncherAngle(60.0),
+                new SetLauncherSpeed(5000, false)
             ),
             new InstantCommand(
                 () -> Transport.getInstance().attemptTransitionToState(TransportState.LaunchingNote)

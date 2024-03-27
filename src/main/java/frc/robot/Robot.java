@@ -15,7 +15,10 @@ import org.littletonrobotics.urcl.URCL;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.controls.AutomaticLauncherControl;
+import frc.robot.controls.SwerveAlignmentController;
 import frc.robot.controls.VibrationFeedback;
+import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.vision.Limelight;
 
@@ -182,5 +185,8 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void simulationPeriodic() {
+    // TEMPORARY
+    SwerveAlignmentController.getInstance().setAlignmentMode(AlignmentMode.AllianceSpeaker);
+    AutomaticLauncherControl.getInstance().autoAlign();
   }
 }
