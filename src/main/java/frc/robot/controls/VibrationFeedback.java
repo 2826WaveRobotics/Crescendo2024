@@ -1,6 +1,5 @@
 package frc.robot.controls;
 
-import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
@@ -104,19 +103,24 @@ public class VibrationFeedback {
         // WPILib clamps rumble values to 0-1, so we don't need to do it here
         Controls.getInstance().setDriverRumble(currentLeftDriver + driverAddLeft,currentRightDriver + driverAddRight);
         Controls.getInstance().setOperatorRumble(currentLeftOperator + operatorAddLeft,currentRightOperator + operatorAddRight);
+
+        driverAddLeft = 0;
+        driverAddRight = 0;
+        operatorAddLeft = 0;
+        operatorAddRight = 0;
     }
 
-    public void setDriverAddLeft(double override) {
-        driverAddLeft = override;
+    public void addToDriverLeft(double override) {
+        driverAddLeft += override;
     }
-    public void setDriverAddRight(double override) {
-        driverAddRight = override;
+    public void addToDriverRight(double override) {
+        driverAddRight += override;
     }
-    public void setOperatorAddLeft(double override) {
-        operatorAddLeft = override;
+    public void addToOperatorLeft(double override) {
+        operatorAddLeft += override;
     }
-    public void setOperatorAddRight(double override) {
-        operatorAddRight = override;
+    public void addToOperatorRight(double override) {
+        operatorAddRight += override;
     }
 
     private class SetVibrationCommand extends InstantCommand {

@@ -42,7 +42,7 @@ public class Launcher extends SubsystemBase {
    * The current target launcher angle.
    */
   @AutoLogOutput(key = "Launcher/TargetAngle")
-  public double launcherAngle = 45; // TODO: Change to a Rotation2d
+  public Rotation2d launcherAngle = Rotation2d.fromDegrees(45);
   @AutoLogOutput(key = "Launcher/TopRollerSpeed")
   public double topRollerSpeed = 1200;
   @AutoLogOutput(key = "Launcher/BottomRollerSpeed")
@@ -53,9 +53,9 @@ public class Launcher extends SubsystemBase {
    * @param angle
    */
   public void setLauncherAngle(Rotation2d angle) {
-    launcherAngle = angle.getDegrees();
+    launcherAngle = angle;
     if(Constants.enableNonEssentialShuffleboard) {
-      SmartDashboard.putNumber("LauncherAngle", launcherAngle);
+      SmartDashboard.putNumber("LauncherAngle", launcherAngle.getDegrees());
     }
     
     // All length units here are in inches
@@ -118,6 +118,10 @@ public class Launcher extends SubsystemBase {
 
   public double getSpeedRPM() {
     return inputs.speedRPM;
+  }
+
+  public boolean atSetpoints() {
+    return getAngleVelocityRPM() < 60.0 && Math.abs(getSpeedRPM() - topRollerSpeed) < 100.0;
   }
 
   @Override

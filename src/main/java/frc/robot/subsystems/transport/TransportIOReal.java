@@ -45,7 +45,7 @@ public class TransportIOReal implements TransportIO {
   /**
    * The slew rate limiter for the transport speed.
    */
-  private SlewRateLimiter transportSlewRateLimiter = new SlewRateLimiter(11000 * 6.);
+  private SlewRateLimiter transportSlewRateLimiter = new SlewRateLimiter(100000);
 
   private double oldLimitedSpeed = 0.0;
 

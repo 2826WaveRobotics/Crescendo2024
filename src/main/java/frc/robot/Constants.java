@@ -59,9 +59,9 @@ public final class Constants {
 
     /** The constraints to use while pathfinding. This doesn't apply to the paths followed at the end. */
     public static final PathConstraints pathfindingConstraints = new PathConstraints(3.4, 6.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-    public static final double trackingAngleControllerP = 7.5;
-    public static final double trackingAngleControllerI = 0.0;
-    public static final double trackingAngleControllerD = 0.0;
+    public static final double trackingAngleControllerP = 7.0; // 7.5
+    public static final double trackingAngleControllerI = 0.2; // 0
+    public static final double trackingAngleControllerD = 0.0002; // 0
 
     // The locations of the modules on the robot, in meters.
     public static final Translation2d[] modulePositions = {
@@ -250,18 +250,20 @@ public final class Constants {
     ).configurePIDSlot(0, 1e-4, 0.0, 0.0, 1. / 5700.);
 
     /**
-     * The speed that notes are moved into the launcher to shoot, in meters per second.
+     * The speed that notes are moved into the launcher to shoot, in meters per second.  
+     * 3.8 m/s is roughly our max speed.
      */
-    public static final double launchNoteTransportSpeed = 6.0;
+    public static final double launchNoteTransportSpeed = 3.8;
     /**
      * The speed to move notes when ejecting.  
      * Notes are ejected when we have more than 1 note in the transport at a time.
      */
     public static final double ejectNoteSpeed = 0.5;
     /**
-     * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at), in meters per second.
+     * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at), in meters per second.  
+     * 3.8 m/s is roughly our max speed.
      */
-    public static final double intakeSpeed = 5.0;
+    public static final double intakeSpeed = 3.8;
   }
 
   public static final class Climber {

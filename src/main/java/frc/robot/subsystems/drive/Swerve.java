@@ -35,6 +35,8 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.lib.drive.FieldRelativeAcceleration;
+import frc.lib.drive.FieldRelativeVelocity;
 import frc.lib.util.LocalADStarAK;
 import frc.lib.util.ShuffleboardContent;
 import frc.robot.Constants;
@@ -223,16 +225,24 @@ public class Swerve extends SubsystemBase {
     PathPlannerLogging.setLogActivePathCallback((poses) -> field.getObject("path").setPoses(poses));
   }
 
+  private double robotSpeed = 0.0;
+  private FieldRelativeVelocity velocity = new FieldRelativeVelocity();
+  private FieldRelativeVelocity lastVelocity = new FieldRelativeVelocity();
+  private FieldRelativeAcceleration acceleration = new FieldRelativeAcceleration();
+
   /**
    * Gets the absolute speed of the robot in meters per second.
    * @return
    */
+  @AutoLogOutput(key = "Drive/Speed")
   public double getRobotSpeed() {
-    ChassisSpeeds chassisSpeeds = getRobotRelativeSpeeds();
-    return Math.sqrt(
-      chassisSpeeds.vxMetersPerSecond * chassisSpeeds.vxMetersPerSecond +
-      chassisSpeeds.vyMetersPerSecond * chassisSpeeds.vyMetersPerSecond
-    );
+    return robotSpeed;
+  }
+  public FieldRelativeVelocity getFieldRelativeVelocity() {
+    return velocity;
+  }
+  public FieldRelativeAcceleration getFieldRelativeAcceleration() {
+    return acceleration;
   }
 
   public ChassisSpeeds getRobotRelativeSpeeds() {
@@ -448,5 +458,17 @@ public class Swerve extends SubsystemBase {
     Logger.recordOutput("Drive/ExecutionTimeMS", executionTime * 0.001);
 
     field.setRobotPose(getPose());
+
+    // Update speed, velocity, and accceleration
+    
+    ChassisSpeeds chassisSpeeds = getRobotRelativeSpeeds();
+    robotSpeed = Math.sqrt(
+      chassisSpeeds.vxMetersPerSecond * chassisSpeeds.vxMetersPerSecond +
+      chassisSpeeds.vyMetersPerSecond * chassisSpeeds.vyMetersPerSecond
+    );
+
+    velocity = new FieldRelativeVelocity(chassisSpeeds, gyroInputs.yawPosition);
+    acceleration = new FieldRelativeAcceleration(velocity, lastVelocity, 0.02);
+    lastVelocity = velocity;
   }
 }

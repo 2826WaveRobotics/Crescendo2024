@@ -19,14 +19,14 @@ public class LauncherVisualizer {
 
     private Mechanism2d mechanism = new Mechanism2d(Constants.Swerve.wheelBase, 3);
     private MechanismRoot2d root = mechanism.getRoot("Launcher pivot", Constants.Swerve.wheelBase / 2 + 0.1, 0.35);
-    private MechanismLigament2d arm = new MechanismLigament2d("Launcher arm", 0.4, Launcher.getInstance().launcherAngle);
+    private MechanismLigament2d arm = new MechanismLigament2d("Launcher arm", 0.4, -Launcher.getInstance().launcherAngle.getDegrees());
 
     private LauncherVisualizer() {
         root.append(arm);
     }
 
     public void update() {
-        arm.setAngle(Launcher.getInstance().launcherAngle);
+        arm.setAngle(Launcher.getInstance().launcherAngle.times(-1));
         Logger.recordOutput("Launcher/Mechanism", mechanism);
     }
 }

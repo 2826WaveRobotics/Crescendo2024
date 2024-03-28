@@ -172,21 +172,47 @@ public class AutomaticLauncherControl {
 
     return new LauncherState(usedSpeedRPM, Units.radiansToDegrees(angleRadians));
   }
+
+  public static double getShotTime(double distane) {
+    return distane * 0.17 + 0.45; // TODO: Find equation from data
+  }
+
+  // https://docs.google.com/spreadsheets/d/1dXLGZ84TEYzmvrYkXQ3SZOwmgObqmYSxnnUZoMg85Bo/edit?usp=sharing
+  // Very rudimentary model for now
+  private static double getSpeed(double distance) {
+    return 3339 * Math.pow(distance, 0.348);
+  }
+  private static double getAngle(double distance) {
+    return 75.6 + -21.7 * distance + 4.75 * Math.pow(distance, 2) + -0.698 * Math.pow(distance, 3);
+  }
+
+  private LauncherState getLauncherStateTimeBasedPrediction() {
+    double distance = SwerveAlignmentController.getInstance().allianceSpeakerDistance;
+
+    double speed = getSpeed(distance);
+    double angle = getAngle(distance);
+
+    return new LauncherState(speed, angle);
+  }
   
   public enum LauncherControlType {
     LookupTable,
-    MathematicalModel
+    MathematicalModel,
+    TimeBasedPrediction
   }
 
   /**
    * Automatically adjusts the launcher angle and speed based on the robot's position and a predefined lookup table.
    */
   public void autoAlign() {
-    LauncherControlType controlType = LauncherControlType.LookupTable;
+    LauncherControlType controlType = LauncherControlType.TimeBasedPrediction;
     LauncherState state;
     switch(controlType) {
       case MathematicalModel:
         state = getLauncherStateMathematicalModel();
+        break;
+      case TimeBasedPrediction:
+        state = getLauncherStateTimeBasedPrediction();
         break;
       case LookupTable:
       default:
@@ -196,7 +222,16 @@ public class AutomaticLauncherControl {
     
     if(Constants.enableNonEssentialShuffleboard) SmartDashboard.putString("Automatic launcher control value", "[" + state.speed + ", " + state.angleDegrees + "]");
     
-    Launcher.getInstance().setLauncherSpeed(state.speed, true);
-    Launcher.getInstance().setLauncherAngle(Rotation2d.fromDegrees(state.angleDegrees));
+    Launcher launcher = Launcher.getInstance();
+
+    launcher.setLauncherSpeed(state.speed, true);
+    launcher.setLauncherAngle(Rotation2d.fromDegrees(state.angleDegrees));
+    
+    if(launcher.atSetpoints() && SwerveAlignmentController.getInstance().atTarget) {
+      VibrationFeedback.getInstance().addToOperatorLeft(1.0);
+      VibrationFeedback.getInstance().addToOperatorRight(1.0);
+      VibrationFeedback.getInstance().addToDriverLeft(0.3);
+      VibrationFeedback.getInstance().addToDriverRight(0.3);
+    }
   }
 }

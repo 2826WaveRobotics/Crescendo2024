@@ -26,8 +26,8 @@ public class TeleopIntake extends Command {
 
         Transport transport = Transport.getInstance();
         TransportState transportState = transport.getCurrentState();
-        VibrationFeedback.getInstance().setOperatorAddLeft(transportState == TransportState.IntakingNote ? 0.6 : 0);
-        VibrationFeedback.getInstance().setOperatorAddRight(transportState == TransportState.MovingNote ? 0.6 : 0);
+        if(transportState == TransportState.IntakingNote) VibrationFeedback.getInstance().addToOperatorLeft(0.6);
+        if(transportState == TransportState.MovingNote) VibrationFeedback.getInstance().addToOperatorRight(0.6);
 
         double intakeSpeed = MathUtil.applyDeadband(intakeOverride.getAsDouble(), 0.25);
 

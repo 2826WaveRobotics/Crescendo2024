@@ -6,9 +6,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import frc.lib.drive.FieldRelativeAcceleration;
+import frc.lib.drive.FieldRelativeVelocity;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Swerve;
+import frc.robot.subsystems.transport.Transport.TransportState;
 
 /**
  * This class manages updating our input robot speeds to target the current goal.
@@ -37,6 +41,7 @@ public class SwerveAlignmentController {
 
     private SwerveAlignmentController() {
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
+        thetaController.setTolerance(Units.degreesToRadians(7.5));
     }
 
     public void setAlignmentMode(AlignmentMode mode) {
@@ -51,25 +56,59 @@ public class SwerveAlignmentController {
         return alignmentMode;
     }
 
+    public double allianceSpeakerDistance = 0.0;
+    public boolean atTarget = false;
+
     private Rotation2d getTargetAngle() {
         switch (alignmentMode) {
             case AllianceSpeaker:
                 Swerve swerve = Swerve.getInstance();
 
-                // Adjust for the robot's speed since by the time we reach the target, the robot will have moved
-                double lookaheadDistance = swerve.getRobotSpeed() * 0.2; // 0.2 is abritrary; let's say it takes 200ms to rotate to the proper angle
-                Pose2d pose = swerve.getPose().transformBy(new Transform2d(lookaheadDistance, 0.0, new Rotation2d()));
-                Translation2d currentTranslation = pose.getTranslation();
+                Translation2d currentPosition = swerve.getPose().getTranslation();
+                FieldRelativeVelocity currentVelocity = swerve.getFieldRelativeVelocity();
+                FieldRelativeAcceleration currentAcceleration = swerve.getFieldRelativeAcceleration();
 
                 double speakerInward = -0.1;
-                Translation2d allianceSpeakerTranslation = isBlueAlliance() ? new Translation2d(speakerInward, 5.55) : new Translation2d(Constants.fieldLengthMeters - speakerInward, 5.55);
+                boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
+                Translation2d targetLocation = isBlueAlliance ? new Translation2d(speakerInward, 5.55) : new Translation2d(Constants.fieldLengthMeters - speakerInward, 5.55);
 
-                return Rotation2d.fromRadians(
-                    Math.atan2(
-                        allianceSpeakerTranslation.getY() - currentTranslation.getY(),
-                        allianceSpeakerTranslation.getX() - currentTranslation.getX()
-                    )
-                ).plus(Rotation2d.fromRadians(Math.PI)); // Add 180 degrees because we want to face the launcher toward the alliance speaker instead of the intake, which is the real front of the robot
+                Translation2d relativeTargetLocation = targetLocation.minus(currentPosition);
+                double distance = relativeTargetLocation.getNorm();
+
+                double shotTime = AutomaticLauncherControl.getShotTime(distance);
+
+                // Poor man's Newton's method
+                int iterations = 10; // Maximum number of iterations
+                Translation2d correctedTargetPosition = targetLocation;
+                for(int i = 0; i < iterations; i++) {
+                    double accelerationCompensationFactor = 0.1;
+                    correctedTargetPosition = new Translation2d(
+                        // Note that this doesn't use correctedTargetPosition as a base -- it uses targetLocation
+                        targetLocation.getX() - shotTime * (currentVelocity.vx + currentAcceleration.ax * accelerationCompensationFactor),
+                        targetLocation.getY() - shotTime * (currentVelocity.vy + currentAcceleration.ay * accelerationCompensationFactor)
+                    );
+
+                    Translation2d relativeCorrectedTargetPosition = correctedTargetPosition.minus(currentPosition);
+                    distance = relativeCorrectedTargetPosition.getNorm();
+
+                    double oldShotTime = shotTime;
+                    shotTime = AutomaticLauncherControl.getShotTime(distance);
+
+                    if(Math.abs(shotTime - oldShotTime) < 0.005) {
+                        // Once we're close enough, stop
+                        break;
+                    }
+                }
+
+                allianceSpeakerDistance = distance;
+
+                // Aim at correctedTargetPosition
+                Translation2d currentTranslation = swerve.getPose().getTranslation();
+                Translation2d relativeCorrectedTargetPosition = correctedTargetPosition.minus(currentTranslation);
+                double angle = Math.atan2(relativeCorrectedTargetPosition.getY(), relativeCorrectedTargetPosition.getX());
+                
+                // Add 180 degrees because we want to face the launcher toward the alliance speaker instead of the intake, which is the real front of the robot
+                return Rotation2d.fromRadians(angle).plus(Rotation2d.fromRadians(Math.PI));
             case Right:
                 return Rotation2d.fromDegrees(isBlueAlliance() ? 270.0 : 90.0);
             case Backward:
@@ -101,6 +140,8 @@ public class SwerveAlignmentController {
             thetaController.calculate(currentAngle.getRadians(), targetAngle.getRadians()),
             Constants.Swerve.maxAngularVelocity
         );
+
+        atTarget = thetaController.atSetpoint();
 
         return new ChassisSpeeds(
             speeds.vxMetersPerSecond,
