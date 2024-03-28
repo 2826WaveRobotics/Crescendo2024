@@ -89,8 +89,13 @@ public class LauncherIOReal implements LauncherIO {
     return Rotation2d.fromRotations((angleLauncherEncoder.getPosition() / Constants.Launcher.angleMotorGearboxReduction) % 1.);
   }
 
+  private double oldRotations = 0.;
+
   @Override
   public void setAngleReference(double rotations) {
+    if(rotations == oldRotations) return;
+    oldRotations = rotations;
+
     if(Constants.enableNonEssentialShuffleboard) {
       SmartDashboard.putNumber("Launcher angle reference", rotations * 360.);
     }
@@ -105,9 +110,18 @@ public class LauncherIOReal implements LauncherIO {
     inputs.speedRPM = topRollerEncoder.getVelocity();
   }
 
+  private double oldTopRollerSpeed = 0.0;
+  private double oldBottomRollerSpeed = 0.0;
+
   @Override
   public void runRollers(double topRollerSpeed, double bottomRollerSpeed) {
-    topLaunchRollerPIDController.setReference(topRollerSpeed, CANSparkMax.ControlType.kVelocity);
-    bottomLaunchRollerPIDController.setReference(bottomRollerSpeed, CANSparkMax.ControlType.kVelocity);
+    if(topRollerSpeed != oldTopRollerSpeed) {
+      topLaunchRollerPIDController.setReference(topRollerSpeed, CANSparkMax.ControlType.kVelocity);
+      oldTopRollerSpeed = topRollerSpeed;
+    }
+    if(bottomRollerSpeed != oldBottomRollerSpeed) {
+      bottomLaunchRollerPIDController.setReference(bottomRollerSpeed, CANSparkMax.ControlType.kVelocity);
+      oldBottomRollerSpeed = bottomRollerSpeed;
+    }
   }
 }

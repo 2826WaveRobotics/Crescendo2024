@@ -47,6 +47,8 @@ public class TransportIOReal implements TransportIO {
    */
   private SlewRateLimiter transportSlewRateLimiter = new SlewRateLimiter(11000 * 6.);
 
+  private double oldLimitedSpeed = 0.0;
+
   /**
    * Sets the transport speeds. Speeds are how fast the edge wheels will move at, in meters per second.
    * This is effectively the speed that the note moves.  
@@ -57,6 +59,8 @@ public class TransportIOReal implements TransportIO {
     double limitedSpeed = transportSlewRateLimiter.calculate(speedMetersPerSecond);
     if(speedMetersPerSecond == 0.0) limitedSpeed = 0.0;
 
+    if(limitedSpeed == oldLimitedSpeed) return;
+    oldLimitedSpeed = limitedSpeed;
     double speedRPM = getTransportMotorRPM(limitedSpeed, Constants.Transport.transportGearRatio);
     topTransportPIDController.setReference(-speedRPM, ControlType.kVelocity);
     bottomTransportPIDController.setReference(-speedRPM, ControlType.kVelocity);

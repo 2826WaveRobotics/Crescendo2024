@@ -43,8 +43,11 @@ public class ClimberIOReal implements ClimberIO {
     rightClimberEncoder.setPosition(0);
   }
 
-  public boolean currentlyControllingSpeedLeft = false;
-  public boolean currentlyControllingSpeedRight = false;
+  private boolean currentlyControllingSpeedLeft = false;
+  private boolean currentlyControllingSpeedRight = false;
+
+  private double oldLeftSpeed = 0.0;
+  private double oldRightSpeed = 0.0;
   
   /**
    * Sets the left motor speed in RPM. Positive values move the climber downward.
@@ -52,8 +55,12 @@ public class ClimberIOReal implements ClimberIO {
    */
   @Override
   public void setLeftSpeed(double speed) {
+    if(speed == oldLeftSpeed) return;
+    oldLeftSpeed = speed;
+
     if(!currentlyControllingSpeedLeft) leftClimberMotor.stopMotor();
     currentlyControllingSpeedLeft = true;
+
     leftPIDController.setReference(-speed, ControlType.kVelocity, 1);
   }
   /**
@@ -62,16 +69,27 @@ public class ClimberIOReal implements ClimberIO {
    */
   @Override
   public void setRightSpeed(double speed) {
+    if(speed == oldRightSpeed) return;
+    oldRightSpeed = speed;
+
     if(!currentlyControllingSpeedRight) rightClimberMotor.stopMotor();
     currentlyControllingSpeedRight = true;
+
     rightPIDController.setReference(speed, ControlType.kVelocity, 1);
   }
+
+  private double oldLeftPosition = 0.0;
+  private double oldRightPosition = 0.0;
+
   /**
    * Sets the right motor position in rotations, where 0 is the resting position and positive numbers are upward.
    * @param position
    */
   @Override
   public void setRightPosition(double position) {
+    if(position == oldRightPosition) return;
+    oldRightPosition = position;
+
     if(currentlyControllingSpeedRight) rightClimberMotor.stopMotor();
     currentlyControllingSpeedRight = false;
     rightPIDController.setReference(position, ControlType.kPosition, 0);
@@ -83,6 +101,9 @@ public class ClimberIOReal implements ClimberIO {
    */
   @Override
   public void setLeftPosition(double position) {
+    if(position == oldLeftPosition) return;
+    oldLeftPosition = position;
+
     if(currentlyControllingSpeedLeft) leftClimberMotor.stopMotor();
     currentlyControllingSpeedLeft = false;
     leftPIDController.setReference(position, ControlType.kPosition, 0);
@@ -100,18 +121,21 @@ public class ClimberIOReal implements ClimberIO {
     inputs.rightClimberSpeedRPM = rightClimberEncoder.getVelocity();
   }
 
-  int smartLimit = 0;
-  int secondaryLimit = 0;
+  int oldSmartLimit = 0;
+  int oldSecondaryLimit = 0;
 
   @Override
   public void useCurrentLimits(int smartLimit, int secondaryLimit) {
-    if(this.smartLimit == smartLimit && this.secondaryLimit == secondaryLimit) return;
-    this.smartLimit = smartLimit;
-    this.secondaryLimit = secondaryLimit;
-    
-    leftClimberMotor.setSmartCurrentLimit(smartLimit);
-    rightClimberMotor.setSmartCurrentLimit(smartLimit);
-    leftClimberMotor.setSecondaryCurrentLimit(secondaryLimit);
-    rightClimberMotor.setSecondaryCurrentLimit(secondaryLimit);
+    if(smartLimit != oldSmartLimit) {
+      leftClimberMotor.setSmartCurrentLimit(smartLimit);
+      rightClimberMotor.setSmartCurrentLimit(smartLimit);
+      oldSmartLimit = smartLimit;
+    }
+
+    if(secondaryLimit != oldSecondaryLimit) {
+      leftClimberMotor.setSecondaryCurrentLimit(secondaryLimit);
+      rightClimberMotor.setSecondaryCurrentLimit(secondaryLimit);
+      oldSecondaryLimit = secondaryLimit;
+    }
   }
 }
