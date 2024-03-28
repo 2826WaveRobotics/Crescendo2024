@@ -158,8 +158,6 @@ public class Transport extends SubsystemBase {
   public void attemptTransitionToState(TransportState newState) {
     if (validStateTransitions.contains(new TransportStatePair(transportState, newState))) {
       transportState = newState;
-    } else {
-      if(transportState == newState) return;
     }
   }
 

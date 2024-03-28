@@ -9,7 +9,7 @@ import frc.robot.subsystems.transport.Transport.TransportState;
 import frc.robot.visualization.NoteVisualizer;
 
 /**
- * A command that runs the launcher and upper launch roller for 0.75 seconds.
+ * A command that runs the transport for 0.5 seconds to launch a note.
  */
 public class LaunchNote extends Command {
   private double m_startTime;
@@ -43,6 +43,6 @@ public class LaunchNote extends Command {
   @Override
   public boolean isFinished() {
     double currentTime = Timer.getFPGATimestamp();
-    return ((currentTime - m_startTime) > 0.75);
+    return ((currentTime - m_startTime) > 0.5);
   }
 }

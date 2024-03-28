@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.2568179368972778,
-      "y": 5.5340399742126465
+      "x": 1.4076547622680664,
+      "y": 4.70463752746582
     },
-    "rotation": -2.229561277629802e-28
+    "rotation": -28.369046293278583
   },
   "command": {
     "type": "sequential",
@@ -14,66 +14,78 @@
         {
           "type": "named",
           "data": {
-            "name": "Launch close"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Enable intake"
+            "name": "Launch close prep"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Center notes.1"
+            "pathName": "7 note.1"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Launch start line"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Enable intake"
+            "name": "7 note launch 2 prep"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Center notes.2"
+            "pathName": "7 note.2"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Center notes launch"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Enable intake"
+            "name": "7 note 3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Center notes.3"
+            "pathName": "7 note.3"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Center notes launch"
+            "name": "7 note 5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "7 note.4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "7 note 6"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "7 note.5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "7 note.6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "7 note 7"
           }
         }
       ]
     }
   },
-  "folder": null,
+  "folder": "Seven Rivers autos",
   "choreoAuto": true
 }

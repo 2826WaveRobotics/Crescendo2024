@@ -5,7 +5,7 @@
       "x": 1.5287564992904663,
       "y": 7.421595573425293
     },
-    "rotation": -1.4828492049019e-20
+    "rotation": 1.7474564919669598e-22
   },
   "command": {
     "type": "sequential",
@@ -14,7 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Sweep launch"
+            "name": "Sweep transport"
           }
         },
         {
@@ -26,6 +26,6 @@
       ]
     }
   },
-  "folder": "CIR autos",
+  "folder": "Seven Rivers autos",
   "choreoAuto": true
 }

@@ -97,13 +97,15 @@ public class Limelight extends SubsystemBase {
       Logger.recordOutput("Odometry/LimelightPoseEstimateUsed", false);
       return;
     }
-    if(poseEstimateData.avgTagDist > 5) {
+
+    double maxDistance = DriverStation.isAutonomous() ? 1.5 : 4.0;
+    if(poseEstimateData.avgTagDist > maxDistance) {
       Logger.recordOutput("Odometry/LimelightPoseEstimateUsed", false);
       return;
     }
 
     // Scale the vision measurement expected standard deviation exponentially by the distance 
-    double standardDeviationScalar = Math.max(0.01, 0.5 * Math.pow(1.5, poseEstimateData.avgTagDist) - 0.03) / (poseEstimateData.tagCount);
+    double standardDeviationScalar = Math.max(0.01, 0.4 * Math.pow(1.5, poseEstimateData.avgTagDist) - 0.03) / (poseEstimateData.tagCount);
 
     Logger.recordOutput("Odometry/LimelightPoseEstimateUsed", true);
 
