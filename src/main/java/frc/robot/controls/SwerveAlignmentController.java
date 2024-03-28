@@ -1,5 +1,7 @@
 package frc.robot.controls;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -68,12 +70,18 @@ public class SwerveAlignmentController {
                 FieldRelativeVelocity currentVelocity = swerve.getFieldRelativeVelocity();
                 FieldRelativeAcceleration currentAcceleration = swerve.getFieldRelativeAcceleration();
 
+                Logger.recordOutput("SwerveAlignmentController/CurrentPosition", currentPosition);
+                Logger.recordOutput("SwerveAlignmentController/CurrentVelocity/Mag", currentVelocity.getNorm());
+                Logger.recordOutput("SwerveAlignmentController/CurrentAcceleration/Mag", currentAcceleration.getNorm());
+
                 double speakerInward = -0.1;
                 boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
                 Translation2d targetLocation = isBlueAlliance ? new Translation2d(speakerInward, 5.55) : new Translation2d(Constants.fieldLengthMeters - speakerInward, 5.55);
 
                 Translation2d relativeTargetLocation = targetLocation.minus(currentPosition);
                 double distance = relativeTargetLocation.getNorm();
+
+                Logger.recordOutput("SwerveAlignmentController/RealDistance", distance);
 
                 double shotTime = AutomaticLauncherControl.getShotTime(distance);
 
@@ -140,6 +148,8 @@ public class SwerveAlignmentController {
             thetaController.calculate(currentAngle.getRadians(), targetAngle.getRadians()),
             Constants.Swerve.maxAngularVelocity
         );
+
+        Logger.recordOutput("SwerveAlignmentController/TargetAngle", targetAngle.getDegrees());
 
         atTarget = thetaController.atSetpoint();
 

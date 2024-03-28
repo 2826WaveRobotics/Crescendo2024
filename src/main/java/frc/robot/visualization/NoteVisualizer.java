@@ -27,7 +27,11 @@ public class NoteVisualizer {
     robotPoseSupplier = supplier;
   }
 
-  public static Command shoot() {
+  public static void shoot() {
+    shootVisualizationCommand().schedule();
+  }
+
+  public static Command shootVisualizationCommand() {
     return new ScheduleCommand( // Branch off and exit immediately
       Commands.defer(
         () -> {

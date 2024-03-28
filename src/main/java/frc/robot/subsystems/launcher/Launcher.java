@@ -35,7 +35,23 @@ public class Launcher extends SubsystemBase {
   private Launcher(LauncherIO launcherIO) {
     this.launcherIO = launcherIO;
     
-    launchRollersSlow();
+    setLauncherSpeed(Constants.Launcher.idleRollerVelocity, false);
+  }
+  
+  public static class LauncherState {
+    public double speed;
+    public double angleDegrees;
+    public boolean adjustForSpeaker;
+
+    public LauncherState(double speed, double angleDegrees) {
+      this(speed, angleDegrees, true);
+    }
+
+    public LauncherState(double speed, double angleDegrees, boolean adjustForSpeaker) {
+      this.speed = speed;
+      this.angleDegrees = angleDegrees;
+      this.adjustForSpeaker = adjustForSpeaker;
+    }
   }
 
   /**
@@ -47,6 +63,15 @@ public class Launcher extends SubsystemBase {
   public double topRollerSpeed = 1200;
   @AutoLogOutput(key = "Launcher/BottomRollerSpeed")
   public double bottomRollerSpeed = 1200;
+
+  /**
+   * Sets the launcher state.
+   * @param state
+   */
+  public void setLauncherState(LauncherState state) {
+    setLauncherSpeed(state.speed, state.adjustForSpeaker);
+    setLauncherAngle(Rotation2d.fromDegrees(state.angleDegrees));
+  }
 
   /**
    * Calculates the required conch angle from the wanted launcher angle.
@@ -82,20 +107,6 @@ public class Launcher extends SubsystemBase {
     }
 
     launcherIO.setAngleReference(Rotation2d.fromRadians(conchAngleRadians).getRotations());
-  }
-
-  /**
-   * Enables the launch rollers.
-   */
-  public void launchRollersFast() {
-    setLauncherSpeed(Constants.Launcher.maxRollerVelocity, false);
-  }
-
-  /**
-   * Disables the launch rollers.
-   */
-  public void launchRollersSlow() {
-    setLauncherSpeed(Constants.Launcher.launchRollerVelocity, false);
   }
 
   /**

@@ -25,4 +25,8 @@ public class FieldRelativeVelocity {
         this.vy = 0.0;
         this.omega = 0.0;
     }
+
+    public double getNorm() {
+        return Math.sqrt(vx * vx + vy * vy + omega * omega);
+    }
 }

@@ -10,6 +10,7 @@ import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -77,7 +78,8 @@ public class Limelight extends SubsystemBase {
     // Don't use vision measurements if the robot is rotating more than 90 degrees per second.
     // 8 is an arbitrary number, but it's a good starting point. If the robot is rotating faster than this, it's likely that the vision measurements are not accurate
     // since the Limelight camera is slightly blurred and delayed.
-    if (Math.abs(Swerve.getInstance().getRobotRelativeSpeeds().omegaRadiansPerSecond) > Units.degreesToRadians(90)) {
+    ChassisSpeeds robotRelativeSpeeds = Swerve.getInstance().getRobotRelativeSpeeds();
+    if (Math.abs(robotRelativeSpeeds.omegaRadiansPerSecond) > Units.degreesToRadians(90) || Math.abs(robotRelativeSpeeds.vxMetersPerSecond) > 2.5 || Math.abs(robotRelativeSpeeds.vyMetersPerSecond) > 2.5) {
       Logger.recordOutput("Odometry/LimelightPoseEstimateUsed", false);
       return;
     }

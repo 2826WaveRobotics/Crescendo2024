@@ -32,4 +32,8 @@ public class FieldRelativeAcceleration {
         this.ay = 0.0;
         this.alpha = 0.0;
     }
+
+    public double getNorm() {
+        return Math.sqrt(ax*ax + ay*ay + alpha*alpha);
+    }
 }

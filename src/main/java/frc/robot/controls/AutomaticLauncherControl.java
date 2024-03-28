@@ -6,6 +6,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.littletonrobotics.junction.Logger;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -17,6 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
+import frc.robot.subsystems.launcher.Launcher.LauncherState;
 
 public class AutomaticLauncherControl {
   private static AutomaticLauncherControl instance = null;
@@ -29,15 +33,6 @@ public class AutomaticLauncherControl {
   
   private AutomaticLauncherControl() {
     // This is a singleton class.
-  }
-  
-  private class LauncherState {
-    public double speed;
-    public double angleDegrees;
-    public LauncherState(double speed, double angleDegrees) {
-      this.speed = speed;
-      this.angleDegrees = angleDegrees;
-    }
   }
   
   private ArrayList<LauncherState> launcherStateGrid = new ArrayList<>();
@@ -188,9 +183,10 @@ public class AutomaticLauncherControl {
 
   private LauncherState getLauncherStateTimeBasedPrediction() {
     double distance = SwerveAlignmentController.getInstance().allianceSpeakerDistance;
+    Logger.recordOutput("Launcher/AutomaticControl/Distance", distance);
 
-    double speed = getSpeed(distance);
-    double angle = getAngle(distance);
+    double speed = MathUtil.clamp(getSpeed(distance), 150, 6800);
+    double angle = MathUtil.clamp(getAngle(distance), 20, 60);
 
     return new LauncherState(speed, angle);
   }
@@ -219,13 +215,12 @@ public class AutomaticLauncherControl {
         state = getLauncherStateLookupTable();
         break;
     }
-    
-    if(Constants.enableNonEssentialShuffleboard) SmartDashboard.putString("Automatic launcher control value", "[" + state.speed + ", " + state.angleDegrees + "]");
+
+    Logger.recordOutput("Launcher/AutomaticControl/State/Speed", state.speed);
+    Logger.recordOutput("Launcher/AutomaticControl/State/Angle", state.angleDegrees);
     
     Launcher launcher = Launcher.getInstance();
-
-    launcher.setLauncherSpeed(state.speed, true);
-    launcher.setLauncherAngle(Rotation2d.fromDegrees(state.angleDegrees));
+    launcher.setLauncherState(state);
     
     if(launcher.atSetpoints() && SwerveAlignmentController.getInstance().atTarget) {
       VibrationFeedback.getInstance().addToOperatorLeft(1.0);

@@ -17,7 +17,7 @@ public class LaunchNote extends Command {
   /** Creates a new LaunchNote. */
   public LaunchNote() {
     if(Superstructure.getInstance().getNoteState() != NoteState.ReadyToLaunch) cancel();
-    NoteVisualizer.shoot().schedule(); // TODO: This is a bad way to do this, but it's a quick fix for now.
+    NoteVisualizer.shoot();
   }
 
   // Called when the command is initially scheduled.

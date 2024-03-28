@@ -1,6 +1,5 @@
 package frc.robot.controls;
 
-import java.util.Set;
 import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -10,7 +9,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
@@ -24,6 +22,7 @@ import frc.robot.commands.climber.ClimberControls;
 import frc.robot.commands.control.PathfindingCommands;
 import frc.robot.commands.transport.SetLauncherAngle;
 import frc.robot.commands.transport.SetLauncherSpeed;
+import frc.robot.commands.transport.SetLauncherState;
 import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.climber.Climber;
@@ -132,48 +131,22 @@ public class Controls {
         autoSpeakerAim.whileTrue(new RepeatCommand(new InstantCommand(launcherControl::autoAlign)));
 
         BooleanSupplier testMode = operator.x();
+        BooleanSupplier notInTestMode = () -> !testMode.getAsBoolean();
 
         // Test angle mode
-        // launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(25));
-        operator.povUp().whileTrue(new RepeatCommand(new InstantCommand(() -> {
-            if(!testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherAngle(launcherSubsystem.launcherAngle.plus(Rotation2d.fromDegrees(0.15)));
-        }))).onTrue(new InstantCommand(() -> {
-            // Podium speaker preset
-            if(testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(42.1));
-            launcherSubsystem.setLauncherSpeed(2880, true);
-        }));
-
-        operator.povDown().whileTrue(new RepeatCommand(new InstantCommand(() -> {
-            if(!testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherAngle(launcherSubsystem.launcherAngle.minus(Rotation2d.fromDegrees(0.15)));
-        }))).onTrue(new InstantCommand(() -> {
-            // Slow preset
-            if(testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(21));
-            launcherSubsystem.launchRollersSlow();
-        }));
-
-        operator.povRight().whileTrue(new RepeatCommand(new InstantCommand(() -> {
-            if(!testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherSpeed(launcherSubsystem.topRollerSpeed + 20, true);
-        }))).onTrue(new InstantCommand(() -> {
-            // Close speaker preset
-            if(testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(59.95));
-            launcherSubsystem.setLauncherSpeed(4500, true);
-        }));
-
-        operator.povLeft().whileTrue(new RepeatCommand(new InstantCommand(() -> {
-            if(!testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherSpeed(launcherSubsystem.topRollerSpeed - 20, true);
-        }))).onTrue(new InstantCommand(() -> {
-            // Amp preset
-            if(testMode.getAsBoolean()) return; // Test angle mode
-            launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(58.95));
-            launcherSubsystem.setLauncherSpeed(1540, false);
-        }));
+        launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(25));
+        operator.povUp()
+            .whileTrue(new RepeatCommand(new InstantCommand(() -> launcherSubsystem.setLauncherAngle(launcherSubsystem.launcherAngle.plus(Rotation2d.fromDegrees(0.15))))).onlyIf(testMode))
+            .onTrue(new SetLauncherState(Constants.Controls.DPadUpPreset).onlyIf(notInTestMode));
+        operator.povDown()
+            .whileTrue(new RepeatCommand(new InstantCommand(() -> launcherSubsystem.setLauncherAngle(launcherSubsystem.launcherAngle.minus(Rotation2d.fromDegrees(0.15))))).onlyIf(testMode))
+            .onTrue(new SetLauncherState(Constants.Controls.DPadDownPreset).onlyIf(notInTestMode));
+        operator.povRight()
+            .whileTrue(new RepeatCommand(new InstantCommand(() -> launcherSubsystem.setLauncherSpeed(launcherSubsystem.topRollerSpeed + 20, true))).onlyIf(testMode))
+            .onTrue(new SetLauncherState(Constants.Controls.DPadRightPreset).onlyIf(notInTestMode));
+        operator.povLeft()
+            .whileTrue(new RepeatCommand(new InstantCommand(() -> launcherSubsystem.setLauncherSpeed(launcherSubsystem.topRollerSpeed - 20, true))).onlyIf(testMode))
+            .onTrue(new SetLauncherState(Constants.Controls.DPadLeftPreset).onlyIf(notInTestMode));
 
         operator.rightTrigger(0.2).whileTrue(new RepeatCommand(new InstantCommand(
             () -> Transport.getInstance().attemptTransitionToState(TransportState.LaunchingNote)
@@ -182,17 +155,12 @@ public class Controls {
         ));
         
         // Lob shot
-        operator.leftTrigger(0.2).onTrue(new SequentialCommandGroup(
-            new ParallelCommandGroup(
-                new SetLauncherAngle(60.0),
-                new SetLauncherSpeed(5000, false)
-            ),
-            new InstantCommand(
-                () -> Transport.getInstance().attemptTransitionToState(TransportState.LaunchingNote)
-            )
-        )).onFalse(new InstantCommand(
-            () -> Transport.getInstance().attemptTransitionToState(TransportState.Stopped)
-        ));
+        operator.leftTrigger(0.2)
+            .onTrue(new SequentialCommandGroup(
+                new SetLauncherState(Constants.Controls.LobShotState),
+                new InstantCommand(() -> Transport.getInstance().attemptTransitionToState(TransportState.LaunchingNote))
+            ))
+            .onFalse(new InstantCommand(() -> Transport.getInstance().attemptTransitionToState(TransportState.Stopped)));
         
         operator.start().whileTrue(Commands.startEnd(
             () -> launcherSubsystem.setLauncherSpeed(-6800, false),

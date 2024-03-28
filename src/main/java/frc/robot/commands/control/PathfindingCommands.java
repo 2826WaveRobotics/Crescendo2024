@@ -12,12 +12,15 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.transport.LaunchNote;
 import frc.robot.commands.transport.SetLauncherAngle;
 import frc.robot.commands.transport.SetLauncherSpeed;
+import frc.robot.commands.transport.SetLauncherState;
 import frc.robot.controls.SwerveAlignmentController;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
+import frc.robot.subsystems.transport.Transport;
+import frc.robot.subsystems.transport.Transport.TransportState;
 
 public class PathfindingCommands {
-    private static Command pathfind(String pathName, Command... afterPathfindCommands) {
+    private static Command pathfind(String pathName) {
         var commandGroup = new SequentialCommandGroup();
 
         commandGroup.addRequirements(Swerve.getInstance(), Launcher.getInstance());
@@ -32,23 +35,36 @@ public class PathfindingCommands {
         commandGroup.addCommands(
             new InstantCommand(() -> SwerveAlignmentController.getInstance().reset()),
             new InstantCommand(() -> DriveCommands.setPathfinding(true)),
-            new ParallelCommandGroup(
-                new SetLauncherAngle(65),
-                new SetLauncherSpeed(1500, false),
-                pathfindingCommand
-            ),
-            new InstantCommand(() -> DriveCommands.setPathfinding(false))
+            pathfindingCommand
         );
-        commandGroup.addCommands(afterPathfindCommands);
 
         return commandGroup.finallyDo(() -> DriveCommands.setPathfinding(false));
     }
 
     public static Command pathfindToAmpAndLaunch() {
-        return pathfind("Internal_AmpLineup", new LaunchNote());
+        return new SequentialCommandGroup(
+            new ParallelCommandGroup(
+                new SetLauncherState(Constants.Controls.AmpState),
+                pathfind("Internal_AmpLineup")
+            ),
+            new LaunchNote()
+        );
     }
     
     public static Command pathfindToSpeakerAndLaunch() {
-        return pathfind("Internal_SpeakerLineup", new LaunchNote());
+        return new SequentialCommandGroup(
+            new ParallelCommandGroup(
+                new SetLauncherState(Constants.Controls.SpeakerCloseState),
+                pathfind("Internal_SpeakerLineup")
+            ),
+            new LaunchNote()
+        );
+    }
+    
+    public static Command pathfindToSource() {
+        return new ParallelCommandGroup(
+            new InstantCommand(() -> Transport.getInstance().attemptTransitionToState(TransportState.IntakingNote)),
+            pathfind("Internal_SourceLineup")
+        );
     }
 }

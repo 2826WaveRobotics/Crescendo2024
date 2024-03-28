@@ -11,6 +11,7 @@ import frc.lib.config.SwerveModuleConstants;
 import frc.lib.util.CANSparkMaxConfig;
 import frc.lib.util.CANSparkMaxUtil;
 import frc.lib.util.CANSparkMaxUtil.Usage;
+import frc.robot.subsystems.launcher.Launcher.LauncherState;
 
 public final class Constants {
   /**
@@ -18,7 +19,7 @@ public final class Constants {
    * This _must_ be changed before running simulations or on the real robot.  
    * There may be a better way to do this, but we need to differentiate between replays and normal simulations which doesn't seem possible.
    */
-  public static final Mode currentMode = Mode.REAL;
+  public static final Mode currentMode = Mode.SIM;
   /** A situation that the robot is currently running in: real, simulation, or replay. */
   public enum Mode {
     /** Running on a real robot. */
@@ -37,6 +38,17 @@ public final class Constants {
   public static final boolean enableNonEssentialShuffleboard = true;
 
   public static final double fieldLengthMeters = Units.feetToMeters(54. + 1./12);
+
+  public static final class Controls {
+    public static final LauncherState AmpState = new LauncherState(1540, 58.95, false);
+    public static final LauncherState SpeakerCloseState = new LauncherState(4500, 59.95, true);
+    public static final LauncherState LobShotState = new LauncherState(5000, 60, false);
+
+    public static final LauncherState DPadLeftPreset = AmpState;
+    public static final LauncherState DPadUpPreset = new LauncherState(2880, 42.1, true); // Podium speaker preset
+    public static final LauncherState DPadDownPreset = new LauncherState(Constants.Launcher.idleRollerVelocity, 21, false); // Slow preset
+    public static final LauncherState DPadRightPreset = SpeakerCloseState;
+  }
 
   public static final class Swerve {
     public static final double stickDeadband = 0.1;
@@ -60,8 +72,8 @@ public final class Constants {
     /** The constraints to use while pathfinding. This doesn't apply to the paths followed at the end. */
     public static final PathConstraints pathfindingConstraints = new PathConstraints(3.4, 6.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
     public static final double trackingAngleControllerP = 7.0; // 7.5
-    public static final double trackingAngleControllerI = 0.2; // 0
-    public static final double trackingAngleControllerD = 0.0002; // 0
+    public static final double trackingAngleControllerI = 0.5; // 0
+    public static final double trackingAngleControllerD = 0.0005; // 0
 
     // The locations of the modules on the robot, in meters.
     public static final Translation2d[] modulePositions = {
@@ -196,11 +208,7 @@ public final class Constants {
     /**
      * The idle launch roller velocity in revolutions per minute.
      */
-    public static final double launchRollerVelocity = 120.; // 1500.0;
-    /**
-     * The launch roller velocity, when shooting, in revolutions per minute.
-     */
-    public static final double maxRollerVelocity = 3700.0;
+    public static final double idleRollerVelocity = 120.; // 1500.0;
 
     public static final Rotation2d softStopMarginLow = Rotation2d.fromDegrees(3);
     public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(40);
