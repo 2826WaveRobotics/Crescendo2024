@@ -181,6 +181,7 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
 
   @Override
   public void setCharacterizationDriveVoltage(double voltage) {
+    setTurnAngle(Rotation2d.fromDegrees(0));
     driveSparkMax.setVoltage(voltage);
   }
 }
