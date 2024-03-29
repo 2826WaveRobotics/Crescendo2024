@@ -60,7 +60,6 @@ public class Lighting extends SubsystemBase {
      */
     @Override
     public void periodic() {
-        System.out.println("Setting light state to " + getLightingState());
         lightingIO.setLightState(Swerve.getInstance().getRobotSpeed(), getLightingState());
     }
 }
