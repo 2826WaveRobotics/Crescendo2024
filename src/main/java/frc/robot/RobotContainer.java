@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
+import frc.robot.subsystems.lighting.Lighting;
 import frc.robot.subsystems.transport.Transport;
 import frc.robot.subsystems.transport.Transport.TransportState;
 import frc.robot.subsystems.vision.Limelight;
@@ -93,6 +94,9 @@ public class RobotContainer {
       .withSize(3, 1);
 
     Controls.getInstance().configureControls();
+
+    // Initialize the lighting by calling getInstance() because nothing else in the code does.
+    Lighting.getInstance();
     
     LiveWindow.disableAllTelemetry();
   }

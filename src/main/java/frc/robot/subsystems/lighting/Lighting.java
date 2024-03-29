@@ -1,9 +1,6 @@
 package frc.robot.subsystems.lighting;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.NoteState;
@@ -63,6 +60,7 @@ public class Lighting extends SubsystemBase {
      */
     @Override
     public void periodic() {
+        System.out.println("Setting light state to " + getLightingState());
         lightingIO.setLightState(Swerve.getInstance().getRobotSpeed(), getLightingState());
     }
 }
