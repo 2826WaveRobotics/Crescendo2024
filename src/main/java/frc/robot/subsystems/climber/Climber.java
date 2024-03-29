@@ -1,5 +1,7 @@
 package frc.robot.subsystems.climber;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -103,6 +105,7 @@ public class Climber extends SubsystemBase {
   @Override
   public void periodic() {
     climberIO.updateInputs(inputs);
+    Logger.processInputs("Climber", inputs);
   }
 
   public void useClimbingCurrentLimit() {

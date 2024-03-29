@@ -12,6 +12,7 @@ import frc.lib.util.CANSparkMaxConfig;
 import frc.lib.util.CANSparkMaxUtil;
 import frc.lib.util.CANSparkMaxUtil.Usage;
 import frc.robot.subsystems.launcher.Launcher.LauncherState;
+import edu.wpi.first.wpilibj.RobotBase;
 
 public final class Constants {
   /**
@@ -19,7 +20,7 @@ public final class Constants {
    * This _must_ be changed before running simulations or on the real robot.  
    * There may be a better way to do this, but we need to differentiate between replays and normal simulations which doesn't seem possible.
    */
-  public static final Mode currentMode = Mode.SIM;
+  public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : Mode.SIM;
   /** A situation that the robot is currently running in: real, simulation, or replay. */
   public enum Mode {
     /** Running on a real robot. */
@@ -83,11 +84,6 @@ public final class Constants {
       new Translation2d(-wheelBase / 2.0, trackWidth / 2.0)   // br
     };
 
-    /* Drive Motor Characterization Values */
-    public static final double driveKS = 0.667;
-    public static final double driveKV = 2.44;
-    public static final double driveKA = 0.27;
-
     /* Swerve Profiling Values */
     /**
      * The maximum robot movement speed in meters per second.
@@ -107,7 +103,7 @@ public final class Constants {
       100,
       12.0,
       Usage.kAll
-    ).configurePIDSlot(0, 1e-4, 0.0, 0.0, 1. / 6784 /* Free speed of a NEO Vortex */);
+    ).configurePIDSlot(0, 1.5e-4, 0.0, 0.0, 1. / 6784 /* Free speed of a NEO Vortex */);
     
     /**
      * The spark max config for the angle motors.
@@ -179,7 +175,7 @@ public final class Constants {
   }
 
   public static final class Launcher {
-    public static final int absoluteEncoderDIOPort = 0;
+    public static final int absoluteEncoderDIOPort = 1;
 
     public static final int topRollerCANID = 59;
     public static final int bottomRollerCANID = 52;
@@ -213,7 +209,7 @@ public final class Constants {
     public static final Rotation2d softStopMarginLow = Rotation2d.fromDegrees(3);
     public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(40);
 
-    public static final double angleMotorGearboxReduction = Math.pow(5.23, 3);
+    public static final double angleMotorGearboxReduction = Math.pow(5.23, 2);
 
     /**
      * The conch angle offset. 0 degrees should be where the axle sits at the lowest point.

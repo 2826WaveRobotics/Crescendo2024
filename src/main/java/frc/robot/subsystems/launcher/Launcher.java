@@ -1,6 +1,7 @@
 package frc.robot.subsystems.launcher;
 
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -138,12 +139,14 @@ public class Launcher extends SubsystemBase {
   @Override
   public void periodic() {
     launcherIO.updateInputs(inputs);
+    Logger.processInputs("Launcher/Inputs", inputs);
+
     launcherIO.runRollers(topRollerSpeed, bottomRollerSpeed);
 
     LauncherVisualizer.getInstance().update();
 
     if(Constants.enableNonEssentialShuffleboard) {
-      SmartDashboard.putNumber("Absolute launcher angle", inputs.absoluteLauncherAngle.getDegrees());
+      SmartDashboard.putNumber("Absolute launcher angle", inputs.absoluteLauncherAngle.getDegrees() + 1);
     }
     
     if(Constants.enableNonEssentialShuffleboard) {

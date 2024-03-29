@@ -117,6 +117,7 @@ public class Limelight extends SubsystemBase {
   @Override
   public void periodic() {
     limelightIO.updateInputs(inputs);
+    Logger.processInputs("Limelight", inputs);
 
     updateOdometryPoseFromVisionMeasurements();
   }

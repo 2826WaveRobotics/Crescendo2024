@@ -134,7 +134,7 @@ public class Controls {
         BooleanSupplier notInTestMode = () -> !testMode.getAsBoolean();
 
         // Test angle mode
-        launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(25));
+        // launcherSubsystem.setLauncherAngle(Rotation2d.fromDegrees(25));
         operator.povUp()
             .whileTrue(new RepeatCommand(new InstantCommand(() -> launcherSubsystem.setLauncherAngle(launcherSubsystem.launcherAngle.plus(Rotation2d.fromDegrees(0.15))))).onlyIf(testMode))
             .onTrue(new SetLauncherState(Constants.Controls.DPadUpPreset).onlyIf(notInTestMode));

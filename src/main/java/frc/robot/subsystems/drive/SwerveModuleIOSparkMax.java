@@ -130,6 +130,8 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     inputs.turnVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(turnRelativeEncoder.getVelocity()) / Constants.Swerve.angleGearRatio;
     inputs.turnCurrentAmps = turnSparkMax.getOutputCurrent();
 
+    inputs.driveAppliedVolts = driveSparkMax.getAppliedOutput() * driveSparkMax.getBusVoltage();
+
     inputs.odometryTimestamps = timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
     inputs.odometryDrivePositionsRad = drivePositionQueue.stream()
       .mapToDouble((Double value) -> Units.rotationsToRadians(value) / Constants.Swerve.driveGearRatio)
@@ -181,7 +183,6 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
 
   @Override
   public void setCharacterizationDriveVoltage(double voltage) {
-    setTurnAngle(Rotation2d.fromDegrees(0));
     driveSparkMax.setVoltage(voltage);
   }
 }

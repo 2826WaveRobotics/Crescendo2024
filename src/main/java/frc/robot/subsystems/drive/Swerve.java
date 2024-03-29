@@ -230,12 +230,6 @@ public class Swerve extends SubsystemBase {
   private FieldRelativeVelocity velocity = new FieldRelativeVelocity();
   private FieldRelativeVelocity lastVelocity = new FieldRelativeVelocity();
   private FieldRelativeAcceleration acceleration = new FieldRelativeAcceleration();
-  private LinearFilter velocityFilterX = LinearFilter.singlePoleIIR(0.04, 0.02);
-  private LinearFilter velocityFilterY = LinearFilter.singlePoleIIR(0.04, 0.02);
-  private LinearFilter velocityFilterO = LinearFilter.singlePoleIIR(0.04, 0.02);
-  private LinearFilter accelerationFilterX = LinearFilter.singlePoleIIR(0.04, 0.02);
-  private LinearFilter accelerationFilterY = LinearFilter.singlePoleIIR(0.04, 0.02);
-  private LinearFilter accelerationFilterA = LinearFilter.singlePoleIIR(0.04, 0.02);
 
   /**
    * Gets the absolute speed of the robot in meters per second.

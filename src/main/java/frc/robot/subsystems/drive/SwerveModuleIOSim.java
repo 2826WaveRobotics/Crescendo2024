@@ -32,7 +32,7 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
   private final Queue<Double> turnPositionQueue;
 
   private boolean usingPID = true;
-  private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(Constants.Swerve.driveKS, Constants.Swerve.driveKV, Constants.Swerve.driveKA);
+  private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.5, 2.35, 0.61);
   // Velocity
   private final PIDController driveController = Constants.Swerve.driveConfig.getPIDController(0);
   // Position

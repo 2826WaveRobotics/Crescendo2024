@@ -1,5 +1,7 @@
 package frc.robot.subsystems.noteSensors;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -44,6 +46,7 @@ public class NoteSensors extends SubsystemBase {
    */
   public void updateSensorValues() {
     noteSensorIO.updateInputs(inputs);
+    Logger.processInputs("NoteSensors", inputs);
   }
 
   /**
