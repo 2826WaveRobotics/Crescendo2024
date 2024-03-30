@@ -2,6 +2,7 @@ package frc.robot.subsystems.lighting;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.NoteState;
 import frc.robot.subsystems.drive.Swerve;
@@ -10,15 +11,20 @@ public class Lighting extends SubsystemBase {
     private static Lighting instance = null;
     public static Lighting getInstance() {
         if (instance == null) {
-            instance = new Lighting();
+            switch(Constants.currentMode) {
+                case REAL:
+                    instance = new Lighting(new LightingIOReal());
+                default:
+                    instance = new Lighting(new LightingIO() {});
+            }
         }
         return instance;
     }
 
     private LightingIO lightingIO;
 
-    private Lighting() {
-        // This is a singleton class.
+    private Lighting(LightingIO io) {
+        this.lightingIO = io;
     }
 
     /**
@@ -40,18 +46,20 @@ public class Lighting extends SubsystemBase {
      * @return
      */
     private LightState getLightingState() {
-        if(DriverStation.isDisabled()) return LightState.preStartState;
-        if(DriverStation.isAutonomous()) return LightState.autoState;
+        return LightState.teleopNoteIntookState;
 
-        NoteState noteManagementState = Superstructure.getInstance().getNoteState();
+        // if(DriverStation.isDisabled()) return LightState.preStartState;
+        // if(DriverStation.isAutonomous()) return LightState.autoState;
 
-        // Teleop states
-        if(noteManagementState == NoteState.IntakingNote)  return LightState.teleopNoteIntookState;
-        if(noteManagementState == NoteState.MovingNote)    return LightState.teleopTransportState;
-        if(noteManagementState == NoteState.ReadyToLaunch) return LightState.teleopNoteReadyState;
-        if(noteManagementState == NoteState.EjectingNote)  return LightState.teleopEjectingNoteState;
+        // NoteState noteManagementState = Superstructure.getInstance().getNoteState();
 
-        return LightState.teleopStaticState;
+        // // Teleop states
+        // if(noteManagementState == NoteState.IntakingNote)  return LightState.teleopNoteIntookState;
+        // if(noteManagementState == NoteState.MovingNote)    return LightState.teleopTransportState;
+        // if(noteManagementState == NoteState.ReadyToLaunch) return LightState.teleopNoteReadyState;
+        // if(noteManagementState == NoteState.EjectingNote)  return LightState.teleopEjectingNoteState;
+
+        // return LightState.teleopStaticState;
     }
 
     /**

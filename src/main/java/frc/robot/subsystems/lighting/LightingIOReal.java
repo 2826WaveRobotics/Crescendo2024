@@ -35,8 +35,15 @@ public class LightingIOReal implements LightingIO {
         return data;
     }
 
+    private int failedCount = 0;
+
     @Override
     public void setLightState(double robotSpeed, LightState lightState) {
-        i2cLightingArduino.writeBulk(getUpdate(robotSpeed, lightState));
+        var data = getUpdate(robotSpeed, lightState);
+        boolean failed = i2cLightingArduino.transaction(data, data.length, new byte[0], 0);
+        if(failed && failedCount < 10) {
+            failedCount++;
+            System.out.println("Failed to write to lighting Arduino");
+        }
     }
 }

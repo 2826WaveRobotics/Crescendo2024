@@ -43,15 +43,17 @@ uint8_t pulseLUT[PULSE_LUT_ENTRIES];
 
 // Executes whenever data is recieved from the RoboRIO.
 void onRecieveI2CData(int bytesRead) {
+  Serial.println(bytesRead + " bytes read \n");
+
   // Our messages consist of 3 bytes: the light state, the alliance we're on, and the robot speed from 0 to 255.
   if(Wire.available() < 3) return;
   
-  // uint8_t lightState = Wire.read();
-  uint8_t lightState = 2;
+  Serial.println(" Full message\n");
+  
+  uint8_t lightState = Wire.read();
   uint8_t allianceValue = Wire.read();
   uint8_t speed = Wire.read();
   
-
   // Values for light state must be between 0 and (lightStateCount - 1)
   if(lightState >= lightStateCount) return;
   // Values for alliance must be between 0 and (allianceCount - 1)
@@ -70,6 +72,8 @@ void setup() {
 
   Serial.begin(9600);
 
+  Serial.println("Setup\n");
+  
   for(int i = 0; i < PULSE_LUT_ENTRIES; i++) {
     pulseLUT[i] = (uint8_t)((-cos((float)i / PULSE_LUT_ENTRIES * 2 * 3.1415926) * 0.5 + 0.5) * 255);
   }

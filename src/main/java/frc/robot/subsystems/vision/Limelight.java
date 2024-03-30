@@ -21,7 +21,6 @@ import frc.robot.Constants;
 import frc.robot.controls.SwerveAlignmentController;
 import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.drive.Swerve;
-import frc.robot.subsystems.vision.LimelightIO.LimelightIOInputsLogged;
 import frc.lib.LimelightHelpers;
 import frc.lib.util.ShuffleboardContent;
 
@@ -58,7 +57,7 @@ public class Limelight extends SubsystemBase {
   public static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(30));
   
   private LimelightIO limelightIO;
-  private LimelightIOInputsLogged inputs = new LimelightIOInputsLogged();
+  private LimelightIOInputsAutoLogged inputs = new LimelightIOInputsAutoLogged();
 
   private Limelight(LimelightIO limelightIO) {
     this.limelightIO = limelightIO;
@@ -70,10 +69,7 @@ public class Limelight extends SubsystemBase {
   }
 
   private void updateOdometryPoseFromVisionMeasurements() {
-    LimelightHelpers.PoseEstimate poseEstimateData = inputs.poseEstimateData;
-    if(poseEstimateData == null) return;
-
-    Logger.recordOutput("Odometry/LimelightPoseEstimate", poseEstimateData.pose);
+    Logger.recordOutput("Odometry/LimelightPoseEstimate", inputs.pose);
 
     // Don't use vision measurements if the robot is rotating more than 90 degrees per second.
     // 8 is an arbitrary number, but it's a good starting point. If the robot is rotating faster than this, it's likely that the vision measurements are not accurate
@@ -84,7 +80,7 @@ public class Limelight extends SubsystemBase {
       return;
     }
     
-    Pose2d pose = poseEstimateData.pose;
+    Pose2d pose = inputs.pose;
 
     Swerve swerve = Swerve.getInstance();
     // If the vision estimate is more than 1.5 meters away from the odometry estimate, discard the vision estimate
@@ -95,23 +91,23 @@ public class Limelight extends SubsystemBase {
     
     int tagsRequired = 1;
     if(SwerveAlignmentController.getInstance().getAlignmentMode() == AlignmentMode.AllianceSpeaker) tagsRequired = 2;
-    if(poseEstimateData.tagCount < tagsRequired) {
+    if(inputs.tagCount < tagsRequired) {
       Logger.recordOutput("Odometry/LimelightPoseEstimateUsed", false);
       return;
     }
 
     double maxDistance = DriverStation.isAutonomous() ? 1.5 : 4.0;
-    if(poseEstimateData.avgTagDist > maxDistance) {
+    if(inputs.avgTagDist > maxDistance) {
       Logger.recordOutput("Odometry/LimelightPoseEstimateUsed", false);
       return;
     }
 
     // Scale the vision measurement expected standard deviation exponentially by the distance 
-    double standardDeviationScalar = Math.max(0.01, 0.4 * Math.pow(1.5, poseEstimateData.avgTagDist) - 0.03) / (poseEstimateData.tagCount);
+    double standardDeviationScalar = Math.max(0.01, 0.4 * Math.pow(1.5, inputs.avgTagDist) - 0.03) / (inputs.tagCount);
 
     Logger.recordOutput("Odometry/LimelightPoseEstimateUsed", true);
 
-    swerve.addVisionMeasurement(pose, poseEstimateData.timestampSeconds, standardDeviationScalar);
+    swerve.addVisionMeasurement(pose, inputs.timestampSeconds, standardDeviationScalar);
   }
 
   @Override
