@@ -78,6 +78,9 @@ void onRecieveSerialData() {
   state = static_cast<LightState>(lightState);
   alliance = static_cast<Alliance>(allianceValue);
   robotSpeed = speed;
+
+  // Avoid backup of data
+  while(Serial.available() >= 3) Serial.read();
 }
 
 void setup() {
