@@ -16,10 +16,14 @@ public class LightingIOReal implements LightingIO {
     private void openSerial() {
         if(failedCount < 10) {
             try {
-                serialLightingArduino = new SerialPort(14400, Port.kUSB2);
-            } catch(UncleanStatusException e) {
-                failedCount++;
-                System.out.println("Failed to create lighting Arduino ----------------------- " + e.getLocalizedMessage());
+                serialLightingArduino = new SerialPort(9600, Port.kUSB2);
+            } catch(Exception e) {
+                try {
+                    serialLightingArduino = new SerialPort(9600, Port.kUSB1);
+                } catch(Exception e2) {
+                    failedCount++;
+                    System.out.println("Failed to create lighting Arduino - " + e.getLocalizedMessage() + ", " + e2.getLocalizedMessage());
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ import com.revrobotics.SparkPIDController;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.util.CANSparkMaxUtil;
 import frc.lib.util.CANSparkMaxUtil.Usage;
@@ -62,7 +63,6 @@ public class LauncherIOReal implements LauncherIO {
       SoftLimitDirection.kForward,
       (float)((1 - Constants.Launcher.softStopMarginHigh.getRotations()) * Constants.Launcher.angleMotorGearboxReduction)
     );
-    angleLauncherMotor.setInverted(Constants.Launcher.invertAngle);
 
     angleLauncherMotor.burnFlash();
     
@@ -108,6 +108,10 @@ public class LauncherIOReal implements LauncherIO {
     inputs.launcherRelativeConchAngle = getLauncherConchAngle();
     inputs.launcherAngleVeocityRPM = angleLauncherEncoder.getVelocity();
     inputs.speedRPM = topRollerEncoder.getVelocity();
+    
+    if(Constants.enableNonEssentialShuffleboard) {
+      SmartDashboard.putNumber("Launcher encoder angle reading", getLauncherConchAngle().getRotations());
+    }
   }
 
   private double oldTopRollerSpeed = 0.0;

@@ -72,9 +72,9 @@ public final class Constants {
 
     /** The constraints to use while pathfinding. This doesn't apply to the paths followed at the end. */
     public static final PathConstraints pathfindingConstraints = new PathConstraints(3.4, 6.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-    public static final double trackingAngleControllerP = 7.0; // 7.5
-    public static final double trackingAngleControllerI = 0.5; // 0
-    public static final double trackingAngleControllerD = 0.0005; // 0
+    public static final double trackingAngleControllerP = 7.5;
+    public static final double trackingAngleControllerI = 0.0;
+    public static final double trackingAngleControllerD = 0.0;
 
     // The locations of the modules on the robot, in meters.
     public static final Translation2d[] modulePositions = {
@@ -196,25 +196,25 @@ public final class Constants {
       CANSparkMax.IdleMode.kBrake,
       10,
       15,
-      100,
+      0.5,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
     ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0);
     
+    public static final double angleMotorGearboxReduction = 5.23 * 5.23;
+
     /**
      * The idle launch roller velocity in revolutions per minute.
      */
-    public static final double idleRollerVelocity = 120.; // 1500.0;
+    public static final double idleRollerVelocity = 120.;
 
-    public static final Rotation2d softStopMarginLow = Rotation2d.fromDegrees(3);
-    public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(40);
-
-    public static final double angleMotorGearboxReduction = Math.pow(5.23, 2);
+    public static final Rotation2d softStopMarginLow = Rotation2d.fromDegrees(15);
+    public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(150);
 
     /**
      * The conch angle offset. 0 degrees should be where the axle sits at the lowest point.
      */
-    public static final Rotation2d angleOffset = Rotation2d.fromDegrees(100);
+    public static final Rotation2d angleOffset = Rotation2d.fromDegrees(42);
 
     /**
      * If we should invert the angle motor direction.

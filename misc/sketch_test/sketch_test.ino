@@ -1,6 +1,4 @@
 #include "FastLED.h"
-#include <Wire.h>
-// include "FastLED.h" - was in original code, probaby not needed
 #include "colorutils.h"
 #define PIN1 12
 
@@ -83,7 +81,7 @@ void onRecieveSerialData() {
 }
 
 void setup() {
-  Serial.begin(14400);
+  Serial.begin(9600);
   Serial.println("Setup\n");
   
   for(int i = 0; i < PULSE_LUT_ENTRIES; i++) {

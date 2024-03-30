@@ -146,7 +146,7 @@ public class Launcher extends SubsystemBase {
     LauncherVisualizer.getInstance().update();
 
     if(Constants.enableNonEssentialShuffleboard) {
-      SmartDashboard.putNumber("Absolute launcher angle", inputs.absoluteLauncherAngle.getDegrees() + 1);
+      SmartDashboard.putNumber("Absolute launcher angle", inputs.absoluteLauncherAngle.getDegrees());
     }
     
     if(Constants.enableNonEssentialShuffleboard) {
