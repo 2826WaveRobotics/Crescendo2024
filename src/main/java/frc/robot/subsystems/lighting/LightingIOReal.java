@@ -34,21 +34,23 @@ public class LightingIOReal implements LightingIO {
 
     /**
      * Gets a lighting update with the current lighting state.  
-     * Message format is 1 byte for the light state, 1 byte for the alliance, and 1 byte for the robot speed
+     * Message format is 0xFF, 1 byte for the light state, 1 byte for the alliance, and 1 byte for the robot speed
      * (as a ratio of the full speed).
      * Checks and casts are done on both sides.
      * 
      * @param robotSpeed The robot speed in meters per second.
      */
     private byte[] getUpdate(double robotSpeed, LightState lightState) {
-        byte[] data = new byte[3];
-        data[0] = (byte)lightState.ordinal();
+        byte[] data = new byte[4];
+        data[0] = (byte)0xFF;
+
+        data[1] = (byte)lightState.ordinal();
 
         // This value matches the Arduino's enum definitions for the alliance.
-        data[1] = (byte)(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 1);
+        data[2] = (byte)(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 1);
         // 5.4 meters per second is our maximum speed.
-        // This is just a rough conversion to 0-255, which is what we send to the Arduino.
-        data[2] = (byte)(robotSpeed / 5.4 * 255);
+        // This is just a rough conversion to 0-254, which is what we send to the Arduino.
+        data[3] = (byte)(Math.min(robotSpeed / 5.4, 1.0) * 254);
         return data;
     }
 

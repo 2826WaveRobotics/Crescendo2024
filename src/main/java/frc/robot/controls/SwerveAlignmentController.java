@@ -1,8 +1,11 @@
 package frc.robot.controls;
 
+import javax.sound.sampled.Line;
+
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -14,7 +17,6 @@ import frc.lib.drive.FieldRelativeAcceleration;
 import frc.lib.drive.FieldRelativeVelocity;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Swerve;
-import frc.robot.subsystems.transport.Transport.TransportState;
 
 /**
  * This class manages updating our input robot speeds to target the current goal.
@@ -58,6 +60,11 @@ public class SwerveAlignmentController {
         return alignmentMode;
     }
 
+    private LinearFilter velocityXFilter = LinearFilter.singlePoleIIR(0.05, 0.02);
+    private LinearFilter velocityYFilter = LinearFilter.singlePoleIIR(0.05, 0.02);
+    private LinearFilter accelerationXFilter = LinearFilter.singlePoleIIR(0.05, 0.02);
+    private LinearFilter accelerationYFilter = LinearFilter.singlePoleIIR(0.05, 0.02);
+
     public double allianceSpeakerDistance = 0.0;
     public boolean atTarget = false;
 
@@ -69,6 +76,11 @@ public class SwerveAlignmentController {
                 Translation2d currentPosition = swerve.getPose().getTranslation();
                 FieldRelativeVelocity currentVelocity = swerve.getFieldRelativeVelocity();
                 FieldRelativeAcceleration currentAcceleration = swerve.getFieldRelativeAcceleration();
+
+                double filteredVelocityX = velocityXFilter.calculate(currentVelocity.vx);
+                double filteredVelocityY = velocityYFilter.calculate(currentVelocity.vy);
+                double filteredAccelerationX = accelerationXFilter.calculate(currentAcceleration.ax);
+                double filteredAccelerationY = accelerationYFilter.calculate(currentAcceleration.ay);
 
                 Logger.recordOutput("SwerveAlignmentController/CurrentPosition", currentPosition);
                 Logger.recordOutput("SwerveAlignmentController/CurrentVelocity/Mag", currentVelocity.getNorm());
@@ -85,15 +97,17 @@ public class SwerveAlignmentController {
 
                 double shotTime = AutomaticLauncherControl.getShotTime(distance);
 
+                double correctionFactor = 0.4; // Ideally would be close to 1, but just to compensate for other inaccuracies.
+
                 // Poor man's Newton's method
-                int iterations = 10; // Maximum number of iterations
+                int iterations = 5; // Maximum number of iterations
                 Translation2d correctedTargetPosition = targetLocation;
                 for(int i = 0; i < iterations; i++) {
-                    double accelerationCompensationFactor = 0.1;
+                    double accelerationCompensationFactor = 0.1; // Roughly the pipeline latency in seconds
                     correctedTargetPosition = new Translation2d(
                         // Note that this doesn't use correctedTargetPosition as a base -- it uses targetLocation
-                        targetLocation.getX() - shotTime * (currentVelocity.vx + currentAcceleration.ax * accelerationCompensationFactor),
-                        targetLocation.getY() - shotTime * (currentVelocity.vy + currentAcceleration.ay * accelerationCompensationFactor)
+                        targetLocation.getX() - shotTime * (filteredVelocityX + filteredAccelerationX * accelerationCompensationFactor) * correctionFactor,
+                        targetLocation.getY() - shotTime * (filteredVelocityY + filteredAccelerationY * accelerationCompensationFactor) * correctionFactor
                     );
 
                     Translation2d relativeCorrectedTargetPosition = correctedTargetPosition.minus(currentPosition);
@@ -102,7 +116,7 @@ public class SwerveAlignmentController {
                     double oldShotTime = shotTime;
                     shotTime = AutomaticLauncherControl.getShotTime(distance);
 
-                    if(Math.abs(shotTime - oldShotTime) < 0.005) {
+                    if(Math.abs(shotTime - oldShotTime) < 0.01) {
                         // Once we're close enough, stop
                         break;
                     }

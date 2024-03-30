@@ -169,7 +169,7 @@ public class AutomaticLauncherControl {
   }
 
   public static double getShotTime(double distane) {
-    return distane * 0.17 + 0.45; // TODO: Find equation from data
+    return distane * 0.17 + 0.5;
   }
 
   // https://docs.google.com/spreadsheets/d/1dXLGZ84TEYzmvrYkXQ3SZOwmgObqmYSxnnUZoMg85Bo/edit?usp=sharing
@@ -178,7 +178,7 @@ public class AutomaticLauncherControl {
     return 3339 * Math.pow(distance, 0.348);
   }
   private static double getAngle(double distance) {
-    return 75.6 + -21.7 * distance + 4.75 * Math.pow(distance, 2) + -0.698 * Math.pow(distance, 3);
+    return (73.6 + -21.7 * distance + 4.75 * Math.pow(distance, 2) + -0.698 * Math.pow(distance, 3)) * 0.9;
   }
 
   private LauncherState getLauncherStateTimeBasedPrediction() {
