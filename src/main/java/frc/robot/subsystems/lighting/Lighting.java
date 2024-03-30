@@ -46,20 +46,18 @@ public class Lighting extends SubsystemBase {
      * @return
      */
     private LightState getLightingState() {
-        return LightState.teleopNoteIntookState;
+        if(DriverStation.isDisabled()) return LightState.preStartState;
+        if(DriverStation.isAutonomous()) return LightState.autoState;
 
-        // if(DriverStation.isDisabled()) return LightState.preStartState;
-        // if(DriverStation.isAutonomous()) return LightState.autoState;
+        NoteState noteManagementState = Superstructure.getInstance().getNoteState();
 
-        // NoteState noteManagementState = Superstructure.getInstance().getNoteState();
+        // Teleop states
+        if(noteManagementState == NoteState.IntakingNote)  return LightState.teleopNoteIntookState;
+        if(noteManagementState == NoteState.MovingNote)    return LightState.teleopTransportState;
+        if(noteManagementState == NoteState.ReadyToLaunch) return LightState.teleopNoteReadyState;
+        if(noteManagementState == NoteState.EjectingNote)  return LightState.teleopEjectingNoteState;
 
-        // // Teleop states
-        // if(noteManagementState == NoteState.IntakingNote)  return LightState.teleopNoteIntookState;
-        // if(noteManagementState == NoteState.MovingNote)    return LightState.teleopTransportState;
-        // if(noteManagementState == NoteState.ReadyToLaunch) return LightState.teleopNoteReadyState;
-        // if(noteManagementState == NoteState.EjectingNote)  return LightState.teleopEjectingNoteState;
-
-        // return LightState.teleopStaticState;
+        return LightState.teleopStaticState;
     }
 
     int cycle = 0;

@@ -111,6 +111,13 @@ public class Launcher extends SubsystemBase {
   }
 
   /**
+   * Resets the launcher to the encoder's absolute position.
+   */
+  public void resetToAbsolute() {
+    launcherIO.resetToAbsolute();
+  }
+
+  /**
    * Sets the launch roller speed.
    * @param speed
    * @param adjustToLevelNote If we should adjust the roller speeds so we can keep the notes level. Only used for the speaker shots.

@@ -10,8 +10,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.transport.LaunchNote;
-import frc.robot.commands.transport.SetLauncherAngle;
-import frc.robot.commands.transport.SetLauncherSpeed;
 import frc.robot.commands.transport.SetLauncherState;
 import frc.robot.controls.SwerveAlignmentController;
 import frc.robot.subsystems.drive.Swerve;
@@ -23,7 +21,7 @@ public class PathfindingCommands {
     private static Command pathfind(String pathName) {
         var commandGroup = new SequentialCommandGroup();
 
-        commandGroup.addRequirements(Swerve.getInstance(), Launcher.getInstance());
+        commandGroup.addRequirements(Swerve.getInstance());
 
         // Since AutoBuilder is configured, we can use it to build pathfinding commands
         Command pathfindingCommand = AutoBuilder.pathfindThenFollowPath(

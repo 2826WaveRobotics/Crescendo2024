@@ -19,6 +19,9 @@ public interface LauncherIO {
   /** Sets the angle of the conch motor in rotations. */
   public default void setAngleReference(double rotations) {}
 
+  /** Resets the launcher position based on the absolute encoder. */
+  public default void resetToAbsolute() {}
+  
   /** Updates the set of loggable inputs. */
   public default void updateInputs(LauncherIOInputs inputs) {}
 }

@@ -1,6 +1,7 @@
 package frc.robot.commands.transport;
 
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import frc.robot.subsystems.launcher.Launcher;
 import frc.robot.subsystems.launcher.Launcher.LauncherState;
 
 /**
@@ -12,6 +13,7 @@ public class SetLauncherState extends ParallelCommandGroup {
    * @param state The launcher state
    */
   public SetLauncherState(LauncherState state) {
+    addRequirements(Launcher.getInstance());
     addCommands(
       new SetLauncherAngle(state.angleDegrees),
       new SetLauncherSpeed(state.speed, state.adjustForSpeaker)

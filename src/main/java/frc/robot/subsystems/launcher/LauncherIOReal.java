@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.lib.util.CANSparkMaxUtil;
 import frc.lib.util.CANSparkMaxUtil.Usage;
 import frc.robot.Constants;
@@ -76,6 +78,8 @@ public class LauncherIOReal implements LauncherIO {
   
   public void resetToAbsolute() {
     Rotation2d absolutePosition = getAbsoluteLauncherAngle().minus(Constants.Launcher.angleOffset);
+    SmartDashboard.putNumber("Launcher absolutePosition", absolutePosition.getDegrees());
+    SmartDashboard.putNumber("Launcher getAbsoluteLauncherAngle", getAbsoluteLauncherAngle().getDegrees());
     double rotations = absolutePosition.getRotations() % 1.;
     if(rotations < 0.) rotations = rotations + 1;
     angleLauncherEncoder.setPosition(rotations * Constants.Launcher.angleMotorGearboxReduction);
@@ -110,7 +114,7 @@ public class LauncherIOReal implements LauncherIO {
     inputs.speedRPM = topRollerEncoder.getVelocity();
     
     if(Constants.enableNonEssentialShuffleboard) {
-      SmartDashboard.putNumber("Launcher encoder angle reading", getLauncherConchAngle().getRotations());
+      SmartDashboard.putNumber("Launcher encoder angle reading", getLauncherConchAngle().getDegrees());
     }
   }
 
