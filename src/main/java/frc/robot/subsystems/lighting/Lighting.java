@@ -62,12 +62,18 @@ public class Lighting extends SubsystemBase {
         // return LightState.teleopStaticState;
     }
 
+    int cycle = 0;
+
     /**
      * Updates the arduino with the state it requires.
      * This is run periodically, no matter if the robot is enabled, by the scheduler.
      */
     @Override
     public void periodic() {
-        lightingIO.setLightState(Swerve.getInstance().getRobotSpeed(), getLightingState());
+        cycle++;
+        if(cycle > 3) {
+            cycle = 0;
+            lightingIO.setLightState(Swerve.getInstance().getRobotSpeed(), getLightingState());
+        }
     }
 }

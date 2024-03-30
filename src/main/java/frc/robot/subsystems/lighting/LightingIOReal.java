@@ -1,5 +1,6 @@
 package frc.robot.subsystems.lighting;
 
+import edu.wpi.first.hal.util.UncleanStatusException;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -8,11 +9,23 @@ import frc.robot.subsystems.lighting.Lighting.LightState;
 
 public class LightingIOReal implements LightingIO {
     /**
-     * The I2C device for the lighting arduino.
+     * The Serial device for the lighting arduino.
      */
-    private static SerialPort serialLightingArduino = new SerialPort(14400, Port.kUSB2);
+    private static SerialPort serialLightingArduino = null;
+
+    private void openSerial() {
+        if(failedCount < 10) {
+            try {
+                serialLightingArduino = new SerialPort(14400, Port.kUSB2);
+            } catch(UncleanStatusException e) {
+                failedCount++;
+                System.out.println("Failed to create lighting Arduino ----------------------- " + e.getLocalizedMessage());
+            }
+        }
+    }
 
     public LightingIOReal() {
+        openSerial();
     }
 
     /**
@@ -39,6 +52,9 @@ public class LightingIOReal implements LightingIO {
 
     @Override
     public void setLightState(double robotSpeed, LightState lightState) {
+        if(serialLightingArduino == null) openSerial();
+        if(serialLightingArduino == null) return;
+
         var data = getUpdate(robotSpeed, lightState);
         int bytesWritten = serialLightingArduino.write(data, data.length);
         if(bytesWritten != data.length && failedCount < 10) {
