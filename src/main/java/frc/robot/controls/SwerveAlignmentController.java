@@ -65,72 +65,76 @@ public class SwerveAlignmentController {
     private LinearFilter accelerationXFilter = LinearFilter.singlePoleIIR(0.05, 0.02);
     private LinearFilter accelerationYFilter = LinearFilter.singlePoleIIR(0.05, 0.02);
 
+    public double updateAllianceSpeakerDistance() {
+        Swerve swerve = Swerve.getInstance();
+
+        Translation2d currentPosition = swerve.getPose().getTranslation();
+        FieldRelativeVelocity currentVelocity = swerve.getFieldRelativeVelocity();
+        FieldRelativeAcceleration currentAcceleration = swerve.getFieldRelativeAcceleration();
+
+        double filteredVelocityX = velocityXFilter.calculate(currentVelocity.vx);
+        double filteredVelocityY = velocityYFilter.calculate(currentVelocity.vy);
+        double filteredAccelerationX = accelerationXFilter.calculate(currentAcceleration.ax);
+        double filteredAccelerationY = accelerationYFilter.calculate(currentAcceleration.ay);
+
+        Logger.recordOutput("SwerveAlignmentController/CurrentPosition", currentPosition);
+        Logger.recordOutput("SwerveAlignmentController/CurrentVelocity/Mag", currentVelocity.getNorm());
+        Logger.recordOutput("SwerveAlignmentController/CurrentAcceleration/Mag", currentAcceleration.getNorm());
+
+        double speakerInward = -0.1;
+        boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
+        Translation2d targetLocation = isBlueAlliance ? new Translation2d(speakerInward, 5.55) : new Translation2d(Constants.fieldLengthMeters - speakerInward, 5.55);
+
+        Translation2d relativeTargetLocation = targetLocation.minus(currentPosition);
+        double distance = relativeTargetLocation.getNorm();
+
+        Logger.recordOutput("SwerveAlignmentController/RealDistance", distance);
+
+        double shotTime = AutomaticLauncherControl.getShotTime(distance);
+
+        double correctionFactor = 0.7; // Ideally would be close to 1, but just to compensate for other inaccuracies.
+
+        // Poor man's Newton's method
+        int iterations = 5; // Maximum number of iterations
+        Translation2d correctedTargetPosition = targetLocation;
+        for(int i = 0; i < iterations; i++) {
+            double accelerationCompensationFactor = 0.1; // Roughly the pipeline latency in seconds
+            correctedTargetPosition = new Translation2d(
+                // Note that this doesn't use correctedTargetPosition as a base -- it uses targetLocation
+                targetLocation.getX() - shotTime * (filteredVelocityX + filteredAccelerationX * accelerationCompensationFactor) * correctionFactor,
+                targetLocation.getY() - shotTime * (filteredVelocityY + filteredAccelerationY * accelerationCompensationFactor) * correctionFactor
+            );
+
+            Translation2d relativeCorrectedTargetPosition = correctedTargetPosition.minus(currentPosition);
+            distance = relativeCorrectedTargetPosition.getNorm();
+
+            double oldShotTime = shotTime;
+            shotTime = AutomaticLauncherControl.getShotTime(distance);
+
+            if(Math.abs(shotTime - oldShotTime) < 0.01) {
+                // Once we're close enough, stop
+                break;
+            }
+        }
+
+        allianceSpeakerDistance = distance;
+
+        // Aim at correctedTargetPosition
+        Translation2d currentTranslation = swerve.getPose().getTranslation();
+        Translation2d relativeCorrectedTargetPosition = correctedTargetPosition.minus(currentTranslation);
+        double angle = Math.atan2(relativeCorrectedTargetPosition.getY(), relativeCorrectedTargetPosition.getX());
+
+        return angle;
+    }
+
     public double allianceSpeakerDistance = 0.0;
     public boolean atTarget = false;
 
     private Rotation2d getTargetAngle() {
         switch (alignmentMode) {
             case AllianceSpeaker:
-                Swerve swerve = Swerve.getInstance();
-
-                Translation2d currentPosition = swerve.getPose().getTranslation();
-                FieldRelativeVelocity currentVelocity = swerve.getFieldRelativeVelocity();
-                FieldRelativeAcceleration currentAcceleration = swerve.getFieldRelativeAcceleration();
-
-                double filteredVelocityX = velocityXFilter.calculate(currentVelocity.vx);
-                double filteredVelocityY = velocityYFilter.calculate(currentVelocity.vy);
-                double filteredAccelerationX = accelerationXFilter.calculate(currentAcceleration.ax);
-                double filteredAccelerationY = accelerationYFilter.calculate(currentAcceleration.ay);
-
-                Logger.recordOutput("SwerveAlignmentController/CurrentPosition", currentPosition);
-                Logger.recordOutput("SwerveAlignmentController/CurrentVelocity/Mag", currentVelocity.getNorm());
-                Logger.recordOutput("SwerveAlignmentController/CurrentAcceleration/Mag", currentAcceleration.getNorm());
-
-                double speakerInward = -0.1;
-                boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
-                Translation2d targetLocation = isBlueAlliance ? new Translation2d(speakerInward, 5.55) : new Translation2d(Constants.fieldLengthMeters - speakerInward, 5.55);
-
-                Translation2d relativeTargetLocation = targetLocation.minus(currentPosition);
-                double distance = relativeTargetLocation.getNorm();
-
-                Logger.recordOutput("SwerveAlignmentController/RealDistance", distance);
-
-                double shotTime = AutomaticLauncherControl.getShotTime(distance);
-
-                double correctionFactor = 0.4; // Ideally would be close to 1, but just to compensate for other inaccuracies.
-
-                // Poor man's Newton's method
-                int iterations = 5; // Maximum number of iterations
-                Translation2d correctedTargetPosition = targetLocation;
-                for(int i = 0; i < iterations; i++) {
-                    double accelerationCompensationFactor = 0.1; // Roughly the pipeline latency in seconds
-                    correctedTargetPosition = new Translation2d(
-                        // Note that this doesn't use correctedTargetPosition as a base -- it uses targetLocation
-                        targetLocation.getX() - shotTime * (filteredVelocityX + filteredAccelerationX * accelerationCompensationFactor) * correctionFactor,
-                        targetLocation.getY() - shotTime * (filteredVelocityY + filteredAccelerationY * accelerationCompensationFactor) * correctionFactor
-                    );
-
-                    Translation2d relativeCorrectedTargetPosition = correctedTargetPosition.minus(currentPosition);
-                    distance = relativeCorrectedTargetPosition.getNorm();
-
-                    double oldShotTime = shotTime;
-                    shotTime = AutomaticLauncherControl.getShotTime(distance);
-
-                    if(Math.abs(shotTime - oldShotTime) < 0.01) {
-                        // Once we're close enough, stop
-                        break;
-                    }
-                }
-
-                allianceSpeakerDistance = distance;
-
-                // Aim at correctedTargetPosition
-                Translation2d currentTranslation = swerve.getPose().getTranslation();
-                Translation2d relativeCorrectedTargetPosition = correctedTargetPosition.minus(currentTranslation);
-                double angle = Math.atan2(relativeCorrectedTargetPosition.getY(), relativeCorrectedTargetPosition.getX());
-                
                 // Add 180 degrees because we want to face the launcher toward the alliance speaker instead of the intake, which is the real front of the robot
-                return Rotation2d.fromRadians(angle).plus(Rotation2d.fromRadians(Math.PI));
+                return Rotation2d.fromRadians(updateAllianceSpeakerDistance()).plus(Rotation2d.fromRadians(Math.PI));
             case Right:
                 return Rotation2d.fromDegrees(isBlueAlliance() ? 270.0 : 90.0);
             case Backward:

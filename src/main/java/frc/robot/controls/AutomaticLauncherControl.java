@@ -178,7 +178,7 @@ public class AutomaticLauncherControl {
     return 3339 * Math.pow(distance, 0.348);
   }
   private static double getAngle(double distance) {
-    return (73.6 + -21.7 * distance + 4.75 * Math.pow(distance, 2) + -0.698 * Math.pow(distance, 3)) * 0.9;
+    return 74.6 + -21.7 * distance + 4.65 * Math.pow(distance, 2) + -0.598 * Math.pow(distance, 3);
   }
 
   private LauncherState getLauncherStateTimeBasedPrediction() {
@@ -201,6 +201,13 @@ public class AutomaticLauncherControl {
    * Automatically adjusts the launcher angle and speed based on the robot's position and a predefined lookup table.
    */
   public void autoAlign() {
+    autoAlign(false);
+  }
+
+  /**
+   * Automatically adjusts the launcher angle and speed based on the robot's position and a predefined lookup table.
+   */
+  public void autoAlign(boolean inAuto) {
     LauncherControlType controlType = LauncherControlType.TimeBasedPrediction;
     LauncherState state;
     switch(controlType) {
@@ -222,7 +229,7 @@ public class AutomaticLauncherControl {
     Launcher launcher = Launcher.getInstance();
     launcher.setLauncherState(state);
     
-    if(launcher.atSetpoints() && SwerveAlignmentController.getInstance().atTarget) {
+    if(!inAuto && launcher.atSetpoints() && SwerveAlignmentController.getInstance().atTarget) {
       VibrationFeedback.getInstance().addToOperatorLeft(1.0);
       VibrationFeedback.getInstance().addToOperatorRight(1.0);
       VibrationFeedback.getInstance().addToDriverLeft(0.3);
