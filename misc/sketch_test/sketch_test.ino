@@ -65,9 +65,8 @@ uint8_t pulseLUT[PULSE_LUT_ENTRIES];
 // }
 
 // Executes whenever data is recieved from the RoboRIO.
-void onRecieveSerialData(int bytesRead) {
+void onRecieveSerialData() {
   // Our messages consist of 3 bytes: the light state, the alliance we're on, and the robot speed from 0 to 255.
-  if(Serial.available() < 3) return;
   
   uint8_t lightState = Serial.read();
   uint8_t allianceValue = Serial.read();
@@ -107,7 +106,8 @@ int getShiftColorMultiplier() {
 }
 
 void loop() {
-  if(Serial.available() > 0) {
+  if(Serial.available() >= 3) {
+    // Our messages consist of 3 bytes: the light state, the alliance we're on, and the robot speed from 0 to 255.
     onRecieveSerialData();
   }
 
