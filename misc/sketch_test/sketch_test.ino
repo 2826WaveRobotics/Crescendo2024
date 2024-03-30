@@ -41,18 +41,37 @@ int frame = 0;
 #define PULSE_LUT_ENTRIES 10
 uint8_t pulseLUT[PULSE_LUT_ENTRIES];
 
-// Executes whenever data is recieved from the RoboRIO.
-void onRecieveI2CData(int bytesRead) {
-  Serial.println(bytesRead + " bytes read \n");
+// // Executes whenever data is recieved from the RoboRIO.
+// void onRecieveI2CData(int bytesRead) {
+//   Serial.println(bytesRead + " bytes read \n");
 
+//   // Our messages consist of 3 bytes: the light state, the alliance we're on, and the robot speed from 0 to 255.
+//   if(Wire.available() < 3) return;
+  
+//   Serial.println(" Full message\n");
+  
+//   uint8_t lightState = Wire.read();
+//   uint8_t allianceValue = Wire.read();
+//   uint8_t speed = Wire.read();
+  
+//   // Values for light state must be between 0 and (lightStateCount - 1)
+//   if(lightState >= lightStateCount) return;
+//   // Values for alliance must be between 0 and (allianceCount - 1)
+//   if(allianceValue >= allianceCount) return;
+
+//   state = static_cast<LightState>(lightState);
+//   alliance = static_cast<Alliance>(allianceValue);
+//   robotSpeed = speed;
+// }
+
+// Executes whenever data is recieved from the RoboRIO.
+void onRecieveSerialData(int bytesRead) {
   // Our messages consist of 3 bytes: the light state, the alliance we're on, and the robot speed from 0 to 255.
-  if(Wire.available() < 3) return;
+  if(Serial.available() < 3) return;
   
-  Serial.println(" Full message\n");
-  
-  uint8_t lightState = Wire.read();
-  uint8_t allianceValue = Wire.read();
-  uint8_t speed = Wire.read();
+  uint8_t lightState = Serial.read();
+  uint8_t allianceValue = Serial.read();
+  uint8_t speed = Serial.read();
   
   // Values for light state must be between 0 and (lightStateCount - 1)
   if(lightState >= lightStateCount) return;
@@ -65,13 +84,7 @@ void onRecieveI2CData(int bytesRead) {
 }
 
 void setup() {
-  // Join the i2c bus with address #5. This can be anything from 1-128 except 112 (which is reserved by the RoboRIO).
-  // The lighting Arduino acts as a slave (more specifically, a peripheral) and recieves updates periodically from the RoboRIO.
-  Wire.begin(5);
-  Wire.onReceive(onRecieveI2CData);
-
-  Serial.begin(9600);
-
+  Serial.begin(14400);
   Serial.println("Setup\n");
   
   for(int i = 0; i < PULSE_LUT_ENTRIES; i++) {
@@ -94,6 +107,10 @@ int getShiftColorMultiplier() {
 }
 
 void loop() {
+  if(Serial.available() > 0) {
+    onRecieveSerialData();
+  }
+
   FastLED.setBrightness(100);  // Set brightness to 100%
   frame++;
 

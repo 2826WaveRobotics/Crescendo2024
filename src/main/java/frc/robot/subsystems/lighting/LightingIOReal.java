@@ -1,16 +1,16 @@
 package frc.robot.subsystems.lighting;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.I2C.Port;
+import edu.wpi.first.wpilibj.SerialPort.Port;
 import frc.robot.subsystems.lighting.Lighting.LightState;
 
 public class LightingIOReal implements LightingIO {
     /**
      * The I2C device for the lighting arduino.
      */
-    private static I2C i2cLightingArduino = new I2C(Port.kMXP, 5);
+    private static SerialPort serialLightingArduino = new SerialPort(14400, Port.kUSB2);
 
     public LightingIOReal() {
     }
@@ -40,8 +40,8 @@ public class LightingIOReal implements LightingIO {
     @Override
     public void setLightState(double robotSpeed, LightState lightState) {
         var data = getUpdate(robotSpeed, lightState);
-        boolean failed = i2cLightingArduino.transaction(data, data.length, new byte[0], 0);
-        if(failed && failedCount < 10) {
+        int bytesWritten = serialLightingArduino.write(data, data.length);
+        if(bytesWritten != data.length && failedCount < 10) {
             failedCount++;
             System.out.println("Failed to write to lighting Arduino");
         }
