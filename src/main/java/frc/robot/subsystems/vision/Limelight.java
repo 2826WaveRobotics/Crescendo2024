@@ -96,7 +96,7 @@ public class Limelight extends SubsystemBase {
       return;
     }
 
-    double maxDistance = DriverStation.isAutonomous() ? 1.5 : 4.0;
+    double maxDistance = DriverStation.isAutonomous() ? 2.5 : 4.0;
     if(inputs.avgTagDist > maxDistance) {
       Logger.recordOutput("Odometry/LimelightPoseEstimateUsed", false);
       return;

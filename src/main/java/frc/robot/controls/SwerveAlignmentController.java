@@ -81,9 +81,10 @@ public class SwerveAlignmentController {
         Logger.recordOutput("SwerveAlignmentController/CurrentVelocity/Mag", currentVelocity.getNorm());
         Logger.recordOutput("SwerveAlignmentController/CurrentAcceleration/Mag", currentAcceleration.getNorm());
 
-        double speakerInward = -0.1;
         boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
-        Translation2d targetLocation = isBlueAlliance ? new Translation2d(speakerInward, 5.55) : new Translation2d(Constants.fieldLengthMeters - speakerInward, 5.55);
+        double speakerInward = -0.1;
+        double speakerY = 5.55;
+        Translation2d targetLocation = isBlueAlliance ? new Translation2d(speakerInward, speakerY) : new Translation2d(Constants.fieldLengthMeters - speakerInward, speakerY);
 
         Translation2d relativeTargetLocation = targetLocation.minus(currentPosition);
         double distance = relativeTargetLocation.getNorm();
@@ -126,8 +127,12 @@ public class SwerveAlignmentController {
 
         return angle;
     }
-
+    
+    private static Rotation2d farInterpolationStartAngle = Rotation2d.fromDegrees(40);
+    private static Rotation2d farInterpolationWidth = Rotation2d.fromDegrees(15);
+    
     public double allianceSpeakerDistance = 0.0;
+    public double farShotInterpolationFactor = 0.0;
     public boolean atTarget = false;
 
     private Rotation2d getTargetAngle() {

@@ -174,11 +174,13 @@ public class AutomaticLauncherControl {
 
   // https://docs.google.com/spreadsheets/d/1dXLGZ84TEYzmvrYkXQ3SZOwmgObqmYSxnnUZoMg85Bo/edit?usp=sharing
   // Very rudimentary model for now
+  private static Rotation2d farInterpolationStartAngle = Rotation2d.fromDegrees(40);
+  private static Rotation2d farInterpolationWidth = Rotation2d.fromDegrees(15);
   private static double getSpeed(double distance) {
     return 3339 * Math.pow(distance, 0.348);
   }
   private static double getAngle(double distance) {
-    return 74.6 + -21.7 * distance + 4.65 * Math.pow(distance, 2) + -0.598 * Math.pow(distance, 3);
+    return 92.3 + -48.8 * distance + 14.8 * Math.pow(distance, 2) + -1.85 * Math.pow(distance, 3);
   }
 
   private LauncherState getLauncherStateTimeBasedPrediction() {
