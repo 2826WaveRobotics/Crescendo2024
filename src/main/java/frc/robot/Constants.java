@@ -72,7 +72,7 @@ public final class Constants {
 
     /** The constraints to use while pathfinding. This doesn't apply to the paths followed at the end. */
     public static final PathConstraints pathfindingConstraints = new PathConstraints(3.4, 6.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-    public static final double trackingAngleControllerP = 7.5;
+    public static final double trackingAngleControllerP = RobotBase.isReal() ? 7.5 : 3.0;
     public static final double trackingAngleControllerI = 0.0;
     public static final double trackingAngleControllerD = 0.0;
 

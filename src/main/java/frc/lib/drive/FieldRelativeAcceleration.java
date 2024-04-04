@@ -16,14 +16,14 @@ public class FieldRelativeAcceleration {
         this.ay = (newSpeed.vy - oldSpeed.vy) / time;
         this.alpha = (newSpeed.omega - oldSpeed.omega) / time;
 
-        if(Math.abs(this.ax) > 6.0) {
-            this.ax = 6.0 * Math.signum(this.ax);
+        if(Math.abs(this.ax) > 3.0) {
+            this.ax = 3.0 * Math.signum(this.ax);
         }
-        if(Math.abs(this.ay) > 6.0) {
-            this.ay = 6.0 * Math.signum(this.ay);
+        if(Math.abs(this.ay) > 3.0) {
+            this.ay = 3.0 * Math.signum(this.ay);
         }
-        if(Math.abs(this.alpha) > 4 * Math.PI) {
-            this.alpha = 4 * Math.PI * Math.signum(this.alpha);
+        if(Math.abs(this.alpha) > 3 * Math.PI) {
+            this.alpha = 3 * Math.PI * Math.signum(this.alpha);
         }
     }
 

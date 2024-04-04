@@ -462,7 +462,7 @@ public class Swerve extends SubsystemBase {
 
     // Update speed, velocity, and accceleration
     
-    ChassisSpeeds chassisSpeeds = getRobotRelativeSpeeds();
+    ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(getRobotRelativeSpeeds(), rawGyroRotation);
     robotSpeed = Math.sqrt(
       chassisSpeeds.vxMetersPerSecond * chassisSpeeds.vxMetersPerSecond +
       chassisSpeeds.vyMetersPerSecond * chassisSpeeds.vyMetersPerSecond
