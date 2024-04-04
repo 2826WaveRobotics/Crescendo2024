@@ -50,7 +50,6 @@ public class Transport extends SubsystemBase {
     EjectingNote,
     OperatorOverride,
     LaunchingNote,
-    TrapEjectNote,
     /**
      * Used when we do a "center sweep" to put notes on our side in auto.
      * Different from IntakingNote because there are no normally-run transitions from this state,
@@ -122,9 +121,6 @@ public class Transport extends SubsystemBase {
     transitions.add(new TransportStatePair(TransportState.LaunchingNote, TransportState.Stopped));
     
     transitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.LaunchingNote));
-
-    transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.TrapEjectNote));
-    transitions.add(new TransportStatePair(TransportState.TrapEjectNote, TransportState.Stopped));
 
     // Operator override transitions
     transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.OperatorOverride));
