@@ -56,6 +56,7 @@ public class LightingIOReal implements LightingIO {
     }
 
     private int failedCount = 0;
+    private byte[] lastData = new byte[4];
 
     @Override
     public void setLightState(double robotSpeed, LightState lightState) {
@@ -63,7 +64,10 @@ public class LightingIOReal implements LightingIO {
         if(serialLightingArduino == null) return;
 
         var data = getUpdate(robotSpeed, lightState);
-        int bytesWritten = serialLightingArduino.write(data, data.length);
+        if(data == lastData) return;
+        
+        Logger.recordOutput("Lighting/SentMessage", data);
+        int bytesWritten = serialLightingArduino.write(data, 4);
         if(bytesWritten != data.length && failedCount < 10) {
             failedCount++;
             DriverStation.reportError("Failed to write to lighting Arduino", false);

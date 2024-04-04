@@ -41,7 +41,7 @@ public final class Constants {
   public static final double fieldLengthMeters = Units.feetToMeters(54. + 1./12);
 
   public static final class Controls {
-    public static final LauncherState AmpState = new LauncherState(1540, 58.95, false);
+    public static final LauncherState AmpState = new LauncherState(1900, 56.25, false);
     public static final LauncherState SpeakerCloseState = new LauncherState(4500, 59.95, true);
     public static final LauncherState LobShotState = new LauncherState(5000, 60, false);
 
