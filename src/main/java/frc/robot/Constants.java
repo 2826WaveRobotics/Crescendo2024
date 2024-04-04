@@ -122,7 +122,7 @@ public final class Constants {
       public static final int driveMotorID = 11;
       public static final int angleMotorID = 12;
       public static final int canCoderID = 13;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(349.013);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(210.76 - 180);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -199,7 +199,7 @@ public final class Constants {
       0.5,
       12.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0);
+    ).configurePIDSlot(0, 0.2, 0.0, 0.0, 0.0);
     
     public static final double angleMotorGearboxReduction = 5.23 * 5.23;
 
@@ -209,7 +209,7 @@ public final class Constants {
     public static final double idleRollerVelocity = 120.;
 
     public static final Rotation2d softStopMarginLow = Rotation2d.fromDegrees(15);
-    public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(150);
+    public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(75);
 
     /**
      * The conch angle offset. 0 degrees should be where the axle sits at the lowest point.
@@ -226,11 +226,11 @@ public final class Constants {
     /**
      * The DIO port of the through beam sensor detecting if notes are in the intake.
      */
-    public static final int intakeSensorDIOPort = 6;
+    public static final int intakeSensorDIOPort = 2;
     /**
      * The DIO port of the through beam sensor detecting if the note is in position.
      */
-    public static final int noteInPositionSensorDIOPort = 2;
+    public static final int noteInPositionSensorDIOPort = 6;
     /**
      * The DIO port of the through beam sensor detecting if the note is transitioning to the resting position.
      */

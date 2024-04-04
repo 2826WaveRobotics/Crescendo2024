@@ -174,19 +174,57 @@ public class AutomaticLauncherControl {
 
   // https://docs.google.com/spreadsheets/d/1dXLGZ84TEYzmvrYkXQ3SZOwmgObqmYSxnnUZoMg85Bo/edit?usp=sharing
   // Very rudimentary model for now
-  private static double getSpeed(double distance) {
+  private static double getSpeed(double distance, Rotation2d angle) {
+    double speakerAngle = angle.getDegrees();
+    double startAngle = SwerveAlignmentController.farInterpolationStartAngle.getDegrees();
+    double angleWidth = SwerveAlignmentController.farInterpolationWidth.getDegrees();
+    if(speakerAngle < startAngle) {
+      return getSpeedAcute(distance);
+    } else if(speakerAngle > startAngle + angleWidth) {
+      return getSpeedObtuse(distance);
+    } else {
+      double interpolation = (speakerAngle - startAngle) / angleWidth;
+      double acute = getSpeedAcute(distance);
+      double obtuse = getSpeedObtuse(distance);
+      return MathUtil.interpolate(acute, obtuse, interpolation);
+    }
+  }
+  private static double getAngle(double distance, Rotation2d angle) {
+    double speakerAngle = angle.getDegrees();
+    double startAngle = SwerveAlignmentController.farInterpolationStartAngle.getDegrees();
+    double angleWidth = SwerveAlignmentController.farInterpolationWidth.getDegrees();
+    if(speakerAngle < startAngle) {
+      return getAngleAcute(distance);
+    } else if(speakerAngle > startAngle + angleWidth) {
+      return getAngleObtuse(distance);
+    } else {
+      double interpolation = (speakerAngle - startAngle) / angleWidth;
+      double acute = getAngleAcute(distance);
+      double obtuse = getAngleObtuse(distance);
+      return MathUtil.interpolate(acute, obtuse, interpolation);
+    }
+  }
+  private static double getSpeedAcute(double distance) {
     return 3339 * Math.pow(distance, 0.348);
   }
-  private static double getAngle(double distance) {
-    return (73.6 + -21.7 * distance + 4.75 * Math.pow(distance, 2) + -0.698 * Math.pow(distance, 3)) * 0.9;
+  private static double getAngleAcute(double distance) {
+    return 92.3 + -48.8 * distance + 14.8 * Math.pow(distance, 2) + -1.85 * Math.pow(distance, 3);
+  }
+  private static double getSpeedObtuse(double distance) {
+    return 1771 + 2473 * distance + -496 * Math.pow(distance, 2);
+  }
+  private static double getAngleObtuse(double distance) {
+    return 101 + -63.6 * distance + 19.5 * Math.pow(distance, 2) + -2.31 * Math.pow(distance, 3);
   }
 
   private LauncherState getLauncherStateTimeBasedPrediction() {
     double distance = SwerveAlignmentController.getInstance().allianceSpeakerDistance;
+    Rotation2d speakerAngle = SwerveAlignmentController.getInstance().speakerAngle;
     Logger.recordOutput("Launcher/AutomaticControl/Distance", distance);
+    Logger.recordOutput("Launcher/AutomaticControl/SpeakerAngle", speakerAngle);
 
-    double speed = MathUtil.clamp(getSpeed(distance), 150, 6800);
-    double angle = MathUtil.clamp(getAngle(distance), 20, 60);
+    double speed = MathUtil.clamp(getSpeed(distance, speakerAngle), 150, 6800);
+    double angle = MathUtil.clamp(getAngle(distance, speakerAngle), 20, 60);
 
     return new LauncherState(speed, angle);
   }
@@ -201,6 +239,13 @@ public class AutomaticLauncherControl {
    * Automatically adjusts the launcher angle and speed based on the robot's position and a predefined lookup table.
    */
   public void autoAlign() {
+    autoAlign(false);
+  }
+
+  /**
+   * Automatically adjusts the launcher angle and speed based on the robot's position and a predefined lookup table.
+   */
+  public void autoAlign(boolean inAuto) {
     LauncherControlType controlType = LauncherControlType.TimeBasedPrediction;
     LauncherState state;
     switch(controlType) {
@@ -222,7 +267,7 @@ public class AutomaticLauncherControl {
     Launcher launcher = Launcher.getInstance();
     launcher.setLauncherState(state);
     
-    if(launcher.atSetpoints() && SwerveAlignmentController.getInstance().atTarget) {
+    if(!inAuto && launcher.atSetpoints() && SwerveAlignmentController.getInstance().atTarget) {
       VibrationFeedback.getInstance().addToOperatorLeft(1.0);
       VibrationFeedback.getInstance().addToOperatorRight(1.0);
       VibrationFeedback.getInstance().addToDriverLeft(0.3);

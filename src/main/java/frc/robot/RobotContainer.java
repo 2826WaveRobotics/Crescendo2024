@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -41,7 +42,9 @@ import frc.lib.util.ShuffleboardContent;
 import frc.robot.commands.transport.LaunchNote;
 import frc.robot.commands.transport.SetLauncherAngle;
 import frc.robot.commands.transport.SetLauncherSpeed;
+import frc.robot.controls.AutomaticLauncherControl;
 import frc.robot.controls.Controls;
+import frc.robot.controls.SwerveAlignmentController;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -101,6 +104,8 @@ public class RobotContainer {
     LiveWindow.disableAllTelemetry();
   }
 
+  private Command autonomousLauncherConfigCommand = null;
+
   /**
    * Registers the NamedCommands used for PathPlanner auto commands.
    */
@@ -118,6 +123,9 @@ public class RobotContainer {
       new LaunchNote()
     ));
     NamedCommands.registerCommand("Launch", new ScheduleCommand(new LaunchNote()));
+    NamedCommands.registerCommand("Intake/Launch",
+      new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote))
+    );
     NamedCommands.registerCommand("Run transport delayed", new ScheduleCommand(new SequentialCommandGroup(
       new WaitCommand(0.5),
       new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote))
@@ -234,6 +242,19 @@ public class RobotContainer {
       // Launch seventh
       new LaunchNote()
     )));
+
+
+    NamedCommands.registerCommand("Start launcher automation", new InstantCommand(() -> {
+      if(autonomousLauncherConfigCommand != null) autonomousLauncherConfigCommand.cancel();
+      autonomousLauncherConfigCommand = new RepeatCommand(new InstantCommand(() -> {
+        SwerveAlignmentController.getInstance().updateAllianceSpeakerDistance();
+        AutomaticLauncherControl.getInstance().autoAlign(true);
+      }));
+      autonomousLauncherConfigCommand.schedule();
+    }));
+    NamedCommands.registerCommand("Stop launcher automation", new InstantCommand(() -> {
+      if(autonomousLauncherConfigCommand != null) autonomousLauncherConfigCommand.cancel();
+    }));
   }
 
   public void updateAutoPublisher() {

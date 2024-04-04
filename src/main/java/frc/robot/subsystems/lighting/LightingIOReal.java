@@ -22,7 +22,7 @@ public class LightingIOReal implements LightingIO {
                     serialLightingArduino = new SerialPort(9600, Port.kUSB1);
                 } catch(Exception e2) {
                     failedCount++;
-                    System.out.println("Failed to create lighting Arduino - " + e.getLocalizedMessage() + ", " + e2.getLocalizedMessage());
+                    DriverStation.reportError("Failed to create lighting Arduino - " + e.getLocalizedMessage() + ", " + e2.getLocalizedMessage(), false);
                 }
             }
         }
@@ -65,7 +65,7 @@ public class LightingIOReal implements LightingIO {
         int bytesWritten = serialLightingArduino.write(data, data.length);
         if(bytesWritten != data.length && failedCount < 10) {
             failedCount++;
-            System.out.println("Failed to write to lighting Arduino");
+            DriverStation.reportError("Failed to write to lighting Arduino", false);
         }
     }
 }
