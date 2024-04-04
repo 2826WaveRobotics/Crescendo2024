@@ -1,5 +1,7 @@
 package frc.robot.subsystems.lighting;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -71,7 +73,11 @@ public class Lighting extends SubsystemBase {
         cycle++;
         if(cycle > 3) {
             cycle = 0;
-            lightingIO.setLightState(Swerve.getInstance().getRobotSpeed(), getLightingState());
+            LightState lightState = getLightingState();
+            double robotSpeed = Swerve.getInstance().getRobotSpeed();
+            Logger.recordOutput("Lighting/lightState", lightState.toString());
+            Logger.recordOutput("Lighting/robotSpeed", robotSpeed);
+            lightingIO.setLightState(robotSpeed, lightState);
         }
     }
 }

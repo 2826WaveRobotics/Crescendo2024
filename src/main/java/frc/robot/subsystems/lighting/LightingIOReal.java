@@ -1,6 +1,7 @@
 package frc.robot.subsystems.lighting;
 
-import edu.wpi.first.hal.util.UncleanStatusException;
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -14,7 +15,7 @@ public class LightingIOReal implements LightingIO {
     private static SerialPort serialLightingArduino = null;
 
     private void openSerial() {
-        if(failedCount < 10) {
+        if(failedCount < 5) {
             try {
                 serialLightingArduino = new SerialPort(9600, Port.kUSB2);
             } catch(Exception e) {
