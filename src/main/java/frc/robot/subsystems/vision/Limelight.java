@@ -119,7 +119,7 @@ public class Limelight extends SubsystemBase {
   }
 
   public void initiaize() {
-    ShuffleboardContent.competitionTab.addCamera("Intake feed", "Intake Limelight", "http://limelight.local:5800/stream.mjpg")
+    ShuffleboardContent.competitionTab.addCamera("Intake feed", "Intake Limelight", "http://limelight-intake.local:5800/stream.mjpg")
       .withPosition(0, 0)
       .withSize(6, 4)
       .withProperties(Map.of("Show Crosshair", false, "Show Controls", false));
@@ -128,6 +128,7 @@ public class Limelight extends SubsystemBase {
     // More information: https://docs.limelightvision.io/docs/docs-limelight/getting-started/best-practices#event-preparation-checklist
     for (int port = 5800; port <= 5807; port++) {
       PortForwarder.add(port, "limelight.local", port);
+      PortForwarder.add(port, "limelight-intake.local", port + 10);
     }
   }
 }

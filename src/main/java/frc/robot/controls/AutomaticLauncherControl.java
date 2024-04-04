@@ -174,21 +174,57 @@ public class AutomaticLauncherControl {
 
   // https://docs.google.com/spreadsheets/d/1dXLGZ84TEYzmvrYkXQ3SZOwmgObqmYSxnnUZoMg85Bo/edit?usp=sharing
   // Very rudimentary model for now
-  private static Rotation2d farInterpolationStartAngle = Rotation2d.fromDegrees(40);
-  private static Rotation2d farInterpolationWidth = Rotation2d.fromDegrees(15);
-  private static double getSpeed(double distance) {
+  private static double getSpeed(double distance, Rotation2d angle) {
+    double speakerAngle = angle.getDegrees();
+    double startAngle = SwerveAlignmentController.farInterpolationStartAngle.getDegrees();
+    double angleWidth = SwerveAlignmentController.farInterpolationWidth.getDegrees();
+    if(speakerAngle < startAngle) {
+      return getSpeedAcute(distance);
+    } else if(speakerAngle > startAngle + angleWidth) {
+      return getSpeedObtuse(distance);
+    } else {
+      double interpolation = (speakerAngle - startAngle) / angleWidth;
+      double acute = getSpeedAcute(distance);
+      double obtuse = getSpeedObtuse(distance);
+      return MathUtil.interpolate(acute, obtuse, interpolation);
+    }
+  }
+  private static double getAngle(double distance, Rotation2d angle) {
+    double speakerAngle = angle.getDegrees();
+    double startAngle = SwerveAlignmentController.farInterpolationStartAngle.getDegrees();
+    double angleWidth = SwerveAlignmentController.farInterpolationWidth.getDegrees();
+    if(speakerAngle < startAngle) {
+      return getAngleAcute(distance);
+    } else if(speakerAngle > startAngle + angleWidth) {
+      return getAngleObtuse(distance);
+    } else {
+      double interpolation = (speakerAngle - startAngle) / angleWidth;
+      double acute = getAngleAcute(distance);
+      double obtuse = getAngleObtuse(distance);
+      return MathUtil.interpolate(acute, obtuse, interpolation);
+    }
+  }
+  private static double getSpeedAcute(double distance) {
     return 3339 * Math.pow(distance, 0.348);
   }
-  private static double getAngle(double distance) {
+  private static double getAngleAcute(double distance) {
     return 92.3 + -48.8 * distance + 14.8 * Math.pow(distance, 2) + -1.85 * Math.pow(distance, 3);
+  }
+  private static double getSpeedObtuse(double distance) {
+    return 1771 + 2473 * distance + -496 * Math.pow(distance, 2);
+  }
+  private static double getAngleObtuse(double distance) {
+    return 101 + -63.6 * distance + 19.5 * Math.pow(distance, 2) + -2.31 * Math.pow(distance, 3);
   }
 
   private LauncherState getLauncherStateTimeBasedPrediction() {
     double distance = SwerveAlignmentController.getInstance().allianceSpeakerDistance;
+    Rotation2d speakerAngle = SwerveAlignmentController.getInstance().speakerAngle;
     Logger.recordOutput("Launcher/AutomaticControl/Distance", distance);
+    Logger.recordOutput("Launcher/AutomaticControl/SpeakerAngle", speakerAngle);
 
-    double speed = MathUtil.clamp(getSpeed(distance), 150, 6800);
-    double angle = MathUtil.clamp(getAngle(distance), 20, 60);
+    double speed = MathUtil.clamp(getSpeed(distance, speakerAngle), 150, 6800);
+    double angle = MathUtil.clamp(getAngle(distance, speakerAngle), 20, 60);
 
     return new LauncherState(speed, angle);
   }

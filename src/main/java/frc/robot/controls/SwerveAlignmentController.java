@@ -71,6 +71,16 @@ public class SwerveAlignmentController {
         Translation2d currentPosition = swerve.getPose().getTranslation();
         FieldRelativeVelocity currentVelocity = swerve.getFieldRelativeVelocity();
         FieldRelativeAcceleration currentAcceleration = swerve.getFieldRelativeAcceleration();
+        
+        double speakerInward = -0.1;
+        double speakerY = 5.55;
+        double obtuseShiftY = 6.15 - speakerY;
+
+        boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
+        Translation2d centerTargetLocation = isBlueAlliance ? new Translation2d(speakerInward, speakerY) : new Translation2d(Constants.fieldLengthMeters - speakerInward, speakerY);
+
+        Rotation2d angleToTarget = centerTargetLocation.minus(currentPosition).getAngle().minus(Rotation2d.fromDegrees(180));
+        speakerAngle = new Rotation2d(Math.abs(angleToTarget.getRadians()));
 
         double filteredVelocityX = velocityXFilter.calculate(currentVelocity.vx);
         double filteredVelocityY = velocityYFilter.calculate(currentVelocity.vy);
@@ -81,11 +91,15 @@ public class SwerveAlignmentController {
         Logger.recordOutput("SwerveAlignmentController/CurrentVelocity/Mag", currentVelocity.getNorm());
         Logger.recordOutput("SwerveAlignmentController/CurrentAcceleration/Mag", currentAcceleration.getNorm());
 
-        boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
-        double speakerInward = -0.1;
-        double speakerY = 5.55;
-        Translation2d targetLocation = isBlueAlliance ? new Translation2d(speakerInward, speakerY) : new Translation2d(Constants.fieldLengthMeters - speakerInward, speakerY);
-
+        Translation2d targetLocation = centerTargetLocation;
+        double startAngle = farInterpolationStartAngle.getDegrees();
+        double angleWidth = farInterpolationWidth.getDegrees();
+        if(speakerAngle.getDegrees() > startAngle && speakerAngle.getDegrees() < startAngle + angleWidth) {
+            double interpolation = (speakerAngle.getDegrees() - startAngle) / angleWidth;
+            double shiftY = angleToTarget.getRadians() < 0 ? obtuseShiftY : -obtuseShiftY;
+            Translation2d movedTargetLocation = targetLocation.plus(new Translation2d(0, shiftY));
+            targetLocation = targetLocation.interpolate(movedTargetLocation, interpolation);
+        }
         Translation2d relativeTargetLocation = targetLocation.minus(currentPosition);
         double distance = relativeTargetLocation.getNorm();
 
@@ -128,11 +142,10 @@ public class SwerveAlignmentController {
         return angle;
     }
     
-    private static Rotation2d farInterpolationStartAngle = Rotation2d.fromDegrees(40);
-    private static Rotation2d farInterpolationWidth = Rotation2d.fromDegrees(15);
-    
+    public static Rotation2d farInterpolationStartAngle = Rotation2d.fromDegrees(35);
+    public static Rotation2d farInterpolationWidth = Rotation2d.fromDegrees(15);
     public double allianceSpeakerDistance = 0.0;
-    public double farShotInterpolationFactor = 0.0;
+    public Rotation2d speakerAngle = new Rotation2d();
     public boolean atTarget = false;
 
     private Rotation2d getTargetAngle() {
