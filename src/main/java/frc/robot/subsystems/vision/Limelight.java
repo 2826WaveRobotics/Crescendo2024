@@ -10,6 +10,7 @@ import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -116,6 +117,15 @@ public class Limelight extends SubsystemBase {
     Logger.processInputs("Limelight", inputs);
 
     updateOdometryPoseFromVisionMeasurements();
+  }
+
+  public Rotation2d getIntakeNoteX() {
+    if(!inputs.intakeNotePresent) return new Rotation2d(0);
+    return inputs.intakeNoteX;
+  }
+
+  public void flashIntakeLimelight() {
+    limelightIO.flashIntakeLimelight();
   }
 
   public void initiaize() {

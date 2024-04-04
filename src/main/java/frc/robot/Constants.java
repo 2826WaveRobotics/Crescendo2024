@@ -291,7 +291,7 @@ public final class Constants {
       12.0,
       Usage.kAll
     ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)         // Position controller
-     .configurePIDSlot(1, 1e-7, 0.0, 0.0, 1. / 5600.); // Velocity controller
+     .configurePIDSlot(1, 2e-6, 0.0, 0.0, 1. / 5600.); // Velocity controller
 
     public static final double fullUpRotations = 100;
   }
