@@ -205,16 +205,16 @@ public class AutomaticLauncherControl {
     }
   }
   private static double getSpeedAcute(double distance) {
-    return 3339 * Math.pow(distance, 0.348);
+    return 3327 * Math.pow(distance, 0.351);
   }
   private static double getAngleAcute(double distance) {
-    return 92.3 + -48.8 * distance + 14.8 * Math.pow(distance, 2) + -1.85 * Math.pow(distance, 3);
+    return 85.1 + -39.6 * distance + 11.1 * Math.pow(distance, 2) + -1.39 * Math.pow(distance, 3);
   }
   private static double getSpeedObtuse(double distance) {
-    return 1771 + 2473 * distance + -496 * Math.pow(distance, 2);
+    return 2128 + 2168 * distance + -437 * Math.pow(distance, 2);
   }
   private static double getAngleObtuse(double distance) {
-    return 101 + -63.6 * distance + 19.5 * Math.pow(distance, 2) + -2.31 * Math.pow(distance, 3);
+    return 83.3 + -30.9 * distance + 3.74 * Math.pow(distance, 2) + -0.046 * Math.pow(distance, 3);
   }
 
   private LauncherState getLauncherStateTimeBasedPrediction() {
