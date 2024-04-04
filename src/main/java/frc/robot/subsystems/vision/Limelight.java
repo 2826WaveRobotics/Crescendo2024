@@ -128,7 +128,7 @@ public class Limelight extends SubsystemBase {
     // More information: https://docs.limelightvision.io/docs/docs-limelight/getting-started/best-practices#event-preparation-checklist
     for (int port = 5800; port <= 5807; port++) {
       PortForwarder.add(port, "limelight.local", port);
-      PortForwarder.add(port, "limelight-intake.local", port + 10);
+      PortForwarder.add(port + 10, "limelight-intake.local", port);
     }
   }
 }

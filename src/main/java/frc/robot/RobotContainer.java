@@ -42,6 +42,7 @@ import frc.lib.util.ShuffleboardContent;
 import frc.robot.commands.transport.LaunchNote;
 import frc.robot.commands.transport.SetLauncherAngle;
 import frc.robot.commands.transport.SetLauncherSpeed;
+import frc.robot.commands.transport.SetLauncherState;
 import frc.robot.controls.AutomaticLauncherControl;
 import frc.robot.controls.Controls;
 import frc.robot.controls.SwerveAlignmentController;
@@ -141,7 +142,16 @@ public class RobotContainer {
     NamedCommands.registerCommand("Prep sweep launch", new ParallelCommandGroup(
       new SetLauncherAngle(45),
       new SetLauncherSpeed(4800, true),
-      new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.Stopped))
+      new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote))
+    ));
+
+    // ------------------------------------------------------------------
+    // ----------------------------- 5 note -----------------------------
+    // ------------------------------------------------------------------
+    NamedCommands.registerCommand("Prep 5 note", new SequentialCommandGroup(
+      new SetLauncherState(Constants.Controls.SpeakerCloseState),
+      // Launch and intake
+      new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote))
     ));
 
     // ------------------------------------------------------------------
