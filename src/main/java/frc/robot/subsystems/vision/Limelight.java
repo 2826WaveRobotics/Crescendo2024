@@ -131,7 +131,7 @@ public class Limelight extends SubsystemBase {
   public void initiaize() {
     ShuffleboardContent.competitionTab.addCamera("Intake feed", "Intake Limelight", "http://limelight-intake.local:5800/stream.mjpg")
       .withPosition(0, 0)
-      .withSize(6, 4)
+      .withSize(5, 4)
       .withProperties(Map.of("Show Crosshair", false, "Show Controls", false));
     
     // Forward the Limelight camera ports

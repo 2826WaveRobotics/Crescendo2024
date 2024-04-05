@@ -31,6 +31,6 @@ public class SetLauncherAngle extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return stopMovingDebouncer.calculate(Launcher.getInstance().getAngleVelocityRPM() < 60);
+    return stopMovingDebouncer.calculate(Launcher.getInstance().getAngleVelocityRPM() < 100);
   }
 }

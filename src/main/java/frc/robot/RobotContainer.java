@@ -34,14 +34,13 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
+import frc.robot.subsystems.launcher.Launcher.LauncherState;
 import frc.robot.subsystems.lighting.Lighting;
 import frc.robot.subsystems.transport.Transport;
 import frc.robot.subsystems.transport.Transport.TransportState;
 import frc.robot.subsystems.vision.Limelight;
 import frc.lib.util.ShuffleboardContent;
 import frc.robot.commands.transport.LaunchNote;
-import frc.robot.commands.transport.SetLauncherAngle;
-import frc.robot.commands.transport.SetLauncherSpeed;
 import frc.robot.commands.transport.SetLauncherState;
 import frc.robot.controls.AutomaticLauncherControl;
 import frc.robot.controls.Controls;
@@ -94,7 +93,7 @@ public class RobotContainer {
     autoChooser.getSendableChooser().onChange(swerveSubsystem::selectedAutoChanged);
 
     ShuffleboardContent.competitionTab.add("Auto to run", autoChooser.getSendableChooser())
-      .withPosition(1, 5)
+      .withPosition(1, 4)
       .withSize(3, 1);
 
     Controls.getInstance().configureControls();
@@ -114,13 +113,10 @@ public class RobotContainer {
     Transport transportSubsystem = Transport.getInstance();
 
     // All autos
-    NamedCommands.registerCommand("Launch close prep", new ScheduleCommand(new ParallelCommandGroup(
-      new SetLauncherSpeed(3560, true),
-      new SetLauncherAngle(59.2)
-    )));
-    NamedCommands.registerCommand("Launch close", new ParallelCommandGroup(
-      new SetLauncherSpeed(3560, true),
-      new SetLauncherAngle(59.2),
+    LauncherState closeState = new LauncherState(3560, 59.2, true);
+    NamedCommands.registerCommand("Launch close prep", new ScheduleCommand(new SetLauncherState(closeState)));
+    NamedCommands.registerCommand("Launch close", new SequentialCommandGroup(
+      new SetLauncherState(closeState),
       new LaunchNote()
     ));
     NamedCommands.registerCommand("Launch", new ScheduleCommand(new LaunchNote()));
@@ -139,9 +135,9 @@ public class RobotContainer {
       launcherSubsystem.setLauncherSpeed(1200, true);
       transportSubsystem.attemptTransitionToState(TransportState.SweepTransport);
     }));
-    NamedCommands.registerCommand("Prep sweep launch", new ParallelCommandGroup(
-      new SetLauncherAngle(45),
-      new SetLauncherSpeed(4800, true),
+    LauncherState sweepState = new LauncherState(4800, 45, true);
+    NamedCommands.registerCommand("Prep sweep launch", new SequentialCommandGroup(
+      new SetLauncherState(sweepState),
       new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote))
     ));
 
@@ -159,19 +155,15 @@ public class RobotContainer {
     // ------------------------------------------------------------------
     NamedCommands.registerCommand("7 note 1", new SequentialCommandGroup(
       // Launch first
-      new ParallelCommandGroup(
-        // ------- FIRST NOTE PARAMETERS -------
-        new SetLauncherSpeed(3900, true),
-        new SetLauncherAngle(53.2)
-      ),
+      // ------- FIRST NOTE PARAMETERS -------
+      new SetLauncherState(new LauncherState(3900, 53.2, true)),
       new LaunchNote(),
 
       // Prep second
       new ScheduleCommand(new ParallelCommandGroup(
         new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote)),
         // ------- SECOND NOTE PARAMETERS -------
-        new SetLauncherSpeed(4100, true),
-        new SetLauncherAngle(50.0)
+        new SetLauncherState(new LauncherState(4100, 50.0, true))
       ))
     ));
     NamedCommands.registerCommand("7 note 2", new ScheduleCommand(new SequentialCommandGroup(
@@ -185,8 +177,7 @@ public class RobotContainer {
       new ParallelCommandGroup(
         new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote)),
         // ------- THIRD NOTE PARAMETERS -------
-        new SetLauncherSpeed(4100, true),
-        new SetLauncherAngle(50.0)
+        new SetLauncherState(new LauncherState(4100, 50.0, true))
       )
     )));
     NamedCommands.registerCommand("7 note 3-4", new ScheduleCommand(new ParallelCommandGroup(
@@ -200,8 +191,7 @@ public class RobotContainer {
       new ParallelCommandGroup(
         new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote)),
         // ------- FOURTH NOTE PARAMETERS -------
-        new SetLauncherSpeed(5400, true),
-        new SetLauncherAngle(42.0)
+        new SetLauncherState(new LauncherState(5400, 42.0, true))
       ),
 
       // Wait for fourth
@@ -214,8 +204,7 @@ public class RobotContainer {
       new ParallelCommandGroup(
         new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote)),
         // ------- FIFTH NOTE PARAMETERS -------
-        new SetLauncherSpeed(5500, true),
-        new SetLauncherAngle(22.0)
+        new SetLauncherState(new LauncherState(5500, 22.0, true))
       )
     )));
     NamedCommands.registerCommand("7 note 5", new ScheduleCommand(new ParallelCommandGroup(
@@ -228,8 +217,7 @@ public class RobotContainer {
       new ParallelCommandGroup(
         new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote)),
         // ------- SIXTH NOTE PARAMETERS -------
-        new SetLauncherSpeed(5500, true),
-        new SetLauncherAngle(22.0)
+        new SetLauncherState(new LauncherState(5500, 22.0, true))
       )
     )));
     NamedCommands.registerCommand("7 note 6", new ScheduleCommand(new ParallelCommandGroup(
@@ -242,8 +230,7 @@ public class RobotContainer {
       new ParallelCommandGroup(
         new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote)),
         // ------- SEVENTH NOTE PARAMETERS -------
-        new SetLauncherSpeed(5500, true),
-        new SetLauncherAngle(22.0)
+        new SetLauncherState(new LauncherState(5500, 22.0, true))
       )
     )));
     NamedCommands.registerCommand("7 note 7", new ScheduleCommand(new ParallelCommandGroup(

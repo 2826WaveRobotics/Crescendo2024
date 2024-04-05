@@ -213,8 +213,8 @@ public class Swerve extends SubsystemBase {
 
     field = new Field2d();
     ShuffleboardContent.competitionTab.add("Field", field)
-      .withPosition(6, 0)
-      .withSize(7, 4);
+      .withPosition(5, 0)
+      .withSize(5, 4);
 
     if(Constants.enableNonEssentialShuffleboard) {
       Shuffleboard.getTab("Notes").addString("Odometry position", () -> ("(" + getPose().getX() + ", " + getPose().getY() + ")"));

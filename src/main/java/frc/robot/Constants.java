@@ -199,8 +199,10 @@ public final class Constants {
       0.5,
       10.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    ).configurePIDSlot(0, 0.2, 0.0, 0.0, 0.0);
+    // ).configurePIDSlot(0, 0.05, 0.0, 0.0, 0.0);
+    ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0);
     
+    // public static final double angleMotorGearboxReduction = 5.23 * 5.23 * 2.89;
     public static final double angleMotorGearboxReduction = 5.23 * 5.23;
 
     /**

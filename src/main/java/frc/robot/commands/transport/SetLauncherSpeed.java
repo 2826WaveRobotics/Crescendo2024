@@ -29,6 +29,6 @@ public class SetLauncherSpeed extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return Math.abs(Launcher.getInstance().getSpeedRPM() - speed) < 100;
+    return Math.abs(Launcher.getInstance().getSpeedRPM() - speed) < 200;
   }
 }
