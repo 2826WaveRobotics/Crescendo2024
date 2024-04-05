@@ -129,7 +129,7 @@ public class CANSparkMaxConfig {
         CANSparkMaxUtil.setCANSparkMaxBusUsage(spark, usage);
         spark.setSmartCurrentLimit(smartCurrentLimit);
         spark.setSecondaryCurrentLimit(secondaryCurrentLimit);
-        // spark.setClosedLoopRampRate(closedLoopRampRate);
+        spark.setClosedLoopRampRate(closedLoopRampRate);
 
         spark.setIdleMode(idleMode);
 

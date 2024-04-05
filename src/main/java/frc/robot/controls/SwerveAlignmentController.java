@@ -1,14 +1,10 @@
 package frc.robot.controls;
 
-import javax.sound.sampled.Line;
-
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
@@ -17,6 +13,7 @@ import frc.lib.drive.FieldRelativeAcceleration;
 import frc.lib.drive.FieldRelativeVelocity;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Swerve;
+import frc.robot.subsystems.vision.Limelight;
 
 /**
  * This class manages updating our input robot speeds to target the current goal.
@@ -37,6 +34,7 @@ public class SwerveAlignmentController {
         Backward,
         Left,
         Manual,
+        CenterNote
     }
 
     private AlignmentMode alignmentMode = AlignmentMode.Manual;
@@ -170,6 +168,8 @@ public class SwerveAlignmentController {
                 return Rotation2d.fromDegrees(isBlueAlliance() ? 180.0 : 0.0);
             case Left:
                 return Rotation2d.fromDegrees(isBlueAlliance() ? 90.0 : 270.0);
+            case CenterNote:
+                return Swerve.getInstance().getPose().getRotation().plus(Limelight.getInstance().getIntakeNoteX());
             default:
                 return Rotation2d.fromDegrees(isBlueAlliance() ? 0.0 : 180.0);
         }

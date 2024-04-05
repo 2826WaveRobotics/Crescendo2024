@@ -101,6 +101,10 @@ public class Controls {
         Trigger autoSpeakerAim = driver.rightBumper();
         autoSpeakerAim.onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.AllianceSpeaker)));
 
+        driver.rightTrigger(0.3)
+            .onTrue(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.CenterNote)))
+            .onFalse(new InstantCommand(() -> alignmentController.setAlignmentMode(AlignmentMode.Manual)));
+
         driver.y().whileTrue(PathfindingCommands.pathfindToSpeakerAndLaunch());
         driver.b().whileTrue(PathfindingCommands.pathfindToAmpAndLaunch());
         

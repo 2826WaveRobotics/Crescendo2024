@@ -3,7 +3,9 @@ package frc.robot.subsystems;
 import java.util.HashMap;
 
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -23,6 +25,7 @@ import frc.robot.subsystems.launcher.Launcher;
 import frc.robot.subsystems.noteSensors.NoteSensors;
 import frc.robot.subsystems.transport.Transport;
 import frc.robot.subsystems.transport.Transport.TransportState;
+import frc.robot.subsystems.vision.Limelight;
 
 public class Superstructure extends SubsystemBase {
     private static Superstructure instance = null;
@@ -159,7 +162,11 @@ public class Superstructure extends SubsystemBase {
     private Superstructure() {
         Transport transportSubsystem = Transport.getInstance();
 
-        intakingNoteEvent.ifHigh(() -> VibrationFeedback.getInstance().runPattern(VibrationPatternType.IntakingNote));
+        intakingNoteEvent.ifHigh(() -> {
+            if(!DriverStation.isTeleop()) return;
+            VibrationFeedback.getInstance().runPattern(VibrationPatternType.IntakingNote);
+            Limelight.getInstance().flashIntakeLimelight();
+        });
         movingNoteEvent.ifHigh(() -> {
             attemptTransitionToState(TransportState.MovingNote);
             transportSubsystem.immediatelyUpdateSpeeds();

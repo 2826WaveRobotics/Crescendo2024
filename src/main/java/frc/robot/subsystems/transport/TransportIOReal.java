@@ -5,6 +5,8 @@ import com.revrobotics.CANSparkBase.ControlType;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -58,6 +60,9 @@ public class TransportIOReal implements TransportIO {
   public void setTransportSpeed(double speedMetersPerSecond) {
     double limitedSpeed = transportSlewRateLimiter.calculate(speedMetersPerSecond);
     if(speedMetersPerSecond == 0.0) limitedSpeed = 0.0;
+
+    Logger.recordOutput("Transport/TopMotorCurrentDraw", topTransportMotor.getOutputCurrent());
+    Logger.recordOutput("Transport/BottomMotorCurrentDraw", bottomTransportMotor.getOutputCurrent());
 
     if(limitedSpeed == oldLimitedSpeed) return;
     oldLimitedSpeed = limitedSpeed;

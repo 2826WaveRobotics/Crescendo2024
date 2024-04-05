@@ -41,7 +41,7 @@ public final class Constants {
   public static final double fieldLengthMeters = Units.feetToMeters(54. + 1./12);
 
   public static final class Controls {
-    public static final LauncherState AmpState = new LauncherState(1540, 58.95, false);
+    public static final LauncherState AmpState = new LauncherState(1900, 56.25, false);
     public static final LauncherState SpeakerCloseState = new LauncherState(4500, 59.95, true);
     public static final LauncherState LobShotState = new LauncherState(5000, 60, false);
 
@@ -100,8 +100,8 @@ public final class Constants {
     public static final CANSparkMaxConfig driveConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,
       40, 50,
-      100,
-      12.0,
+      0.1,
+      10.0,
       Usage.kAll
     ).configurePIDSlot(0, 1.5e-4, 0.0, 0.0, 1. / 6784 /* Free speed of a NEO Vortex */);
     
@@ -111,8 +111,8 @@ public final class Constants {
     public static final CANSparkMaxConfig angleConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,
       20, 30,
-      100,
-      12.0,
+      0,
+      10.0,
       Usage.kPositionOnly
     ).configurePIDSlot(0, 0.5, 5e-7, 0.0, 1. / 5700 /* Free speed of a NEO 1650 */);
 
@@ -187,8 +187,8 @@ public final class Constants {
       CANSparkMax.IdleMode.kCoast,
       30,
       40,
-      100,
-      12.0,
+      0.25,
+      10.0,
       CANSparkMaxUtil.Usage.kPositionOnly
     ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 1 / 5700.);
 
@@ -197,7 +197,7 @@ public final class Constants {
       10,
       15,
       0.5,
-      12.0,
+      10.0,
       CANSparkMaxUtil.Usage.kPositionOnly
     ).configurePIDSlot(0, 0.2, 0.0, 0.0, 0.0);
     
@@ -243,13 +243,13 @@ public final class Constants {
 
     public static final double rollerDiameterMeters = Units.inchesToMeters(1.525);
 
-    public static final double transportGearRatio = 2.89;
+    public static final double transportGearRatio = 5; // : 1
 
     public static final CANSparkMaxConfig transportMotorConfig = new CANSparkMaxConfig(
       IdleMode.kCoast,
       20, 25,
       0.0, // We manually use a slew rate limiter so we can stop instantly.
-      12.0,
+      10.0,
       CANSparkMaxUtil.Usage.kPositionOnly
     ).configurePIDSlot(0, 1e-4, 0.0, 0.0, 1. / 5700.);
 
@@ -257,7 +257,7 @@ public final class Constants {
      * The speed that notes are moved into the launcher to shoot, in meters per second.  
      * 3.8 m/s is roughly our max speed.
      */
-    public static final double launchNoteTransportSpeed = 3.8;
+    public static final double launchNoteTransportSpeed = 2.9;
     /**
      * The speed to move notes when ejecting.  
      * Notes are ejected when we have more than 1 note in the transport at a time.
@@ -267,7 +267,7 @@ public final class Constants {
      * The intake speed (meaning the speed at the edge of the wheel/the speed that the belt moves at), in meters per second.  
      * 3.8 m/s is roughly our max speed.
      */
-    public static final double intakeSpeed = 3.8;
+    public static final double intakeSpeed = 2.9;
   }
 
   public static final class Climber {
@@ -287,11 +287,11 @@ public final class Constants {
     public static final CANSparkMaxConfig motorConfig = new CANSparkMaxConfig(
       IdleMode.kBrake,
       resetSmartCurrentLimit, resetSecondaryCurrentLimit,
-      (1 / 0.2) * (5676 / climberMotorSpeed), // 0.2 second acceleration to the climbing speed
-      12.0,
+      0.1,
+      10.0,
       Usage.kAll
     ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)         // Position controller
-     .configurePIDSlot(1, 1e-7, 0.0, 0.0, 1. / 5600.); // Velocity controller
+     .configurePIDSlot(1, 2e-6, 0.0, 0.0, 1. / 5600.); // Velocity controller
 
     public static final double fullUpRotations = 100;
   }
