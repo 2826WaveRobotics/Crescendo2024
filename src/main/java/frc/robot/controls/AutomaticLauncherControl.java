@@ -16,7 +16,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
@@ -168,8 +167,9 @@ public class AutomaticLauncherControl {
     return new LauncherState(usedSpeedRPM, Units.radiansToDegrees(angleRadians));
   }
 
-  public static double getShotTime(double distane) {
-    return distane * 0.17 + 0.5;
+  // Higher shot time = more correction for velocity (and acceleration depending on pipeline latency)
+  public static double getShotTime(double distance) {
+    return 0.205 * distance + 0.155;
   }
 
   // https://docs.google.com/spreadsheets/d/1dXLGZ84TEYzmvrYkXQ3SZOwmgObqmYSxnnUZoMg85Bo/edit?usp=sharing
@@ -204,17 +204,40 @@ public class AutomaticLauncherControl {
       return MathUtil.interpolate(acute, obtuse, interpolation);
     }
   }
+
+  private static final boolean USE_OLD_EQUATION = false;
+
   private static double getSpeedAcute(double distance) {
-    return 3327 * Math.pow(distance, 0.351);
+    if(USE_OLD_EQUATION) {
+      return 3327 * Math.pow(distance, 0.351);
+    } else {
+      if(distance > 3.37) return 0;
+      return 5928 + -2139 * distance + 800 * Math.pow(distance, 2);
+    }
   }
   private static double getAngleAcute(double distance) {
-    return 98.2 + -59.2 * distance + 18.4 * Math.pow(distance, 2) + -2.27 * Math.pow(distance, 3);
+    if(USE_OLD_EQUATION) {
+      return 98.2 + -59.2 * distance + 18.4 * Math.pow(distance, 2) + -2.27 * Math.pow(distance, 3);
+    } else {
+      if(distance > 3.37) return 0;
+      return 107 * Math.exp(-0.466 * distance);
+    }
   }
   private static double getSpeedObtuse(double distance) {
-    return 2128 + 2168 * distance + -437 * Math.pow(distance, 2);
+    if(USE_OLD_EQUATION) {
+      return 2128 + 2168 * distance + -437 * Math.pow(distance, 2);
+    } else {
+      if(distance > 2.95) return 0;
+      return 1893 + 2402 * distance + -222 * Math.pow(distance, 2);
+    }
   }
   private static double getAngleObtuse(double distance) {
-    return 63.4 + -15.1 * distance + -1.29 * Math.pow(distance, 2) + 0.426 * Math.pow(distance, 3);
+    if(USE_OLD_EQUATION) {
+      return 63.4 + -15.1 * distance + -1.29 * Math.pow(distance, 2) + 0.426 * Math.pow(distance, 3);
+    } else {
+      if(distance > 2.95) return 0;
+      return getAngleAcute(distance) * 0.95;
+    }
   }
 
   private LauncherState getLauncherStateTimeBasedPrediction() {
@@ -263,6 +286,8 @@ public class AutomaticLauncherControl {
 
     Logger.recordOutput("Launcher/AutomaticControl/State/Speed", state.speed);
     Logger.recordOutput("Launcher/AutomaticControl/State/Angle", state.angleDegrees);
+    
+    if(state.speed == 0) return;
     
     Launcher launcher = Launcher.getInstance();
     launcher.setLauncherState(state);

@@ -74,7 +74,7 @@ public class SwerveAlignmentController {
         
         double speakerInward = -0.1;
         double speakerY = 5.55;
-        double obtuseShiftY = 6.15 - speakerY;
+        double obtuseShiftY = 5.98 - speakerY;
 
         boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
         Translation2d centerTargetLocation = isBlueAlliance ? new Translation2d(speakerInward, speakerY) : new Translation2d(Constants.fieldLengthMeters - speakerInward, speakerY);
