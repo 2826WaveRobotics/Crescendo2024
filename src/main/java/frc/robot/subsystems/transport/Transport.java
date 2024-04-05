@@ -190,7 +190,7 @@ public class Transport extends SubsystemBase {
           transportIO.setTransportSpeed(Constants.Transport.intakeSpeed);
           break;
         case MovingNote:
-          transportIO.setTransportSpeed(Constants.Transport.intakeSpeed * 0.75);
+          transportIO.setTransportSpeed(Constants.Transport.intakeSpeed * 0.8);
           break;
         case EjectingNote:
           transportIO.setTransportSpeed(-Constants.Transport.ejectNoteSpeed);

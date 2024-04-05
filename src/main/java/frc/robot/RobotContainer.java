@@ -267,6 +267,10 @@ public class RobotContainer {
     }));
   }
 
+  public void teleopEnable() {
+    if(autonomousLauncherConfigCommand != null) autonomousLauncherConfigCommand.cancel();
+  }
+
   public void updateAutoPublisher() {
     if(autoDataPublisher != null && (DriverStation.isFMSAttached() || DriverStation.isEnabled())) {
       autoDataPublisher.close();

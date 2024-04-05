@@ -171,6 +171,7 @@ public class Robot extends LoggedRobot {
       autonomousCommand.cancel();
     }
 
+    robotContainer.teleopEnable();
     Superstructure.getInstance().resetSubsystemsForTeleop();
     VibrationFeedback.getInstance().teleopInit();
   }

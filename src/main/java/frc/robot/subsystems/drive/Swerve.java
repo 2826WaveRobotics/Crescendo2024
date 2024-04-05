@@ -218,6 +218,23 @@ public class Swerve extends SubsystemBase {
 
     if(Constants.enableNonEssentialShuffleboard) {
       Shuffleboard.getTab("Notes").addString("Odometry position", () -> ("(" + getPose().getX() + ", " + getPose().getY() + ")"));
+      
+      Shuffleboard.getTab("Notes").addNumber("Speaker distance", () -> {
+        Swerve swerve = Swerve.getInstance();
+
+        Translation2d currentPosition = swerve.getPose().getTranslation();
+        
+        double speakerInward = -0.1;
+        double speakerY = 5.55;
+
+        boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
+        Translation2d targetLocation = isBlueAlliance ? new Translation2d(speakerInward, speakerY) : new Translation2d(Constants.fieldLengthMeters - speakerInward, speakerY);
+
+        Translation2d relativeTargetLocation = targetLocation.minus(currentPosition);
+        double distance = relativeTargetLocation.getNorm();
+
+        return distance;
+      });
     }
 
     NoteVisualizer.setRobotPoseSupplier(this::getPose);
