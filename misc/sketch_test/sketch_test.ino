@@ -68,6 +68,8 @@ void onRecieveSerialData() {
   uint8_t lightState = Serial.read();
   uint8_t allianceValue = Serial.read();
   uint8_t speed = Serial.read();
+
+  if(lightState == 0xFF || allianceValue == 0xFF || speed == 0xFF) return;
   
   // Avoid backlog
   if(Serial.available() > MESSAGE_LENGTH * 2) while(Serial.available() > MESSAGE_LENGTH * 2) Serial.read();
