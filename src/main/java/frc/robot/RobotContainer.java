@@ -180,7 +180,7 @@ public class RobotContainer {
         new SetLauncherState(new LauncherState(4100, 50.0, true))
       )
     )));
-    NamedCommands.registerCommand("7 note 3-4", new ScheduleCommand(new ParallelCommandGroup(
+    NamedCommands.registerCommand("7 note 3-4", new ScheduleCommand(new SequentialCommandGroup(
       // Slight delay
       new WaitCommand(0.15),
 
@@ -220,7 +220,7 @@ public class RobotContainer {
         new SetLauncherState(new LauncherState(5500, 22.0, true))
       )
     )));
-    NamedCommands.registerCommand("7 note 6", new ScheduleCommand(new ParallelCommandGroup(
+    NamedCommands.registerCommand("7 note 6", new ScheduleCommand(new SequentialCommandGroup(
       // No delay since note is already ready
 
       // Launch sixth

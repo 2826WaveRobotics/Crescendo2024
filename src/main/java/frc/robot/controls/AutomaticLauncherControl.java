@@ -292,7 +292,11 @@ public class AutomaticLauncherControl {
     Launcher launcher = Launcher.getInstance();
     launcher.setLauncherState(state);
     
-    if(!inAuto && launcher.atSetpoints() && SwerveAlignmentController.getInstance().atTarget) {
+    boolean launcherAtSetpoints = launcher.atSetpoints();
+    boolean atTarget = SwerveAlignmentController.getInstance().atTarget;
+    Logger.recordOutput("Launcher/AutomaticControl/AtSetpoints", launcherAtSetpoints);
+    Logger.recordOutput("Launcher/AutomaticControl/AtTarget", atTarget);
+    if(!inAuto && launcherAtSetpoints && atTarget) {
       VibrationFeedback.getInstance().addToOperatorLeft(1.0);
       VibrationFeedback.getInstance().addToOperatorRight(1.0);
       VibrationFeedback.getInstance().addToDriverLeft(0.3);

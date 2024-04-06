@@ -88,7 +88,10 @@ public class LauncherIOReal implements LauncherIO {
       SmartDashboard.putNumber("Launcher getAbsoluteLauncherAngle", getAbsoluteLauncherAngle().getDegrees());
     }
     double rotations = absolutePosition.getRotations() % 1.;
-    if(rotations < 0.) rotations = rotations + 1;
+    if(
+      rotations <
+      -Constants.Launcher.softStopMarginHigh.getRotations() / 2
+    ) rotations = rotations + 1;
     angleLauncherEncoder.setPosition(rotations * Constants.Launcher.angleMotorGearboxReduction);
   }
 

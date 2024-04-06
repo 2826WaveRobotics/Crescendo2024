@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
@@ -156,12 +155,7 @@ public class Controls {
         ));
         
         // Lob shot
-        operator.leftTrigger(0.2)
-            .onTrue(new SequentialCommandGroup(
-                new SetLauncherState(Constants.Controls.LobShotState),
-                new InstantCommand(() -> Transport.getInstance().attemptTransitionToState(TransportState.LaunchingNote))
-            ))
-            .onFalse(new InstantCommand(() -> Transport.getInstance().attemptTransitionToState(TransportState.Stopped)));
+        operator.leftTrigger(0.2).onTrue(new SetLauncherState(Constants.Controls.LobShotState));
         
         operator.start().whileTrue(Commands.startEnd(
             () -> launcherSubsystem.setLauncherSpeed(-6800, false),

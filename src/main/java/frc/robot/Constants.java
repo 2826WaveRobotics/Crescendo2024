@@ -41,9 +41,9 @@ public final class Constants {
   public static final double fieldLengthMeters = Units.feetToMeters(54. + 1./12);
 
   public static final class Controls {
-    public static final LauncherState AmpState = new LauncherState(1900, 56.25, false);
+    public static final LauncherState AmpState = new LauncherState(1780, 58.35, true);
     public static final LauncherState SpeakerCloseState = new LauncherState(4500, 59.95, true);
-    public static final LauncherState LobShotState = new LauncherState(5000, 60, false);
+    public static final LauncherState LobShotState = new LauncherState(5000, 45, true);
 
     public static final LauncherState DPadLeftPreset = AmpState;
     public static final LauncherState DPadUpPreset = new LauncherState(2880, 42.1, true); // Podium speaker preset
@@ -196,14 +196,12 @@ public final class Constants {
       CANSparkMax.IdleMode.kBrake,
       10,
       15,
-      0.5,
+      0.2,
       10.0,
       CANSparkMaxUtil.Usage.kPositionOnly
-    // ).configurePIDSlot(0, 0.05, 0.0, 0.0, 0.0);
-    ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0);
-    
-    // public static final double angleMotorGearboxReduction = 5.23 * 5.23 * 2.89;
-    public static final double angleMotorGearboxReduction = 5.23 * 5.23;
+    ).configurePIDSlot(0, 0.075, 0.0, -1e-7, 0.0);
+
+    public static final double angleMotorGearboxReduction = 5.23 * 5.23 * 2.89;
 
     /**
      * The idle launch roller velocity in revolutions per minute.

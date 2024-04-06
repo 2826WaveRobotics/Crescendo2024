@@ -165,11 +165,16 @@ public class Superstructure extends SubsystemBase {
         intakingNoteEvent.ifHigh(() -> {
             if(!DriverStation.isTeleop()) return;
             VibrationFeedback.getInstance().runPattern(VibrationPatternType.IntakingNote);
-            Limelight.getInstance().flashIntakeLimelight();
+            // Limelight.getInstance().flashIntakeLimelight();
         });
         movingNoteEvent.ifHigh(() -> {
             attemptTransitionToState(TransportState.MovingNote);
             transportSubsystem.immediatelyUpdateSpeeds();
+            
+            // Remove when we have a working sensor on the intake
+            if(!DriverStation.isTeleop()) return;
+            VibrationFeedback.getInstance().runPattern(VibrationPatternType.IntakingNote);
+            // Limelight.getInstance().flashIntakeLimelight();
         });
 
         startEjectNoteEvent.ifHigh(() -> attemptTransitionToState(TransportState.EjectingNote));
