@@ -92,7 +92,7 @@ public class Robot extends LoggedRobot {
         break;
     }
 
-    // Logger.registerURCL(URCL.startExternal());
+    Logger.registerURCL(URCL.startExternal());
     
     // Logger.disableDeterministicTimestamps() // See "Deterministic Timestamps" in the "Understanding Data Flow" page
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
