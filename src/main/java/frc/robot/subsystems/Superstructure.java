@@ -198,8 +198,8 @@ public class Superstructure extends SubsystemBase {
         // Reset climber
         if(scheduledClimbCommand != null && scheduledClimbCommand.isScheduled()) scheduledClimbCommand.cancel();
 
-        scheduledClimbCommand = new ResetClimbers();
-        scheduledClimbCommand.schedule();
+        // scheduledClimbCommand = new ResetClimbers();
+        // scheduledClimbCommand.schedule();
 
         // Reset the odometry to face the current gyro angle
         Swerve.getInstance().resetRotation();

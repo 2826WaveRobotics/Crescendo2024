@@ -55,7 +55,7 @@ public class Limelight extends SubsystemBase {
    * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and radians.
    * We use an extremely high standard deviation for the heading measurement because we trust our gyro more than our vision for heading measurements.
    */
-  public static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(30));
+  public static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(90));
   
   private LimelightIO limelightIO;
   private LimelightIOInputsAutoLogged inputs = new LimelightIOInputsAutoLogged();
@@ -97,14 +97,14 @@ public class Limelight extends SubsystemBase {
       return;
     }
 
-    double maxDistance = DriverStation.isAutonomous() ? 5.0 * inputs.tagCount : 3.0;
+    double maxDistance = DriverStation.isAutonomous() ? 3.0 * (1 + (inputs.tagCount - 1) / 3.) : 3.0;
     if(inputs.avgTagDist > maxDistance) {
       Logger.recordOutput("Odometry/LimelightPoseEstimateUsed", false);
       return;
     }
 
     // Scale the vision measurement expected standard deviation (0.1m by default) exponentially by the distance 
-    double standardDeviationScalar = Math.max(0.01, 0.5 * Math.pow(1.3, inputs.avgTagDist) - 0.03) / (1. + (inputs.tagCount - 1) / 2.);
+    double standardDeviationScalar = Math.max(0.02, 0.75 * Math.pow(1.35, inputs.avgTagDist)) / inputs.tagCount;
 
     Logger.recordOutput("Odometry/LimelightPoseEstimateUsed", true);
 

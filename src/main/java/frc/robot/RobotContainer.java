@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
@@ -119,10 +120,14 @@ public class RobotContainer {
       new SetLauncherState(closeState),
       new LaunchNote()
     ));
-    NamedCommands.registerCommand("Launch", new ScheduleCommand(new LaunchNote()));
-    NamedCommands.registerCommand("Intake/Launch",
+    NamedCommands.registerCommand("Launch", new SequentialCommandGroup(
+      new WaitUntilCommand(() -> transportSubsystem.getCurrentState() != TransportState.MovingNote),
+      new ScheduleCommand(new LaunchNote())
+    ));
+    NamedCommands.registerCommand("Intake/Launch", new SequentialCommandGroup(
+      new WaitUntilCommand(() -> transportSubsystem.getCurrentState() != TransportState.MovingNote),
       new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote))
-    );
+    ));
     NamedCommands.registerCommand("Run transport delayed", new ScheduleCommand(new SequentialCommandGroup(
       new WaitCommand(0.5),
       new InstantCommand(() -> transportSubsystem.attemptTransitionToState(TransportState.IntakingNote))

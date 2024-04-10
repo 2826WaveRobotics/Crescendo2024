@@ -119,7 +119,7 @@ public class Transport extends SubsystemBase {
     transitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.Stopped));
     transitions.add(new TransportStatePair(TransportState.Stopped, TransportState.LaunchingNote));
     transitions.add(new TransportStatePair(TransportState.LaunchingNote, TransportState.Stopped));
-    
+
     transitions.add(new TransportStatePair(TransportState.MovingNote, TransportState.LaunchingNote));
 
     // Operator override transitions

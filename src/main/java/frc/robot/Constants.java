@@ -189,7 +189,7 @@ public final class Constants {
       40,
       0.25,
       10.0,
-      CANSparkMaxUtil.Usage.kPositionOnly
+      CANSparkMaxUtil.Usage.kAll
     ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 1 / 5700.);
 
     public static CANSparkMaxConfig angleConfig = new CANSparkMaxConfig(
@@ -198,7 +198,7 @@ public final class Constants {
       15,
       0.2,
       10.0,
-      CANSparkMaxUtil.Usage.kPositionOnly
+      CANSparkMaxUtil.Usage.kAll
     ).configurePIDSlot(0, 0.075, 0.0, -1e-7, 0.0);
 
     public static final double angleMotorGearboxReduction = 5.23 * 5.23 * 2.89;

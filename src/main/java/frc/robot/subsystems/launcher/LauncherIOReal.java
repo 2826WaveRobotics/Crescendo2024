@@ -32,6 +32,7 @@ public class LauncherIOReal implements LauncherIO {
   private final SparkPIDController anglePIDController;
 
   private final RelativeEncoder topRollerEncoder;
+  private final RelativeEncoder bottomRollerEncoder;
 
   public LauncherIOReal() {
     // Instantiate member variables and necessary code
@@ -65,6 +66,7 @@ public class LauncherIOReal implements LauncherIO {
     absoluteAngleLauncherEncoder = new DutyCycleEncoder(Constants.Launcher.absoluteEncoderDIOPort);
 
     topRollerEncoder = topRollerMotor.getEncoder();
+    bottomRollerEncoder = bottomRollerMotor.getEncoder();
 
     resetToAbsolute();
     
@@ -124,6 +126,7 @@ public class LauncherIOReal implements LauncherIO {
     inputs.launcherRelativeConchAngle = getLauncherConchAngle();
     inputs.launcherAngleVeocityRPM = angleLauncherEncoder.getVelocity();
     inputs.speedRPM = topRollerEncoder.getVelocity();
+    inputs.bottomSpeedRPM = bottomRollerEncoder.getVelocity();
     
     if(Constants.enableNonEssentialShuffleboard) {
       SmartDashboard.putNumber("Launcher encoder angle reading", getLauncherConchAngle().getDegrees());
