@@ -42,6 +42,11 @@ public class SwerveModule {
   public void updateInputs() {
     io.updateInputs(inputs);
   }
+
+  /** Resets the relative angle encoder to the CANCoder's absolute position (on a real module). */
+  public void resetToAbsolute() {
+    io.resetToAbsolute();
+  }
   
   public void periodic() {
     Logger.processInputs("Drive/Module" + getModuleName(), inputs);

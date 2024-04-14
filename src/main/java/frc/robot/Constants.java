@@ -1,6 +1,12 @@
 package frc.robot;
 
 import com.revrobotics.CANSparkBase.IdleMode;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
 import com.pathplanner.lib.path.PathConstraints;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -12,6 +18,8 @@ import frc.lib.util.CANSparkMaxConfig;
 import frc.lib.util.CANSparkMaxUtil;
 import frc.lib.util.CANSparkMaxUtil.Usage;
 import frc.robot.subsystems.launcher.Launcher.LauncherState;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 
 public final class Constants {
@@ -68,20 +76,20 @@ public final class Constants {
     public static final double driveGearRatio = (6.75 / 1.0); // 6.75:1
     public static final double angleGearRatio = (12.8 / 1.0); // 12.8:1
 
-    public static final String[] moduleNames = {"frontLeft", "frontRight", "backLeft", "backRight"};
+    public static final String[] moduleNames = {"frontLeft", "frontRight", "backRight", "backLeft"};
 
     /** The constraints to use while pathfinding. This doesn't apply to the paths followed at the end. */
     public static final PathConstraints pathfindingConstraints = new PathConstraints(3.4, 6.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-    public static final double trackingAngleControllerP = RobotBase.isReal() ? 5.0 : 3.0;
+    public static final double trackingAngleControllerP = RobotBase.isReal() ? 3.0 : 3.0;
     public static final double trackingAngleControllerI = 0.0;
-    public static final double trackingAngleControllerD = 0.1;
+    public static final double trackingAngleControllerD = 0.5;
 
     // The locations of the modules on the robot, in meters.
     public static final Translation2d[] modulePositions = {
       new Translation2d(wheelBase / 2.0, trackWidth / 2.0),   // fl
       new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),  // fr
-      new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0), // bl
-      new Translation2d(-wheelBase / 2.0, trackWidth / 2.0)   // br
+      new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0), // br
+      new Translation2d(-wheelBase / 2.0, trackWidth / 2.0)   // bl
     };
 
     /* Swerve Profiling Values */
@@ -99,8 +107,8 @@ public final class Constants {
      */
     public static final CANSparkMaxConfig driveConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,
-      40, 50,
-      0.1,
+      38, 40,
+      0.2,
       10.0,
       Usage.kAll
     ).configurePIDSlot(0, 0.0002, 0.0, 0.0, 1. / 6784 /* Free speed of a NEO Vortex */);
@@ -110,52 +118,40 @@ public final class Constants {
      */
     public static final CANSparkMaxConfig angleConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,
-      20, 30,
+      25, 27,
       0,
       10.0,
-      Usage.kPositionOnly
-    ).configurePIDSlot(0, 3.0, 5e-7, 0.02, 0.0);
+      Usage.kAll
+    ).configurePIDSlot(0, 3.0, 2e-4, 0.02, 0.0);
 
-    /* Module Specific Constants */
-    /* Front Left Module - Module 0 */
-    public static final class Mod0 {
-      public static final int driveMotorID = 11;
-      public static final int angleMotorID = 12;
-      public static final int canCoderID = 13;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(28.564);
-      public static final SwerveModuleConstants constants =
-          new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
+    public static final Rotation2d[] swerveOffsets = getSwerveOffsets();
+    public static final String swerveOffsetFileName = "swerveOffsets.txt";
+    private static final Rotation2d[] getSwerveOffsets() {
+      Rotation2d[] offsets = new Rotation2d[4];
+      try (
+        BufferedReader br = new BufferedReader(new FileReader(new File(Filesystem.getDeployDirectory(), swerveOffsetFileName)))
+      ) {
+        String line;
+        int i = 0;
+        while ((line = br.readLine()) != null) {
+          if(line.length() == 0) continue; // Skip empty lines -- the last line might be empty
+          offsets[i++] = Rotation2d.fromDegrees(Double.parseDouble(line));
+        }
+      } catch(IOException ioException) {
+        DriverStation.reportError("ERROR: IO exception while reading swerve offsets: " + ioException.getLocalizedMessage(), false);
+      }
+
+      return offsets;
     }
 
-    /* Front Right Module - Module 1 */
-    public static final class Mod1 {
-      public static final int driveMotorID = 21;
-      public static final int angleMotorID = 22;
-      public static final int canCoderID = 23;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(107.666);
-      public static final SwerveModuleConstants constants =
-          new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
-    }
-
-    /* Back Left Module - Module 2 */
-    public static final class Mod2 {
-      public static final int driveMotorID = 31;
-      public static final int angleMotorID = 32;
-      public static final int canCoderID = 33;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(67.763);
-      public static final SwerveModuleConstants constants =
-          new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
-    }
-
-    /* Back Right Module - Module 3 */
-    public static final class Mod3 {
-      public static final int driveMotorID = 41;
-      public static final int angleMotorID = 42;
-      public static final int canCoderID = 43;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(260.947);
-      public static final SwerveModuleConstants constants =
-          new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
-    }
+    public static final SwerveModuleConstants mod0Constants =
+      new SwerveModuleConstants(11, 12, 13, swerveOffsets[0]); /* Front left */
+    public static final SwerveModuleConstants mod1Constants =
+      new SwerveModuleConstants(21, 22, 23, swerveOffsets[1]); /* Front right */
+    public static final SwerveModuleConstants mod2Constants =
+      new SwerveModuleConstants(31, 32, 33, swerveOffsets[2]); /* Back right */
+    public static final SwerveModuleConstants mod3Constants =
+      new SwerveModuleConstants(41, 42, 43, swerveOffsets[3]); /* Back left */
   }
 
   public static final class Auto {
@@ -184,7 +180,7 @@ public final class Constants {
     public static final double wheelRadiusMeters = Units.inchesToMeters(2);
 
     public static int rollerCurrentLimitForAuto = 50;
-    public static int rollerCurrentLimitForTeleop = 40;
+    public static int rollerCurrentLimitForTeleop = 30;
     public static CANSparkMaxConfig rollerConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kCoast,
       rollerCurrentLimitForAuto,
@@ -208,7 +204,7 @@ public final class Constants {
     /**
      * The idle launch roller velocity in revolutions per minute.
      */
-    public static final double idleRollerVelocity = 120.;
+    public static final double idleRollerVelocity = 3000.;
 
     public static final Rotation2d softStopMarginLow = Rotation2d.fromDegrees(15);
     public static final Rotation2d softStopMarginHigh = Rotation2d.fromDegrees(75);

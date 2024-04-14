@@ -124,7 +124,9 @@ public class CANSparkMaxConfig {
      */
     public PIDController getPIDController(int slot) {
         PIDValues values = pidConfigurations.get(slot);
-        return new PIDController(values.p, values.i, values.d, values.f);
+        PIDController controller = new PIDController(values.p, values.i, values.d, 0.02);
+        controller.setIntegratorRange(-values.iZone, values.iZone);
+        return controller;
     }
 
     /**

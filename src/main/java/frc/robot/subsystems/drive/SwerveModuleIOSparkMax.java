@@ -77,9 +77,7 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     driveEncoder.setMeasurementPeriod(10);
     driveEncoder.setAverageDepth(2);
 
-    turnRelativeEncoder.setPosition(
-      (turnAbsolutePosition.getValueAsDouble() - absoluteEncoderOffset.getRotations()) * Constants.Swerve.angleGearRatio
-    );
+    resetToAbsolute();
     turnRelativeEncoder.setMeasurementPeriod(10);
     turnRelativeEncoder.setAverageDepth(2);
 
@@ -112,6 +110,14 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
           return OptionalDouble.empty();
         }
       }
+    );
+  }
+
+  /** Resets the relative angle encoder to the CANCoder's absolute position. */
+  @Override
+  public void resetToAbsolute() {
+    turnRelativeEncoder.setPosition(
+      (turnAbsolutePosition.getValueAsDouble() - absoluteEncoderOffset.getRotations()) * Constants.Swerve.angleGearRatio
     );
   }
 

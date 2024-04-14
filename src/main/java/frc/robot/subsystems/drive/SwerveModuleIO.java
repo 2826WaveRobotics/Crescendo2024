@@ -41,4 +41,7 @@ public interface SwerveModuleIO {
 
   /** Enable or disable brake mode on the turn motor. */
   public default void setTurnBrakeMode(boolean enable) {}
+
+  /** Resets the relative angle encoder to the CANCoder's absolute position (on a real module). */
+  public default void resetToAbsolute() {}
 }

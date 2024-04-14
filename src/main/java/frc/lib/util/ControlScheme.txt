@@ -17,7 +17,7 @@ Driver:
     D-pad right: Snap right (until rotation stick is next moved)
 
     Start: Change current field-relative orientaton to match direction
-    Back:
+    Back: Reset all swerve modules to absolute angle (if something is messed up mechanically)
 
     Y: Pathfind to alliance speaker and launch note
     B: Pathfind to alliance amp and launch note
@@ -39,7 +39,7 @@ Operator:
     D-pad right: Close speaker preset
 
     Start: Retrieve note from launcher (runs launchers at 100% power backward; can be dangerous)
-    Back:
+    Back: Store current module offsets, keeping a running average while held (ONLY IN TEST MODE)
 
     Y: Climber arms fully up (click)
     B: Activate intake

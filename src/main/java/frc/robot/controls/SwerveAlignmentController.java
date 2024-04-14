@@ -34,7 +34,8 @@ public class SwerveAlignmentController {
         Backward,
         Left,
         Manual,
-        CenterNote
+        CenterNote,
+        LobShot
     }
 
     private AlignmentMode alignmentMode = AlignmentMode.Manual;
@@ -49,6 +50,11 @@ public class SwerveAlignmentController {
     public void setAlignmentMode(AlignmentMode mode) {
         Logger.recordOutput("SwerveAlignmentController/AlignmentMode", mode.toString());
 
+        if(alignmentMode != mode && mode == AlignmentMode.AllianceSpeaker) {
+            thetaController.setD(0.2);
+        } else {
+            thetaController.setD(Constants.Swerve.trackingAngleControllerD);
+        }
         alignmentMode = mode;
     }
 
@@ -65,16 +71,16 @@ public class SwerveAlignmentController {
     private LinearFilter accelerationXFilter = LinearFilter.singlePoleIIR(0.2, 0.02);
     private LinearFilter accelerationYFilter = LinearFilter.singlePoleIIR(0.2, 0.02);
 
-    public double updateAllianceSpeakerDistance() {
+    public double updateDistanceAndGetAngle() {
         Swerve swerve = Swerve.getInstance();
 
         Translation2d currentPosition = swerve.getPose().getTranslation();
         FieldRelativeVelocity currentVelocity = swerve.getFieldRelativeVelocity();
         FieldRelativeAcceleration currentAcceleration = swerve.getFieldRelativeAcceleration();
         
-        double speakerInward = -0.1;
+        double speakerInward = -0.08;
         double speakerY = 5.55;
-        double obtuseShiftY = 5.98 - speakerY;
+        double obtuseShiftY = 5.93 - speakerY;
 
         boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
         Translation2d centerTargetLocation = isBlueAlliance ? new Translation2d(speakerInward, speakerY) : new Translation2d(Constants.fieldLengthMeters - speakerInward, speakerY);
@@ -82,7 +88,7 @@ public class SwerveAlignmentController {
         Rotation2d angleToTarget = centerTargetLocation.minus(currentPosition).getAngle().minus(Rotation2d.fromDegrees(
             isBlueAlliance ? 180 : 0
         ));
-        speakerAngle = new Rotation2d(Math.abs(angleToTarget.getRadians()));
+        targetAngle = new Rotation2d(Math.abs(angleToTarget.getRadians()));
 
         double filteredVelocityX = velocityXFilter.calculate(currentVelocity.vx);
         double filteredVelocityY = velocityYFilter.calculate(currentVelocity.vy);
@@ -96,13 +102,13 @@ public class SwerveAlignmentController {
         Translation2d targetLocation = centerTargetLocation;
         double startAngle = farInterpolationStartAngle.getDegrees();
         double angleWidth = farInterpolationWidth.getDegrees();
-        if(speakerAngle.getDegrees() > startAngle) {
+        if(targetAngle.getDegrees() > startAngle) {
             double shiftY = (angleToTarget.getRadians() < 0 || angleToTarget.getRadians() > 180) ? -obtuseShiftY : obtuseShiftY;
             shiftY = isBlueAlliance ? -shiftY : shiftY;
 
             Translation2d movedTargetLocation = targetLocation.plus(new Translation2d(0, shiftY));
-            if(speakerAngle.getDegrees() < startAngle + angleWidth) {
-                double interpolation = (speakerAngle.getDegrees() - startAngle) / angleWidth;
+            if(targetAngle.getDegrees() < startAngle + angleWidth) {
+                double interpolation = (targetAngle.getDegrees() - startAngle) / angleWidth;
                 targetLocation = targetLocation.interpolate(movedTargetLocation, interpolation);
             } else {
                 targetLocation = movedTargetLocation;
@@ -110,13 +116,14 @@ public class SwerveAlignmentController {
         }
         Translation2d relativeTargetLocation = targetLocation.minus(currentPosition);
         double distance = relativeTargetLocation.getNorm();
+        double startDistance = distance;
 
         Logger.recordOutput("SwerveAlignmentController/RealDistance", distance);
         Logger.recordOutput("SwerveAlignmentController/TargetLocation", targetLocation);
 
         double shotTime = AutomaticLauncherControl.getShotTime(distance);
 
-        double correctionFactor = 0.65; // Ideally would be close to 1, but just to compensate for other inaccuracies.
+        double correctionFactor = 0.99; // Ideally would be close to 1, but just to compensate for other inaccuracies.
 
         // Poor man's Newton's method
         int iterations = 5; // Maximum number of iterations
@@ -141,7 +148,8 @@ public class SwerveAlignmentController {
             }
         }
 
-        allianceSpeakerDistance = distance;
+        double useDistanceForLauncherFactor = 0.3;
+        allianceSpeakerDistance = distance * useDistanceForLauncherFactor + startDistance * (1 - useDistanceForLauncherFactor);
 
         // Aim at correctedTargetPosition
         Translation2d currentTranslation = swerve.getPose().getTranslation();
@@ -151,17 +159,17 @@ public class SwerveAlignmentController {
         return angle;
     }
     
-    public static Rotation2d farInterpolationStartAngle = Rotation2d.fromDegrees(40);
-    public static Rotation2d farInterpolationWidth = Rotation2d.fromDegrees(15);
+    public static Rotation2d farInterpolationStartAngle = Rotation2d.fromDegrees(10);
+    public static Rotation2d farInterpolationWidth = Rotation2d.fromDegrees(22);
     public double allianceSpeakerDistance = 0.0;
-    public Rotation2d speakerAngle = new Rotation2d();
+    public Rotation2d targetAngle = new Rotation2d();
     public boolean atTarget = false;
 
     private Rotation2d getTargetAngle() {
         switch (alignmentMode) {
             case AllianceSpeaker:
                 // Add 180 degrees because we want to face the launcher toward the alliance speaker instead of the intake, which is the real front of the robot
-                return Rotation2d.fromRadians(updateAllianceSpeakerDistance()).plus(Rotation2d.fromRadians(Math.PI));
+                return Rotation2d.fromRadians(updateDistanceAndGetAngle()).plus(Rotation2d.fromRadians(Math.PI));
             case Right:
                 return Rotation2d.fromDegrees(isBlueAlliance() ? 270.0 : 90.0);
             case Backward:

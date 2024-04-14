@@ -17,6 +17,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.Constants;
+import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.drive.Swerve;
 import frc.robot.subsystems.launcher.Launcher;
 import frc.robot.subsystems.launcher.Launcher.LauncherState;
@@ -169,10 +170,11 @@ public class AutomaticLauncherControl {
 
   // Higher shot time = more correction for velocity (and acceleration depending on pipeline latency)
   public static double getShotTime(double distance) {
-    return 0.542 * distance - 0.526;
+    if(SwerveAlignmentController.getInstance().getAlignmentMode() == AlignmentMode.AllianceSpeaker) return 0.35 * distance + 0.05;
+    else return 0.538 + -0.501 * distance + 0.218 * Math.pow(distance, 2) + -0.0147 * Math.pow(distance, 3);
   }
 
-  // https://docs.google.com/spreadsheets/d/1dXLGZ84TEYzmvrYkXQ3SZOwmgObqmYSxnnUZoMg85Bo/edit?usp=sharing
+  // https://docs.google.com/spreadsheets/d/1dXLGZ84TEYzmvrYkXQ3SZOwmgObqmYSdxnnUZoMg85Bo/edit?usp=sharing
   // Very rudimentary model for now
   private static double getSpeed(double distance, Rotation2d angle) {
     double speakerAngle = angle.getDegrees();
@@ -206,21 +208,32 @@ public class AutomaticLauncherControl {
   }
 
   private static double getSpeedAcute(double distance) {
-    return 6124.408;
+    if(SwerveAlignmentController.getInstance().getAlignmentMode() == AlignmentMode.AllianceSpeaker) return 6125;
+    else return getLobSpeed(distance);
   }
   private static double getAngleAcute(double distance) {
-    return 97.2 * Math.exp(-0.473 * distance);
+    if(SwerveAlignmentController.getInstance().getAlignmentMode() == AlignmentMode.AllianceSpeaker) return 97.2 * Math.exp(-0.473 * distance) * 1.06 + 0.8;
+    else return getLobAngle(distance);
   }
   private static double getSpeedObtuse(double distance) {
-    return 6124.408;
+    if(SwerveAlignmentController.getInstance().getAlignmentMode() == AlignmentMode.AllianceSpeaker) return 6125;
+    else return getLobSpeed(distance);
   }
   private static double getAngleObtuse(double distance) {
-    return getAngleAcute(distance) * 0.96;
+    if(SwerveAlignmentController.getInstance().getAlignmentMode() == AlignmentMode.AllianceSpeaker) return getAngleAcute(distance) * 1.035 - 0.2;
+    else return getLobAngle(distance);
+  }
+
+  private static double getLobSpeed(double distance) {
+    return 756 + 185 * distance + 49.8 * Math.pow(distance, 2) + -3.92 * Math.pow(distance, 3);
+  }
+  private static double getLobAngle(double distance) {
+    return 16.2 + 3.99 * distance + 0.709 * Math.pow(distance, 2) + -0.0743 * Math.pow(distance, 3);
   }
 
   private LauncherState getLauncherStateTimeBasedPrediction() {
     double distance = SwerveAlignmentController.getInstance().allianceSpeakerDistance;
-    Rotation2d speakerAngle = SwerveAlignmentController.getInstance().speakerAngle;
+    Rotation2d speakerAngle = SwerveAlignmentController.getInstance().targetAngle;
     Logger.recordOutput("Launcher/AutomaticControl/Distance", distance);
     Logger.recordOutput("Launcher/AutomaticControl/SpeakerAngle", speakerAngle);
 

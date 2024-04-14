@@ -18,7 +18,6 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -54,10 +53,10 @@ public class Swerve extends SubsystemBase {
           instance = new Swerve(
             new GyroIOPigeon2(),
             new SwerveModuleIO[] {
-              new SwerveModuleIOSparkMax(Constants.Swerve.Mod0.constants),
-              new SwerveModuleIOSparkMax(Constants.Swerve.Mod1.constants),
-              new SwerveModuleIOSparkMax(Constants.Swerve.Mod2.constants),
-              new SwerveModuleIOSparkMax(Constants.Swerve.Mod3.constants)
+              new SwerveModuleIOSparkMax(Constants.Swerve.mod0Constants),
+              new SwerveModuleIOSparkMax(Constants.Swerve.mod1Constants),
+              new SwerveModuleIOSparkMax(Constants.Swerve.mod2Constants),
+              new SwerveModuleIOSparkMax(Constants.Swerve.mod3Constants)
             }
           );
           return instance;
@@ -65,12 +64,7 @@ public class Swerve extends SubsystemBase {
           // Sim robot, instantiate physics sim IO implementations
           instance = new Swerve(
             new GyroIO() {},
-            new SwerveModuleIO[] {
-            new SwerveModuleIOSim(Constants.Swerve.Mod0.constants),
-              new SwerveModuleIOSim(Constants.Swerve.Mod1.constants),
-              new SwerveModuleIOSim(Constants.Swerve.Mod2.constants),
-              new SwerveModuleIOSim(Constants.Swerve.Mod3.constants)
-            }
+            new SwerveModuleIO[] { new SwerveModuleIOSim(), new SwerveModuleIOSim(), new SwerveModuleIOSim(), new SwerveModuleIOSim() }
           );
           return instance;
         default:
@@ -235,12 +229,35 @@ public class Swerve extends SubsystemBase {
 
         return distance;
       });
+      Shuffleboard.getTab("Notes").addNumber("Lob distance", () -> {
+        Swerve swerve = Swerve.getInstance();
+
+        Translation2d currentPosition = swerve.getPose().getTranslation();
+
+        double targetX = 1.38;
+        double targetY = 7.06;
+
+        boolean isBlueAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue;
+        Translation2d targetLocation = isBlueAlliance ? new Translation2d(targetX, targetY) : new Translation2d(Constants.fieldLengthMeters - targetX, targetY);
+
+        Translation2d relativeTargetLocation = targetLocation.minus(currentPosition);
+        double distance = relativeTargetLocation.getNorm();
+
+        return distance;
+      });
     }
 
     NoteVisualizer.setRobotPoseSupplier(this::getPose);
 
     // Set up custom logging to add the current path to a field 2d widget
     PathPlannerLogging.setLogActivePathCallback((poses) -> field.getObject("path").setPoses(poses));
+  }
+
+  /** Resets the relative angle encoder to the CANCoder's absolute position on every module. */
+  public void resetToAbsolute() {
+    for(var mod : swerveModules) {
+      mod.resetToAbsolute();
+    }
   }
 
   private double robotSpeed = 0.0;
@@ -369,6 +386,15 @@ public class Swerve extends SubsystemBase {
    */
   public void resetRotation() {
     setPose(new Pose2d(getPose().getTranslation(), new Rotation2d()));
+  }
+
+  public double[] getOffsets() {
+    return new double[] {
+      swerveModules[0].getReportedAbsoluteAngleDegrees(),
+      swerveModules[1].getReportedAbsoluteAngleDegrees(),
+      swerveModules[2].getReportedAbsoluteAngleDegrees(),
+      swerveModules[3].getReportedAbsoluteAngleDegrees()
+    };
   }
 
   /**

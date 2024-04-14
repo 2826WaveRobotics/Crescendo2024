@@ -11,7 +11,6 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import frc.lib.config.SwerveModuleConstants;
 import frc.robot.Constants;
 
 /**
@@ -41,7 +40,7 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
   double driveVelocityReference = 0;
   double turnAngleReference = 0;
   
-  public SwerveModuleIOSim(SwerveModuleConstants moduleConstants) {
+  public SwerveModuleIOSim() {
     driveMotor = new FlywheelSim(DCMotor.getNeoVortex(1), Constants.Swerve.driveGearRatio, 0.025);
     turnMotor = new FlywheelSim(DCMotor.getNEO(1), Constants.Swerve.angleGearRatio, 0.004096955);
 

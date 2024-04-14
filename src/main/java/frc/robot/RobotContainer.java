@@ -249,7 +249,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("Start launcher automation", new InstantCommand(() -> {
       if(autonomousLauncherConfigCommand != null) autonomousLauncherConfigCommand.cancel();
       autonomousLauncherConfigCommand = new RepeatCommand(new InstantCommand(() -> {
-        SwerveAlignmentController.getInstance().updateAllianceSpeakerDistance();
+        SwerveAlignmentController.getInstance().updateDistanceAndGetAngle();
         AutomaticLauncherControl.getInstance().autoAlign(true);
       }));
       autonomousLauncherConfigCommand.schedule();

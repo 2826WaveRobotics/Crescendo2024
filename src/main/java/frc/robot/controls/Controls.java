@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.StoreModuleOffsets;
 import frc.robot.commands.TeleopIntake;
 import frc.robot.commands.climber.ClimberControls;
 import frc.robot.commands.control.PathfindingCommands;
@@ -86,6 +88,7 @@ public class Controls {
 
         driver.x().onTrue(new InstantCommand(swerveSubsystem::stopWithX, swerveSubsystem));
         driver.start().onTrue(new InstantCommand(swerveSubsystem::resetRotation, swerveSubsystem).ignoringDisable(true));
+        driver.back().onTrue(new InstantCommand(swerveSubsystem::resetToAbsolute));
 
         // Snap alignment
         SwerveAlignmentController alignmentController = SwerveAlignmentController.getInstance();
@@ -168,5 +171,7 @@ public class Controls {
             operator.rightBumper(),
             operator.x()
         ));
+
+        operator.back().whileTrue(new StoreModuleOffsets().onlyIf(DriverStation::isTest));
     }
 }

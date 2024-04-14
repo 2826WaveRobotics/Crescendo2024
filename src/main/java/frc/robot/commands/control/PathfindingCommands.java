@@ -40,29 +40,32 @@ public class PathfindingCommands {
     }
 
     public static Command pathfindToAmpAndLaunch() {
-        return new SequentialCommandGroup(
-            new ParallelCommandGroup(
-                new SetLauncherState(Constants.Controls.AmpState),
-                pathfind("Internal_AmpLineup")
-            ),
-            new LaunchNote()
-        );
+        // return new SequentialCommandGroup(
+        //     new ParallelCommandGroup(
+        //         new SetLauncherState(Constants.Controls.AmpState),
+        //         pathfind("Internal_AmpLineup")
+        //     ),
+        //     new LaunchNote()
+        // );
+        return new InstantCommand();
     }
     
     public static Command pathfindToSpeakerAndLaunch() {
-        return new SequentialCommandGroup(
-            new ParallelCommandGroup(
-                new SetLauncherState(Constants.Controls.SpeakerCloseState),
-                pathfind("Internal_SpeakerLineup")
-            ),
-            new LaunchNote()
-        );
+        // return new SequentialCommandGroup(
+        //     new ParallelCommandGroup(
+        //         new SetLauncherState(Constants.Controls.SpeakerCloseState),
+        //         pathfind("Internal_SpeakerLineup")
+        //     ),
+        //     new LaunchNote()
+        // );
+        return new InstantCommand();
     }
     
     public static Command pathfindToSource() {
-        return new ParallelCommandGroup(
-            new InstantCommand(() -> Transport.getInstance().attemptTransitionToState(TransportState.IntakingNote)),
-            pathfind("Internal_SourceLineup")
-        );
+        // return new ParallelCommandGroup(
+        //     new InstantCommand(() -> Transport.getInstance().attemptTransitionToState(TransportState.IntakingNote)),
+        //     pathfind("Internal_SourceLineup")
+        // );
+        return new InstantCommand();
     }
 }
