@@ -169,7 +169,7 @@ public class AutomaticLauncherControl {
 
   // Higher shot time = more correction for velocity (and acceleration depending on pipeline latency)
   public static double getShotTime(double distance) {
-    return 0.205 * distance + 0.155;
+    return 0.542 * distance - 0.526;
   }
 
   // https://docs.google.com/spreadsheets/d/1dXLGZ84TEYzmvrYkXQ3SZOwmgObqmYSxnnUZoMg85Bo/edit?usp=sharing
@@ -205,39 +205,17 @@ public class AutomaticLauncherControl {
     }
   }
 
-  private static final boolean USE_OLD_EQUATION = false;
-
   private static double getSpeedAcute(double distance) {
-    if(USE_OLD_EQUATION) {
-      return 3327 * Math.pow(distance, 0.351);
-    } else {
-      if(distance > 3.37) return 0;
-      return 5928 + -2139 * distance + 800 * Math.pow(distance, 2);
-    }
+    return 6124.408;
   }
   private static double getAngleAcute(double distance) {
-    if(USE_OLD_EQUATION) {
-      return 98.2 + -59.2 * distance + 18.4 * Math.pow(distance, 2) + -2.27 * Math.pow(distance, 3);
-    } else {
-      if(distance > 3.37) return 0;
-      return 107 * Math.exp(-0.466 * distance);
-    }
+    return 97.2 * Math.exp(-0.473 * distance);
   }
   private static double getSpeedObtuse(double distance) {
-    if(USE_OLD_EQUATION) {
-      return 2128 + 2168 * distance + -437 * Math.pow(distance, 2);
-    } else {
-      if(distance > 2.95) return 0;
-      return 1893 + 2402 * distance + -222 * Math.pow(distance, 2);
-    }
+    return 6124.408;
   }
   private static double getAngleObtuse(double distance) {
-    if(USE_OLD_EQUATION) {
-      return 63.4 + -15.1 * distance + -1.29 * Math.pow(distance, 2) + 0.426 * Math.pow(distance, 3);
-    } else {
-      if(distance > 2.95) return 0;
-      return getAngleAcute(distance) * 0.95;
-    }
+    return getAngleAcute(distance) * 0.96;
   }
 
   private LauncherState getLauncherStateTimeBasedPrediction() {

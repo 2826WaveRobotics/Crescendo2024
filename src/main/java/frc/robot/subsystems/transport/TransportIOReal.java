@@ -27,8 +27,8 @@ public class TransportIOReal implements TransportIO {
     topTransportPIDController = topTransportMotor.getPIDController();
     bottomTransportPIDController = bottomTransportMotor.getPIDController();
 
-    Constants.Transport.transportMotorConfig.configure(topTransportMotor, topTransportPIDController);
-    Constants.Transport.transportMotorConfig.configure(bottomTransportMotor, bottomTransportPIDController);
+    Constants.Transport.transportMotorConfig.configure(topTransportMotor, topTransportPIDController, "top transport motor");
+    Constants.Transport.transportMotorConfig.configure(bottomTransportMotor, bottomTransportPIDController, "bottom transport motor");
   }
 
   /**

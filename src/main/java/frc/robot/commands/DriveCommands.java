@@ -22,8 +22,10 @@ import java.util.function.DoubleSupplier;
 public class DriveCommands {
   private DriveCommands() {}
 
-  private static SlewRateLimiter xVelocityRateLimiter = new SlewRateLimiter(3.0);
-  private static SlewRateLimiter yVelocityRateLimiter = new SlewRateLimiter(3.0);
+  // private static SlewRateLimiter xVelocityRateLimiter = new SlewRateLimiter(3.0);
+  // private static SlewRateLimiter yVelocityRateLimiter = new SlewRateLimiter(3.0);
+  private static SlewRateLimiter xVelocityRateLimiter = new SlewRateLimiter(10000000.0);
+  private static SlewRateLimiter yVelocityRateLimiter = new SlewRateLimiter(10000000.0);
   private static SlewRateLimiter omegaRateLimiter = new SlewRateLimiter(3.0);
 
   private static boolean pathfinding = false;

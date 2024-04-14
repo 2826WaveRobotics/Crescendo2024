@@ -135,12 +135,26 @@ public class Launcher extends SubsystemBase {
     return inputs.launcherAngleVeocityRPM;
   }
 
-  public double getSpeedRPM() {
-    return inputs.speedRPM;
+  public double getTopSpeedRPM() {
+    return inputs.topRollerSpeedRPM;
+  }
+  public double getBottomSpeedRPM() {
+    return inputs.bottomRollerSpeedRPM;
   }
 
   public boolean atSetpoints() {
-    return getAngleVelocityRPM() < 60.0 && Math.abs(getSpeedRPM() - topRollerSpeed) < 100.0;
+    // The mechanism only allows a maximum of 4650 RPM.
+    return
+      getAngleVelocityRPM() < 60.0 &&
+      Math.abs(getTopSpeedRPM() - Math.min(topRollerSpeed, 4650)) < 100.0 &&
+      Math.abs(getBottomSpeedRPM() - Math.min(bottomRollerSpeed, 4650)) < 100.0;
+  }
+
+  public void useAutoCurrentLimits() {
+    launcherIO.setRollerCurrentLimit(Constants.Launcher.rollerCurrentLimitForAuto);
+  }
+  public void useTeleopCurrentLimits() {
+    launcherIO.setRollerCurrentLimit(Constants.Launcher.rollerCurrentLimitForTeleop);
   }
 
   @Override
@@ -157,7 +171,8 @@ public class Launcher extends SubsystemBase {
     }
     
     if(Constants.enableNonEssentialShuffleboard) {
-      SmartDashboard.putNumber("LauncherSpeed", topRollerSpeed);
+      SmartDashboard.putNumber("TopRollerTargetSpeed", topRollerSpeed);
+      SmartDashboard.putNumber("BottomRollerTargetSpeed", bottomRollerSpeed);
     }
   }
 }

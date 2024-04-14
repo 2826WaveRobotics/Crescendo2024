@@ -72,9 +72,9 @@ public final class Constants {
 
     /** The constraints to use while pathfinding. This doesn't apply to the paths followed at the end. */
     public static final PathConstraints pathfindingConstraints = new PathConstraints(3.4, 6.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-    public static final double trackingAngleControllerP = RobotBase.isReal() ? 7.5 : 3.0;
+    public static final double trackingAngleControllerP = RobotBase.isReal() ? 5.0 : 3.0;
     public static final double trackingAngleControllerI = 0.0;
-    public static final double trackingAngleControllerD = 0.0;
+    public static final double trackingAngleControllerD = 0.1;
 
     // The locations of the modules on the robot, in meters.
     public static final Translation2d[] modulePositions = {
@@ -103,7 +103,7 @@ public final class Constants {
       0.1,
       10.0,
       Usage.kAll
-    ).configurePIDSlot(0, 1.5e-4, 0.0, 0.0, 1. / 6784 /* Free speed of a NEO Vortex */);
+    ).configurePIDSlot(0, 0.0002, 0.0, 0.0, 1. / 6784 /* Free speed of a NEO Vortex */);
     
     /**
      * The spark max config for the angle motors.
@@ -114,7 +114,7 @@ public final class Constants {
       0,
       10.0,
       Usage.kPositionOnly
-    ).configurePIDSlot(0, 0.5, 5e-7, 0.0, 1. / 5700 /* Free speed of a NEO 1650 */);
+    ).configurePIDSlot(0, 3.0, 5e-7, 0.02, 0.0);
 
     /* Module Specific Constants */
     /* Front Left Module - Module 0 */
@@ -122,7 +122,7 @@ public final class Constants {
       public static final int driveMotorID = 11;
       public static final int angleMotorID = 12;
       public static final int canCoderID = 13;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(210.76 - 180);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(28.564);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -132,7 +132,7 @@ public final class Constants {
       public static final int driveMotorID = 21;
       public static final int angleMotorID = 22;
       public static final int canCoderID = 23;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(106.78);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(107.666);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -142,7 +142,7 @@ public final class Constants {
       public static final int driveMotorID = 31;
       public static final int angleMotorID = 32;
       public static final int canCoderID = 33;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(66.884);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(67.763);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -152,7 +152,7 @@ public final class Constants {
       public static final int driveMotorID = 41;
       public static final int angleMotorID = 42;
       public static final int canCoderID = 43;
-      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(306.298);
+      public static final Rotation2d angleOffset = Rotation2d.fromDegrees(260.947);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
     }
@@ -183,14 +183,16 @@ public final class Constants {
 
     public static final double wheelRadiusMeters = Units.inchesToMeters(2);
 
+    public static int rollerCurrentLimitForAuto = 50;
+    public static int rollerCurrentLimitForTeleop = 40;
     public static CANSparkMaxConfig rollerConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kCoast,
-      30,
-      40,
+      rollerCurrentLimitForAuto,
+      rollerCurrentLimitForAuto,
       0.25,
       10.0,
       CANSparkMaxUtil.Usage.kAll
-    ).configurePIDSlot(0, 6e-5, 0.0, 0.0, 1 / 5700.);
+    ).configurePIDSlot(0, 0.0005, 1e-6, 0.0, 1 / 5700., 500);
 
     public static CANSparkMaxConfig angleConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,

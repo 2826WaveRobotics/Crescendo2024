@@ -66,8 +66,8 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     drivePIDController = driveSparkMax.getPIDController();
     turnPIDController = turnSparkMax.getPIDController();
 
-    Constants.Swerve.driveConfig.configure(driveSparkMax, drivePIDController, false);
-    Constants.Swerve.angleConfig.configure(turnSparkMax, turnPIDController, false);
+    Constants.Swerve.driveConfig.configure(driveSparkMax, drivePIDController, false, "swerve drive motor " + moduleConstants.driveMotorID);
+    Constants.Swerve.angleConfig.configure(turnSparkMax, turnPIDController, false, "swerve angle motor " + moduleConstants.angleMotorID);
 
     turnPIDController.setPositionPIDWrappingEnabled(true);
     turnPIDController.setPositionPIDWrappingMinInput(0.0);

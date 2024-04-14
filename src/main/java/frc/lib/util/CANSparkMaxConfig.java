@@ -3,9 +3,11 @@ package frc.lib.util;
 import java.util.ArrayList;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.REVLibError;
 import com.revrobotics.SparkPIDController;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.lib.util.CANSparkMaxUtil.Usage;
 
 public class CANSparkMaxConfig {
@@ -15,13 +17,15 @@ public class CANSparkMaxConfig {
         public double i;
         public double d;
         public double f;
+        public double iZone;
 
-        public PIDValues(int slot, double p, double i, double d, double f) {
+        public PIDValues(int slot, double p, double i, double d, double f, double iZone) {
             this.slot = slot;
             this.p = p;
             this.i = i;
             this.d = d;
             this.f = f;
+            this.iZone = iZone;
         }
     }
 
@@ -94,7 +98,21 @@ public class CANSparkMaxConfig {
      * @param f
      */
     public CANSparkMaxConfig configurePIDSlot(int slot, double p, double i, double d, double f) {
-        pidConfigurations.add(new PIDValues(slot, p, i, d, f));
+        configurePIDSlot(slot, p, i, d, f, 0);
+        return this;
+    }
+
+    /**
+     * Adds a PID slot to this Spark Max's configuration.
+     * @param slot
+     * @param p
+     * @param i
+     * @param d
+     * @param f
+     * @param iZone
+     */
+    public CANSparkMaxConfig configurePIDSlot(int slot, double p, double i, double d, double f, double iZone) {
+        pidConfigurations.add(new PIDValues(slot, p, i, d, f, iZone));
         return this;
     }
 
@@ -113,9 +131,10 @@ public class CANSparkMaxConfig {
      * Configures the given Spark Max and Spark PID controller from this configuration and burns the settings to flash.
      * @param spark
      * @param pidController
+     * @param name A human-readable device name.
      */
-    public void configure(CANSparkMax spark, SparkPIDController pidController) {
-        configure(spark, pidController, true);
+    public void configure(CANSparkMax spark, SparkPIDController pidController, String name) {
+        configure(spark, pidController, true, name);
     }
 
     /**
@@ -123,25 +142,33 @@ public class CANSparkMaxConfig {
      * @param spark
      * @param pidController
      * @param burnFlash If we should burn the new settings to flash.
+     * @param name A human-readable device name.
      */
-    public void configure(CANSparkMax spark, SparkPIDController pidController, boolean burnFlash) {
-        spark.restoreFactoryDefaults();
+    public void configure(CANSparkMax spark, SparkPIDController pidController, boolean burnFlash, String name) {
+        logErrorIfNotOK(spark.restoreFactoryDefaults(), "restoreFactoryDefaults", name);
         CANSparkMaxUtil.setCANSparkMaxBusUsage(spark, usage);
-        spark.setSmartCurrentLimit(smartCurrentLimit);
-        spark.setSecondaryCurrentLimit(secondaryCurrentLimit);
-        spark.setClosedLoopRampRate(closedLoopRampRate);
+        logErrorIfNotOK(spark.setSmartCurrentLimit(smartCurrentLimit), "setSmartCurrentLimit", name);
+        logErrorIfNotOK(spark.setSecondaryCurrentLimit(secondaryCurrentLimit), "setSecondaryCurrentLimit", name);
+        logErrorIfNotOK(spark.setClosedLoopRampRate(closedLoopRampRate), "setClosedLoopRampRate", name);
 
-        spark.setIdleMode(idleMode);
+        logErrorIfNotOK(spark.setIdleMode(idleMode), "setIdleMode", name);
 
         for(PIDValues values : pidConfigurations) {
-            pidController.setP(values.p, values.slot);
-            pidController.setI(values.i, values.slot);
-            pidController.setD(values.d, values.slot);
-            pidController.setFF(values.f, values.slot);
+            logErrorIfNotOK(pidController.setP(values.p, values.slot), "setP", name);
+            logErrorIfNotOK(pidController.setI(values.i, values.slot), "setI", name);
+            logErrorIfNotOK(pidController.setD(values.d, values.slot), "setD", name);
+            logErrorIfNotOK(pidController.setFF(values.f, values.slot), "setFF", name);
+            logErrorIfNotOK(pidController.setIZone(values.iZone, values.slot), "setIZone", name);
         }
 
-        spark.enableVoltageCompensation(voltageCompensation);
+        logErrorIfNotOK(spark.enableVoltageCompensation(voltageCompensation), "enableVoltageCompensation", name);
         
-        if(burnFlash) spark.burnFlash();
+        // if(burnFlash) logErrorIfNotOK(spark.burnFlash(), "burnFlash", name);
+    }
+
+    private void logErrorIfNotOK(REVLibError error, String type, String name) {
+        if(error != REVLibError.kOk) {
+            DriverStation.reportError("Could not configure SPARK Max: " + type + " configuration failed on device " + name + "!", false);
+        }
     }
 }

@@ -116,7 +116,7 @@ public class SwerveAlignmentController {
 
         double shotTime = AutomaticLauncherControl.getShotTime(distance);
 
-        double correctionFactor = 0.7; // Ideally would be close to 1, but just to compensate for other inaccuracies.
+        double correctionFactor = 0.65; // Ideally would be close to 1, but just to compensate for other inaccuracies.
 
         // Poor man's Newton's method
         int iterations = 5; // Maximum number of iterations
@@ -151,7 +151,7 @@ public class SwerveAlignmentController {
         return angle;
     }
     
-    public static Rotation2d farInterpolationStartAngle = Rotation2d.fromDegrees(35);
+    public static Rotation2d farInterpolationStartAngle = Rotation2d.fromDegrees(40);
     public static Rotation2d farInterpolationWidth = Rotation2d.fromDegrees(15);
     public double allianceSpeakerDistance = 0.0;
     public Rotation2d speakerAngle = new Rotation2d();
@@ -169,7 +169,7 @@ public class SwerveAlignmentController {
             case Left:
                 return Rotation2d.fromDegrees(isBlueAlliance() ? 90.0 : 270.0);
             case CenterNote:
-                return Swerve.getInstance().getPose().getRotation().plus(Limelight.getInstance().getIntakeNoteX());
+                return Swerve.getInstance().getPose().getRotation().minus(Limelight.getInstance().getIntakeNoteX());
             default:
                 return Rotation2d.fromDegrees(isBlueAlliance() ? 0.0 : 180.0);
         }

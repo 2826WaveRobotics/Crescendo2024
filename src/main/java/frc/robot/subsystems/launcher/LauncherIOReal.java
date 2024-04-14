@@ -45,8 +45,8 @@ public class LauncherIOReal implements LauncherIO {
 
     anglePIDController = angleLauncherMotor.getPIDController();
 
-    Constants.Launcher.rollerConfig.configure(topRollerMotor, topLaunchRollerPIDController);
-    Constants.Launcher.rollerConfig.configure(bottomRollerMotor, bottomLaunchRollerPIDController);
+    Constants.Launcher.rollerConfig.configure(topRollerMotor, topLaunchRollerPIDController, "top launcher roller");
+    Constants.Launcher.rollerConfig.configure(bottomRollerMotor, bottomLaunchRollerPIDController, "bottom launcher roller");
     
     angleLauncherMotor.restoreFactoryDefaults();
     CANSparkMaxUtil.setCANSparkMaxBusUsage(angleLauncherMotor, Usage.kPositionOnly);
@@ -60,7 +60,7 @@ public class LauncherIOReal implements LauncherIO {
     angleLauncherMotor.setInverted(Constants.Launcher.invertAngle);
 
     // This doesn't work for some reason.
-    Constants.Launcher.angleConfig.configure(angleLauncherMotor, anglePIDController, false);
+    Constants.Launcher.angleConfig.configure(angleLauncherMotor, anglePIDController, false, "launcher angle motor");
     
     angleLauncherEncoder = angleLauncherMotor.getEncoder();
     absoluteAngleLauncherEncoder = new DutyCycleEncoder(Constants.Launcher.absoluteEncoderDIOPort);
@@ -105,6 +105,14 @@ public class LauncherIOReal implements LauncherIO {
     return Rotation2d.fromRotations((angleLauncherEncoder.getPosition() / Constants.Launcher.angleMotorGearboxReduction) % 1.);
   }
 
+  public void setRollerCurrentLimit(int currentLimit) {
+    topRollerMotor.setSecondaryCurrentLimit(currentLimit);
+    topRollerMotor.setSmartCurrentLimit(currentLimit);
+    
+    bottomRollerMotor.setSecondaryCurrentLimit(currentLimit);
+    bottomRollerMotor.setSmartCurrentLimit(currentLimit);
+  }
+
   private double oldRotations = 0.;
 
   @Override
@@ -125,8 +133,8 @@ public class LauncherIOReal implements LauncherIO {
     inputs.absoluteLauncherAngle = getAbsoluteLauncherAngle();
     inputs.launcherRelativeConchAngle = getLauncherConchAngle();
     inputs.launcherAngleVeocityRPM = angleLauncherEncoder.getVelocity();
-    inputs.speedRPM = topRollerEncoder.getVelocity();
-    inputs.bottomSpeedRPM = bottomRollerEncoder.getVelocity();
+    inputs.topRollerSpeedRPM = topRollerEncoder.getVelocity();
+    inputs.bottomRollerSpeedRPM = bottomRollerEncoder.getVelocity();
     
     if(Constants.enableNonEssentialShuffleboard) {
       SmartDashboard.putNumber("Launcher encoder angle reading", getLauncherConchAngle().getDegrees());

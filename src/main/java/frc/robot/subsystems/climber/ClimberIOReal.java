@@ -27,8 +27,8 @@ public class ClimberIOReal implements ClimberIO {
     leftPIDController = leftClimberMotor.getPIDController();
     rightPIDController = rightClimberMotor.getPIDController();
 
-    Constants.Climber.motorConfig.configure(rightClimberMotor, rightPIDController);    
-    Constants.Climber.motorConfig.configure(leftClimberMotor, leftPIDController);
+    Constants.Climber.motorConfig.configure(rightClimberMotor, rightPIDController, "right climber motor");    
+    Constants.Climber.motorConfig.configure(leftClimberMotor, leftPIDController, "left climber motor");
   }
   
   /** Resets the encoder value for the left motor to 0. */

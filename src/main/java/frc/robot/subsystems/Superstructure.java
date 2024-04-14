@@ -208,6 +208,7 @@ public class Superstructure extends SubsystemBase {
         Climber.getInstance().useResetCurrentLimit();
 
         Launcher.getInstance().resetToAbsolute();
+        Launcher.getInstance().useAutoCurrentLimits();
     }
     
     public void resetSubsystemsForTeleop() {
@@ -217,6 +218,7 @@ public class Superstructure extends SubsystemBase {
         SwerveAlignmentController.getInstance().reset();
         
         Launcher.getInstance().resetToAbsolute();
+        Launcher.getInstance().useTeleopCurrentLimits();
     }
 
     public void climbersUp() {
