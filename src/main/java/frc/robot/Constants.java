@@ -107,8 +107,7 @@ public final class Constants {
      */
     public static final CANSparkMaxConfig driveConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,
-      38, 40,
-      0.2,
+      35,
       10.0,
       Usage.kAll
     ).configurePIDSlot(0, 0.0002, 0.0, 0.0, 1. / 6784 /* Free speed of a NEO Vortex */);
@@ -118,8 +117,7 @@ public final class Constants {
      */
     public static final CANSparkMaxConfig angleConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,
-      25, 27,
-      0,
+      30,
       10.0,
       Usage.kAll
     ).configurePIDSlot(0, 3.0, 2e-4, 0.02, 0.0);
@@ -179,22 +177,18 @@ public final class Constants {
 
     public static final double wheelRadiusMeters = Units.inchesToMeters(2);
 
-    public static int rollerCurrentLimitForAuto = 50;
-    public static int rollerCurrentLimitForTeleop = 30;
+    public static int rollerCurrentLimitForAuto = 30;
+    public static int rollerCurrentLimitForTeleop = 25;
     public static CANSparkMaxConfig rollerConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kCoast,
       rollerCurrentLimitForAuto,
-      rollerCurrentLimitForAuto,
-      0.25,
       10.0,
       CANSparkMaxUtil.Usage.kAll
     ).configurePIDSlot(0, 0.0005, 1e-6, 0.0, 1 / 5700., 500);
 
     public static CANSparkMaxConfig angleConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,
-      10,
       15,
-      0.2,
       10.0,
       CANSparkMaxUtil.Usage.kAll
     ).configurePIDSlot(0, 0.075, 0.0, -1e-7, 0.0);
@@ -245,8 +239,7 @@ public final class Constants {
 
     public static final CANSparkMaxConfig transportMotorConfig = new CANSparkMaxConfig(
       IdleMode.kCoast,
-      20, 25,
-      0.0, // We manually use a slew rate limiter so we can stop instantly.
+      20,
       10.0,
       CANSparkMaxUtil.Usage.kPositionOnly
     ).configurePIDSlot(0, 1e-4, 0.0, 0.0, 1. / 5700.);
@@ -273,9 +266,7 @@ public final class Constants {
     public static final int rightClimberMotorCANID = 56;
 
     public static final int climbingSmartCurrentLimit = 30;
-    public static final int climbingSecondaryCurrentLimit = 35;
     public static final int resetSmartCurrentLimit = 2;
-    public static final int resetSecondaryCurrentLimit = 2;
 
     /**
      * The speed to run the climber motors at when climbing.
@@ -284,8 +275,7 @@ public final class Constants {
 
     public static final CANSparkMaxConfig motorConfig = new CANSparkMaxConfig(
       IdleMode.kBrake,
-      resetSmartCurrentLimit, resetSecondaryCurrentLimit,
-      0.1,
+      resetSmartCurrentLimit,
       10.0,
       Usage.kAll
     ).configurePIDSlot(0, 0.1, 0.0, 0.0, 0.0)         // Position controller

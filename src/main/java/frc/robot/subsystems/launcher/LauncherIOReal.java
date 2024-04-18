@@ -48,20 +48,9 @@ public class LauncherIOReal implements LauncherIO {
     Constants.Launcher.rollerConfig.configure(topRollerMotor, topLaunchRollerPIDController, "top launcher roller");
     Constants.Launcher.rollerConfig.configure(bottomRollerMotor, bottomLaunchRollerPIDController, "bottom launcher roller");
     
-    angleLauncherMotor.restoreFactoryDefaults();
-    CANSparkMaxUtil.setCANSparkMaxBusUsage(angleLauncherMotor, Usage.kPositionOnly);
-    angleLauncherMotor.setSmartCurrentLimit(15);
-    angleLauncherMotor.setIdleMode(IdleMode.kBrake);
-    anglePIDController.setP(0.1);
-    anglePIDController.setI(0.0);
-    anglePIDController.setD(0.0);
-    anglePIDController.setFF(0.000175);
-    angleLauncherMotor.enableVoltageCompensation(10.0);
+    Constants.Launcher.angleConfig.configure(angleLauncherMotor, anglePIDController, false, "launcher angle motor");
     angleLauncherMotor.setInverted(Constants.Launcher.invertAngle);
 
-    // This doesn't work for some reason.
-    Constants.Launcher.angleConfig.configure(angleLauncherMotor, anglePIDController, false, "launcher angle motor");
-    
     angleLauncherEncoder = angleLauncherMotor.getEncoder();
     absoluteAngleLauncherEncoder = new DutyCycleEncoder(Constants.Launcher.absoluteEncoderDIOPort);
 
@@ -105,12 +94,10 @@ public class LauncherIOReal implements LauncherIO {
     return Rotation2d.fromRotations((angleLauncherEncoder.getPosition() / Constants.Launcher.angleMotorGearboxReduction) % 1.);
   }
 
+  @Override
   public void setRollerCurrentLimit(int currentLimit) {
-    topRollerMotor.setSecondaryCurrentLimit(currentLimit);
-    topRollerMotor.setSmartCurrentLimit(currentLimit);
-    
-    bottomRollerMotor.setSecondaryCurrentLimit(currentLimit);
-    bottomRollerMotor.setSmartCurrentLimit(currentLimit);
+    topRollerMotor.setSmartCurrentLimit((int)(currentLimit / 1.2), currentLimit, 0);
+    bottomRollerMotor.setSmartCurrentLimit((int)(currentLimit / 1.2), currentLimit, 0);
   }
 
   private double oldRotations = 0.;

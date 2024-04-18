@@ -109,9 +109,9 @@ public class Climber extends SubsystemBase {
   }
 
   public void useClimbingCurrentLimit() {
-    climberIO.useCurrentLimits(Constants.Climber.climbingSmartCurrentLimit, Constants.Climber.climbingSecondaryCurrentLimit);
+    climberIO.useCurrentLimit(Constants.Climber.climbingSmartCurrentLimit);
   }
   public void useResetCurrentLimit() {
-    climberIO.useCurrentLimits(Constants.Climber.resetSmartCurrentLimit, Constants.Climber.resetSecondaryCurrentLimit);
+    climberIO.useCurrentLimit(Constants.Climber.resetSmartCurrentLimit);
   }
 }
