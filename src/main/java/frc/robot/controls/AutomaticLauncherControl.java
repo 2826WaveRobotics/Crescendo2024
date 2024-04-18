@@ -232,7 +232,7 @@ public class AutomaticLauncherControl {
   }
 
   private LauncherState getLauncherStateTimeBasedPrediction() {
-    double distance = SwerveAlignmentController.getInstance().allianceSpeakerDistance;
+    double distance = SwerveAlignmentController.getInstance().currentShotDistance;
     Rotation2d speakerAngle = SwerveAlignmentController.getInstance().targetAngle;
     Logger.recordOutput("Launcher/AutomaticControl/Distance", distance);
     Logger.recordOutput("Launcher/AutomaticControl/SpeakerAngle", speakerAngle);
