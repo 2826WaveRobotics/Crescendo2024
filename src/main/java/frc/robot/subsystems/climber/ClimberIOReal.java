@@ -122,20 +122,12 @@ public class ClimberIOReal implements ClimberIO {
   }
 
   int oldSmartLimit = 0;
-  int oldSecondaryLimit = 0;
 
   @Override
-  public void useCurrentLimits(int smartLimit, int secondaryLimit) {
+  public void useCurrentLimit(int smartLimit) {
     if(smartLimit != oldSmartLimit) {
-      leftClimberMotor.setSmartCurrentLimit(smartLimit);
-      rightClimberMotor.setSmartCurrentLimit(smartLimit);
+      leftClimberMotor.setSmartCurrentLimit((int)(smartLimit / 1.5), smartLimit, 0);
       oldSmartLimit = smartLimit;
-    }
-
-    if(secondaryLimit != oldSecondaryLimit) {
-      leftClimberMotor.setSecondaryCurrentLimit(secondaryLimit);
-      rightClimberMotor.setSecondaryCurrentLimit(secondaryLimit);
-      oldSecondaryLimit = secondaryLimit;
     }
   }
 }
