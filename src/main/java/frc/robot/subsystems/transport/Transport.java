@@ -2,6 +2,8 @@ package frc.robot.subsystems.transport;
 
 import java.util.HashSet;
 
+import org.littletonrobotics.junction.AutoLogOutput;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -65,6 +67,7 @@ public class Transport extends SubsystemBase {
    * Higher priority states can't transition to lower priority states;
    * for example, you can't transition from MovingNote to IntakingNote or EjectingNote to MovingNote.
    */
+  @AutoLogOutput(key = "Transport/TransportState")
   private TransportState transportState = TransportState.Stopped;
 
   /**

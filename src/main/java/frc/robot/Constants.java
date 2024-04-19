@@ -11,7 +11,6 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import frc.lib.config.SwerveModuleConstants;
 import frc.lib.util.CANSparkMaxConfig;
@@ -51,7 +50,7 @@ public final class Constants {
   public static final class Controls {
     public static final LauncherState AmpState = new LauncherState(1780, 58.35, true);
     public static final LauncherState SpeakerCloseState = new LauncherState(4500, 59.95, true);
-    public static final LauncherState LobShotState = new LauncherState(5000, 45, true);
+    public static final LauncherState LobShotState = new LauncherState(4700, 45, true);
 
     public static final LauncherState DPadLeftPreset = AmpState;
     public static final LauncherState DPadUpPreset = new LauncherState(2880, 42.1, true); // Podium speaker preset
@@ -92,22 +91,35 @@ public final class Constants {
       new Translation2d(-wheelBase / 2.0, trackWidth / 2.0)   // bl
     };
 
+    // Calculate maximum acceleration based on wheel coefficient of friction
+    private static final double wheelCoefficientOfFriction = 1.19;
+    /*
+     * The robot's maximum theoretical acceleration based on the wheels' coefficient of friction,
+     * in meters per second per second.
+     */
+    public static final double maxAcceleration = wheelCoefficientOfFriction * 9.81;
+
     /* Swerve Profiling Values */
+    /**
+     * The maximum drive motor speed. Used to increase our efficiency by clamping our speed below the falloff point.
+     */
+    public static final double maxDriveMotorSpeed = 6500;
     /**
      * The maximum robot movement speed in meters per second.
      */
-    public static final double maxSpeed = 5.2;
+    // ~5.12 m/s
+    public static final double maxVelocity = maxDriveMotorSpeed / 60. * Constants.Swerve.wheelDiameter * Math.PI / driveGearRatio;
     /**
      * The maximum robot angular velocity in radians per second.
      */
-    public static final double maxAngularVelocity = 11.5;
+    public static final double maxAngularVelocity = maxVelocity / new Rotation2d(wheelBase / 2., trackWidth / 2).getRadians();
 
     /**
      * The spark max config for the drive motors.
      */
     public static final CANSparkMaxConfig driveConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,
-      35,
+      45,
       10.0,
       Usage.kAll
     ).configurePIDSlot(0, 0.0002, 0.0, 0.0, 1. / 6784 /* Free speed of a NEO Vortex */);
@@ -117,7 +129,7 @@ public final class Constants {
      */
     public static final CANSparkMaxConfig angleConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,
-      30,
+      25,
       10.0,
       Usage.kAll
     ).configurePIDSlot(0, 3.0, 2e-4, 0.02, 0.0);
@@ -152,22 +164,6 @@ public final class Constants {
       new SwerveModuleConstants(41, 42, 43, swerveOffsets[3]); /* Back left */
   }
 
-  public static final class Auto {
-    public static final double kMaxSpeedMetersPerSecond = 3; //3.25
-    public static final double kMaxAccelerationMetersPerSecondSquared = 3;
-    public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
-    public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
-
-    public static final double kPXController = 1;
-    public static final double kPYController = 1;
-    public static final double kPThetaController = 1;
-
-    // Constraint for the motion profilied robot angle controller
-    public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
-        new TrapezoidProfile.Constraints(
-            kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
-  }
-
   public static final class Launcher {
     public static final int absoluteEncoderDIOPort = 1;
 
@@ -178,7 +174,7 @@ public final class Constants {
     public static final double wheelRadiusMeters = Units.inchesToMeters(2);
 
     public static int rollerCurrentLimitForAuto = 30;
-    public static int rollerCurrentLimitForTeleop = 25;
+    public static int rollerCurrentLimitForTeleop = 20;
     public static CANSparkMaxConfig rollerConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kCoast,
       rollerCurrentLimitForAuto,
@@ -188,7 +184,7 @@ public final class Constants {
 
     public static CANSparkMaxConfig angleConfig = new CANSparkMaxConfig(
       CANSparkMax.IdleMode.kBrake,
-      15,
+      12,
       10.0,
       CANSparkMaxUtil.Usage.kAll
     ).configurePIDSlot(0, 0.075, 0.0, -1e-7, 0.0);
@@ -239,7 +235,7 @@ public final class Constants {
 
     public static final CANSparkMaxConfig transportMotorConfig = new CANSparkMaxConfig(
       IdleMode.kCoast,
-      20,
+      15,
       10.0,
       CANSparkMaxUtil.Usage.kPositionOnly
     ).configurePIDSlot(0, 1e-4, 0.0, 0.0, 1. / 5700.);

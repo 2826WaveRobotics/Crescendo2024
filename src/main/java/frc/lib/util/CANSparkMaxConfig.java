@@ -144,7 +144,7 @@ public class CANSparkMaxConfig {
 
         logErrorIfNotOK(spark.enableVoltageCompensation(voltageCompensation), "enableVoltageCompensation", name);
         
-        // if(burnFlash) logErrorIfNotOK(spark.burnFlash(), "burnFlash", name);
+        if(burnFlash) logErrorIfNotOK(spark.burnFlash(), "burnFlash", name);
     }
 
     private void logErrorIfNotOK(REVLibError error, String type, String name) {

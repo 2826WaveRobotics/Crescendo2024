@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import java.util.HashMap;
 
+import org.littletonrobotics.junction.AutoLogOutput;
+
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
@@ -63,6 +65,7 @@ public class Superstructure extends SubsystemBase {
     /**
      * The current state of the note in the robot.
      */
+    @AutoLogOutput(key = "Superstructure/CurrentState")
     private NoteState currentState = NoteState.NoNote;
 
     /**

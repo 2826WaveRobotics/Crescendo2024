@@ -62,11 +62,6 @@ public class Limelight extends SubsystemBase {
 
   private Limelight(LimelightIO limelightIO) {
     this.limelightIO = limelightIO;
-
-    if(!DriverStation.isFMSAttached()) {
-      var limelightFeed = new HttpCamera("limelight", "http://limelight.local:5800/stream.mjpg", HttpCameraKind.kMJPGStreamer);
-      CameraServer.startAutomaticCapture(limelightFeed);
-    }
   }
 
   private void updateOdometryPoseFromVisionMeasurements() {

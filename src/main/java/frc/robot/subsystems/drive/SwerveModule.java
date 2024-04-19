@@ -73,7 +73,7 @@ public class SwerveModule {
           (Constants.Swerve.wheelDiameter * Math.PI) * // Rotations pesr second
           60.; // Rotations per minute
 
-        io.setDriveVelocity(velocityRPM);
+        io.setDriveVelocity(Math.min(Constants.Swerve.maxDriveMotorSpeed, velocityRPM));
       }
     }
 

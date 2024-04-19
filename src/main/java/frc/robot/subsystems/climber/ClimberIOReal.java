@@ -127,6 +127,7 @@ public class ClimberIOReal implements ClimberIO {
   public void useCurrentLimit(int smartLimit) {
     if(smartLimit != oldSmartLimit) {
       leftClimberMotor.setSmartCurrentLimit((int)(smartLimit / 1.5), smartLimit, 0);
+      rightClimberMotor.setSmartCurrentLimit((int)(smartLimit / 1.5), smartLimit, 0);
       oldSmartLimit = smartLimit;
     }
   }

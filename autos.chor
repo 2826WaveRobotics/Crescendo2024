@@ -3,7 +3,7 @@
     "robotConfiguration": {
         "mass": 62.974780452628146,
         "rotationalInertia": 6.000000000000001,
-        "motorMaxTorque": 0.55,
+        "motorMaxTorque": 0.65,
         "motorMaxVelocity": 5350,
         "gearing": 6.75,
         "wheelbase": 0.5334,
@@ -18979,7 +18979,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         }
     },
     "splitTrajectoriesAtStopPoints": true,

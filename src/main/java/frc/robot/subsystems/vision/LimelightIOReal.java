@@ -1,5 +1,7 @@
 package frc.robot.subsystems.vision;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import frc.lib.LimelightHelpers;
@@ -23,5 +25,7 @@ public class LimelightIOReal implements LimelightIO {
 
         inputs.intakeNotePresent = LimelightHelpers.getTV("limelight-intake");
         inputs.intakeNoteX = Rotation2d.fromDegrees(LimelightHelpers.getTX("limelight-intake"));
+        
+        Logger.recordOutput("Limelight/TargetVisible", LimelightHelpers.getTV("limelight"));
     }
 }

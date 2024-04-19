@@ -13,6 +13,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import org.littletonrobotics.urcl.URCL;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.controls.AutomaticLauncherControl;
@@ -85,7 +86,7 @@ public class Robot extends LoggedRobot {
 
       case REPLAY:
         // Replaying a log, set up replay source
-        // setUseTiming(false); // Run as fast as possible
+        setUseTiming(false); // Run as fast as possible
         String logPath = LogFileUtil.findReplayLog();
         Logger.setReplaySource(new WPILOGReader(logPath));
         Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
@@ -98,12 +99,14 @@ public class Robot extends LoggedRobot {
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
 
     // Instantiate our RobotContainer.  This will perform all our button bindings, put our
-    // autonomous chooser on the dashboard, and do anything else required for initialization.
+    // autonomous chooser on the dashboard, and doS anything else required for initialization.
     robotContainer = new RobotContainer();
     
     Limelight.getInstance().initiaize();
 
     CommandScheduler.getInstance().getDefaultButtonLoop().bind(VibrationFeedback.getInstance()::update);
+
+    RobotController.setBrownoutVoltage(6.25);
   }
 
   /**
