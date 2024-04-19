@@ -22,10 +22,11 @@ import frc.robot.subsystems.drive.Swerve;
 public class DriveCommands {
   private DriveCommands() {}
 
-  private static TrapezoidProfile velocityProfile = new TrapezoidProfile(
-    new TrapezoidProfile.Constraints(Constants.Swerve.maxVelocity, Constants.Swerve.maxAcceleration)
-  );
-  private static TrapezoidProfile.State velocitySetpoint = new TrapezoidProfile.State();
+  // private static TrapezoidProfile velocityProfile = new TrapezoidProfile(
+  //   new TrapezoidProfile.Constraints(Constants.Swerve.maxVelocity, Constants.Swerve.maxAcceleration)
+  // );
+  // private static TrapezoidProfile.State velocitySetpoint = new TrapezoidProfile.State();
+  private static SlewRateLimiter magnitudeLimiter = new SlewRateLimiter(100);
   private static SlewRateLimiter omegaRateLimiter = new SlewRateLimiter(10.0);
 
   private static boolean pathfinding = false;
@@ -71,7 +72,7 @@ public class DriveCommands {
         linearMagnitude = linearMagnitude * linearMagnitude * Constants.Swerve.maxVelocity;
         omega = Math.copySign(omega * omega, omega);
 
-        velocitySetpoint = velocityProfile.calculate(0.02, velocitySetpoint, new TrapezoidProfile.State(linearMagnitude, 0));
+        // velocitySetpoint = velocityProfile.calculate(0.02, velocitySetpoint, new TrapezoidProfile.State(linearMagnitude, 0));
 
         SwerveAlignmentController alignmentController = SwerveAlignmentController.getInstance();
 
@@ -84,7 +85,10 @@ public class DriveCommands {
         Translation2d linearVelocity = new Pose2d(
           new Translation2d(),
           linearDirection.minus(Rotation2d.fromDegrees(90))
-        ).transformBy(new Transform2d(velocitySetpoint.position, 0.0, new Rotation2d())).getTranslation();
+        // ).transformBy(new Transform2d(velocitySetpoint.position, 0.0, new Rotation2d())).getTranslation();
+        ).transformBy(new Transform2d(
+          magnitudeLimiter.calculate(linearMagnitude), 0.0, new Rotation2d()
+        )).getTranslation();
 
         if(fieldRelativeSupplier.getAsBoolean()) {
           // Drive relative to the field
