@@ -225,10 +225,13 @@ public class AutomaticLauncherControl {
   }
 
   private static double getLobSpeed(double distance) {
+    distance = Math.min(distance, 10);
     return 756 + 185 * distance + 49.8 * Math.pow(distance, 2) + -3.92 * Math.pow(distance, 3);
   }
   private static double getLobAngle(double distance) {
-    return 16.2 + 3.99 * distance + 0.709 * Math.pow(distance, 2) + -0.0743 * Math.pow(distance, 3);
+    distance = Math.min(distance, 10);
+    // 19.2 + 1.63x + 1.17x^2 + -0.0969x^3
+    return 19.2 + 1.63 * distance + 1.17 * Math.pow(distance, 2) + -0.0969 * Math.pow(distance, 3);
   }
 
   private LauncherState getLauncherStateTimeBasedPrediction() {

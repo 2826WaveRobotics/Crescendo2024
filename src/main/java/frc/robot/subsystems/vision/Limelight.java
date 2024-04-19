@@ -4,12 +4,8 @@ import java.util.Map;
 
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.HttpCamera;
-import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
@@ -19,10 +15,7 @@ import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.controls.SwerveAlignmentController;
-import frc.robot.controls.SwerveAlignmentController.AlignmentMode;
 import frc.robot.subsystems.drive.Swerve;
-import frc.lib.LimelightHelpers;
 import frc.lib.util.ShuffleboardContent;
 
 public class Limelight extends SubsystemBase {
@@ -66,8 +59,9 @@ public class Limelight extends SubsystemBase {
 
   private void updateOdometryPoseFromVisionMeasurements() {
     Logger.recordOutput("Odometry/LimelightPoseEstimate", inputs.pose);
-
-    boolean discardMeasurement = false;
+  
+    // Temporary, hopefully...
+    boolean discardMeasurement = DriverStation.isAutonomous();
 
     ChassisSpeeds robotRelativeSpeeds = Swerve.getInstance().getRobotRelativeSpeeds();
     if (
