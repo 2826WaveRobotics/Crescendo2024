@@ -1,6 +1,8 @@
 Driver:
     Left trigger: Reduce speed by 4x (just on/off)
-    Right trigger: Center note in intake if visible
+    Right trigger:
+      Auto align to lob shot (until rotation stick is next moved)
+      Automatically configure launcher angle and speed based on current position (runs continuously while held)
     Left bumper: Use robot-centric driving
     Right bumper:
       Auto align to alliance speaker (until rotation stick is next moved)
