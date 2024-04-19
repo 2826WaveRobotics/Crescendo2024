@@ -50,7 +50,7 @@ public final class Constants {
   public static final class Controls {
     public static final LauncherState AmpState = new LauncherState(1780, 58.35, true);
     public static final LauncherState SpeakerCloseState = new LauncherState(4500, 59.95, true);
-    public static final LauncherState LobShotState = new LauncherState(4000, 42, true);
+    public static final LauncherState LobShotState = new LauncherState(3900, 42, true);
 
     public static final LauncherState DPadLeftPreset = AmpState;
     public static final LauncherState DPadUpPreset = new LauncherState(2880, 42.1, true); // Podium speaker preset
