@@ -397,16 +397,6 @@ public class Swerve extends SubsystemBase {
     };
   }
 
-  /**
-   * Adds a vision measurement to the pose estimator.
-   *
-   * @param visionPose The pose of the robot as measured by the vision camera.
-   * @param timestamp The timestamp of the vision measurement in seconds.
-   */
-  public void addVisionMeasurement(Pose2d visionPose, double timestamp) {
-    swerveOdometry.addVisionMeasurement(visionPose, timestamp);
-  }
-
   public SwerveModuleState[] getStates() {
     SwerveModuleState[] states = new SwerveModuleState[4];
     for (SwerveModule mod : swerveModules) {

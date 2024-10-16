@@ -89,8 +89,8 @@ public class SwerveAlignmentController {
             centerTargetLocation = isBlueAlliance ? new Translation2d(speakerInward, speakerY) : new Translation2d(Constants.fieldLengthMeters - speakerInward, speakerY);
         } else {
             // Lob
-            double targetX = 4.0;
-            double targetY = 7.1;
+            double targetX = 2.1;
+            double targetY = 6.48;
             centerTargetLocation = isBlueAlliance ? new Translation2d(targetX, targetY) : new Translation2d(Constants.fieldLengthMeters - targetX, targetY);
         }
 

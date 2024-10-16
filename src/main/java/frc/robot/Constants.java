@@ -202,7 +202,7 @@ public final class Constants {
     /**
      * The conch angle offset. 0 degrees should be where the axle sits at the lowest point.
      */
-    public static final Rotation2d angleOffset = Rotation2d.fromDegrees(42);
+    public static final Rotation2d angleOffset = Rotation2d.fromDegrees(102.2);
 
     /**
      * If we should invert the angle motor direction.

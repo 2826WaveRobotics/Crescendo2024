@@ -41,14 +41,14 @@ public class Limelight extends SubsystemBase {
    * matrix is in the form [x, y, theta]ᵀ, with units in meters and radians, then meters.  
    * We use an extremely low standard deviation for the heading state because we trust our gyro more than our vision for heading measurements.
    */
-  public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.03, 0.03, Units.degreesToRadians(1));
+  public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.3, 0.3, Units.degreesToRadians(3));
 
   /**
    * Standard deviations of the vision measurements. Increase these numbers to trust global measurements from vision
    * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and radians.
    * We use an extremely high standard deviation for the heading measurement because we trust our gyro more than our vision for heading measurements.
    */
-  public static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(90));
+  public static final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(1., 1., 9999999999.);
   
   private LimelightIO limelightIO;
   private LimelightIOInputsAutoLogged inputs = new LimelightIOInputsAutoLogged();
@@ -65,15 +65,15 @@ public class Limelight extends SubsystemBase {
 
     ChassisSpeeds robotRelativeSpeeds = Swerve.getInstance().getRobotRelativeSpeeds();
     if (
-      Math.abs(robotRelativeSpeeds.omegaRadiansPerSecond) > Units.degreesToRadians(720) ||
-      Math.abs(robotRelativeSpeeds.vxMetersPerSecond) > 5.0 ||
-      Math.abs(robotRelativeSpeeds.vyMetersPerSecond) > 5.0
+      Math.abs(robotRelativeSpeeds.omegaRadiansPerSecond) > Units.degreesToRadians(180) ||
+      Math.abs(robotRelativeSpeeds.vxMetersPerSecond) > 2.5 ||
+      Math.abs(robotRelativeSpeeds.vyMetersPerSecond) > 2.5
     ) discardMeasurement = true;
     
     if(inputs.tagCount <= 0) discardMeasurement = true;
 
-    // Scale the vision measurement expected standard deviation (0.1m by default) exponentially by the distance 
-    double standardDeviationScalar = Math.max(0.02, 0.5 * Math.pow(1.2, inputs.avgTagDist)) / inputs.tagCount;
+    // Scale the vision measurement expected standard deviation (1m by default) exponentially by the distance 
+    double standardDeviationScalar = 0.4 * Math.pow(1.15, inputs.avgTagDist) / inputs.tagCount;
 
     Logger.recordOutput("Odometry/LimelightPoseEstimateUsed", !discardMeasurement);
 

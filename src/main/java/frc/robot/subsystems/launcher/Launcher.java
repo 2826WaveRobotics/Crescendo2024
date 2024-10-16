@@ -5,6 +5,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -160,6 +161,11 @@ public class Launcher extends SubsystemBase {
   @Override
   public void periodic() {
     launcherIO.updateInputs(inputs);
+    
+    if(inputs.absoluteLauncherAngle.getRadians() == 0) {
+      DriverStation.reportError("LAUNCHER ANGLE ENCODER IS MESSED UP! This could mean a shorted 5V rail, a disconnected wire, or a broken encoder. If you continue, the launcher will probably destroy itself.", false);
+    }
+
     Logger.processInputs("Launcher/Inputs", inputs);
 
     launcherIO.runRollers(topRollerSpeed, bottomRollerSpeed);

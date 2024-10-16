@@ -21,6 +21,10 @@ public class LimelightIOReal implements LimelightIO {
         inputs.pose = limelightMeasurement.pose;
         inputs.avgTagDist = limelightMeasurement.avgTagDist;
         inputs.tagCount = limelightMeasurement.tagCount;
+        // getRealTimestamp() in microseconds, latency in milliseconds
+        // inputs.timestampSeconds = (Logger.getRealTimestamp() / 1000000.0) - (limelightMeasurement.latency / 1000.0);
+        // System.out.println(inputs.timestampSeconds + ", " + limelightMeasurement.timestampSeconds);
+        
         inputs.timestampSeconds = limelightMeasurement.timestampSeconds;
 
         inputs.intakeNotePresent = LimelightHelpers.getTV("limelight-intake");

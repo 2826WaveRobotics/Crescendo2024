@@ -230,7 +230,6 @@ public class AutomaticLauncherControl {
   }
   private static double getLobAngle(double distance) {
     distance = Math.min(distance, 10);
-    // 19.2 + 1.63x + 1.17x^2 + -0.0969x^3
     return 19.2 + 1.63 * distance + 1.17 * Math.pow(distance, 2) + -0.0969 * Math.pow(distance, 3);
   }
 
