@@ -55,23 +55,32 @@ public class Swerve extends SubsystemBase {
             new SwerveModuleIO[] {
               new SwerveModuleIOSparkMax(Constants.Swerve.mod0Constants),
               new SwerveModuleIOSparkMax(Constants.Swerve.mod1Constants),
-              new SwerveModuleIOSparkMax(Constants.Swerve.mod2Constants),
-              new SwerveModuleIOSparkMax(Constants.Swerve.mod3Constants)
+              new SwerveModuleIOSparkMaxWithEncoder(Constants.Swerve.mod2Constants),
+              new SwerveModuleIOSparkMaxWithEncoder(Constants.Swerve.mod3Constants)
+            },
+            new EncoderIO[] {
+              new EncoderIOCANCoder(Constants.Swerve.mod0Constants),
+              new EncoderIOCANCoder(Constants.Swerve.mod1Constants),
+              new EncoderIOSparkMaxAnalogEncoder(Constants.Swerve.mod2Constants),
+              new EncoderIOSparkMaxAnalogEncoder(Constants.Swerve.mod3Constants)
             }
           );
           return instance;
         case SIM:
+          SwerveModuleIOSim[] moduleIOs = { new SwerveModuleIOSim(), new SwerveModuleIOSim(), new SwerveModuleIOSim(), new SwerveModuleIOSim() };
           // Sim robot, instantiate physics sim IO implementations
           instance = new Swerve(
             new GyroIO() {},
-            new SwerveModuleIO[] { new SwerveModuleIOSim(), new SwerveModuleIOSim(), new SwerveModuleIOSim(), new SwerveModuleIOSim() }
+            moduleIOs,
+            new EncoderIO[] { new EncoderIOSim(moduleIOs[0]), new EncoderIOSim(moduleIOs[1]), new EncoderIOSim(moduleIOs[2]), new EncoderIOSim(moduleIOs[3]) }
           );
           return instance;
         default:
           // Replayed robot, disable IO implementations
           instance = new Swerve(
             new GyroIO() {},
-            new SwerveModuleIO[] { new SwerveModuleIO() {}, new SwerveModuleIO() {}, new SwerveModuleIO() {}, new SwerveModuleIO() {} }
+            new SwerveModuleIO[] { new SwerveModuleIO() {}, new SwerveModuleIO() {}, new SwerveModuleIO() {}, new SwerveModuleIO() {} },
+            new EncoderIO[] { new EncoderIO() {}, new EncoderIO() {}, new EncoderIO() {}, new EncoderIO() {} }
           );
           return instance;
       }
@@ -127,19 +136,20 @@ public class Swerve extends SubsystemBase {
 
   private Swerve(
     GyroIO gyroIO,
-    SwerveModuleIO[] moduleIOs
+    SwerveModuleIO[] moduleIOs,
+    EncoderIO[] encoderIOs
   ) {
     this.gyroIO = gyroIO;
     
     swerveModules = new SwerveModule[moduleIOs.length];
-    for (int i = 0; i < moduleIOs.length; i++) {
-      swerveModules[i] = new SwerveModule(i, moduleIOs[i]);
+    for(int i = 0; i < moduleIOs.length; i++) {
+      swerveModules[i] = new SwerveModule(i, moduleIOs[i], encoderIOs[i]);
     }
     
     SparkMaxOdometryThread.getInstance().start();
 
     SwerveModulePosition[] swerveModulePositions = new SwerveModulePosition[swerveModules.length];
-    for (int i = 0; i < swerveModules.length; i++) {
+    for(int i = 0; i < swerveModules.length; i++) {
       swerveModulePositions[i] = swerveModules[i].getPosition();
     }
     
@@ -390,10 +400,10 @@ public class Swerve extends SubsystemBase {
 
   public double[] getOffsets() {
     return new double[] {
-      swerveModules[0].getReportedAbsoluteAngleDegrees(),
-      swerveModules[1].getReportedAbsoluteAngleDegrees(),
-      swerveModules[2].getReportedAbsoluteAngleDegrees(),
-      swerveModules[3].getReportedAbsoluteAngleDegrees()
+      swerveModules[0].getRawAbsoluteAngleDegrees(),
+      swerveModules[1].getRawAbsoluteAngleDegrees(),
+      swerveModules[2].getRawAbsoluteAngleDegrees(),
+      swerveModules[3].getRawAbsoluteAngleDegrees()
     };
   }
 

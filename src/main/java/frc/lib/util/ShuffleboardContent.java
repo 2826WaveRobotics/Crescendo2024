@@ -24,7 +24,7 @@ public class ShuffleboardContent {
                 .getLayout(swerveModuleHeader, BuiltInLayouts.kList).withPosition(moduleNumber * 2, 0)
                 .withSize(2, 3).withProperties(Map.of("Label position", "LEFT"));
 
-        swerveModuleLayout.addNumber("CANcoder reported position (" + modulePositionAbbreviation + ")", module::getReportedAbsoluteAngleDegrees);
+        swerveModuleLayout.addNumber("CANcoder reported position (" + modulePositionAbbreviation + ")", module::getRawAbsoluteAngleDegrees);
         swerveModuleLayout.addNumber("Absolute position (" + modulePositionAbbreviation + ")", module::getAbsoluteAngleDegrees);
         swerveModuleLayout.addNumber("Drive current (" + modulePositionAbbreviation + ")", module::getAppliedDriveCurrent);
         swerveModuleLayout.addNumber("Turn current (" + modulePositionAbbreviation + ")", module::getAppliedAngleCurrent);

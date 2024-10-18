@@ -68,6 +68,10 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
       }
     );
   }
+
+  public Rotation2d getAbsoluteTurnRotation() {
+    return Rotation2d.fromRadians(turnPosition);
+  }
   
   @Override
   public void updateInputs(SwerveModuleIOInputs inputs) {
@@ -76,9 +80,6 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
     inputs.driveCurrentAmps = driveMotor.getCurrentDrawAmps();
 
     inputs.turnPosition = Rotation2d.fromRadians(turnPosition / Constants.Swerve.angleGearRatio);
-
-    inputs.turnReportedAbsolutePosition = inputs.turnPosition;
-    inputs.turnAbsolutePosition = inputs.turnPosition;
     
     inputs.turnVelocityRadPerSec = turnVelocity / Constants.Swerve.angleGearRatio;
     inputs.turnCurrentAmps = turnMotor.getCurrentDrawAmps();

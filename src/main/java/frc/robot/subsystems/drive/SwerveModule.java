@@ -20,15 +20,22 @@ public class SwerveModule {
 
   private final SwerveModuleIO io;
   private final SwerveModuleIOInputsAutoLogged inputs = new SwerveModuleIOInputsAutoLogged();
+
+  private final EncoderIO encoderIO;
+  private final EncoderIOInputsAutoLogged encoderInputs = new EncoderIOInputsAutoLogged();
+
   public int moduleIndex;
 
   private Rotation2d angleSetpoint = null; // Setpoint for closed loop control, null for open loop
   private Measure<Velocity<Distance>> speedSetpoint = null; // Setpoint for closed loop control, null for open loop
   private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
   
-  public SwerveModule(int index, SwerveModuleIO io) {
+  public SwerveModule(int index, SwerveModuleIO io, EncoderIO encoderIO) {
     this.io = io;
+    this.encoderIO = encoderIO;
     moduleIndex = index;
+
+    io.resetToAbsolute(encoderIO);
 
     setBrakeMode(true);
 
@@ -45,19 +52,19 @@ public class SwerveModule {
 
   /** Resets the relative angle encoder to the CANCoder's absolute position (on a real module). */
   public void resetToAbsolute() {
-    io.resetToAbsolute();
+    io.resetToAbsolute(encoderIO);
   }
   
   public void periodic() {
     Logger.processInputs("Drive/Module" + getModuleName(), inputs);
 
     // Run closed loop turn control
-    if (angleSetpoint != null) {
+    if(angleSetpoint != null) {
       io.setTurnAngle(angleSetpoint);
 
       // Run closed loop drive control
       // Only allowed if closed loop turn control is running
-      if (speedSetpoint != null) {
+      if(speedSetpoint != null) {
         // Scale velocity based on turn error
         //
         // When the error is 90°, the velocity setpoint should be 0. As the wheel turns
@@ -171,12 +178,12 @@ public class SwerveModule {
     return Constants.Swerve.moduleNames[moduleIndex];
   }
 
-  public double getReportedAbsoluteAngleDegrees() {
-    return inputs.turnReportedAbsolutePosition.getDegrees();
+  public double getRawAbsoluteAngleDegrees() {
+    return encoderInputs.rawAbsolutePosition.getDegrees();
   }
 
   public double getAbsoluteAngleDegrees() {
-    return inputs.turnAbsolutePosition.getDegrees();
+    return encoderInputs.absoluteTurnPosition.getDegrees();
   }
 
   public double getAppliedDriveCurrent() {

@@ -159,9 +159,9 @@ public final class Constants {
     public static final SwerveModuleConstants mod1Constants =
       new SwerveModuleConstants(21, 22, 23, swerveOffsets[1]); /* Front right */
     public static final SwerveModuleConstants mod2Constants =
-      new SwerveModuleConstants(31, 32, 33, swerveOffsets[2]); /* Back right */
+      new SwerveModuleConstants(31, 32, 0, swerveOffsets[2]); /* Back right */
     public static final SwerveModuleConstants mod3Constants =
-      new SwerveModuleConstants(41, 42, 43, swerveOffsets[3]); /* Back left */
+      new SwerveModuleConstants(41, 42, 0, swerveOffsets[3]); /* Back left */
   }
 
   public static final class Launcher {

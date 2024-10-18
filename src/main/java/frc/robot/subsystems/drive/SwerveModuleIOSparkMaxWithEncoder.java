@@ -5,8 +5,10 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.MotorFeedbackSensor;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkPIDController;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -27,7 +29,7 @@ import java.util.Queue;
  * absolute encoders using AdvantageScope. These values are logged under
  * "/Drive/ModuleX/TurnAbsolutePositionRad"
  */
-public class SwerveModuleIOSparkMax implements SwerveModuleIO {
+public class SwerveModuleIOSparkMaxWithEncoder implements SwerveModuleIO {
   protected final CANSparkMax driveSparkMax;
   protected final CANSparkMax turnSparkMax;
 
@@ -35,17 +37,17 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
   private final SparkPIDController turnPIDController;
 
   private final RelativeEncoder driveEncoder;
-  private final RelativeEncoder turnRelativeEncoder;
+  private final SparkAbsoluteEncoder turnAbsoluteEncoder;
   private final Queue<Double> timestampQueue;
   private final Queue<Double> drivePositionQueue;
   private final Queue<Double> turnPositionQueue;
 
-  public SwerveModuleIOSparkMax(SwerveModuleConstants moduleConstants) {
+  public SwerveModuleIOSparkMaxWithEncoder(SwerveModuleConstants moduleConstants) {
     driveSparkMax = new CANSparkMax(moduleConstants.driveMotorID, MotorType.kBrushless);
     turnSparkMax = new CANSparkMax(moduleConstants.angleMotorID, MotorType.kBrushless);
 
     driveEncoder = driveSparkMax.getEncoder();
-    turnRelativeEncoder = turnSparkMax.getEncoder();
+    turnAbsoluteEncoder = turnSparkMax.getAbsoluteEncoder();
 
     drivePIDController = driveSparkMax.getPIDController();
     turnPIDController = turnSparkMax.getPIDController();
@@ -56,13 +58,12 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     turnPIDController.setPositionPIDWrappingEnabled(true);
     turnPIDController.setPositionPIDWrappingMinInput(0.0);
     turnPIDController.setPositionPIDWrappingMaxInput(Constants.Swerve.angleGearRatio);
+    turnPIDController.setFeedbackDevice(turnAbsoluteEncoder);
+    turnAbsoluteEncoder.setPositionConversionFactor(Constants.Swerve.angleGearRatio);
 
     driveEncoder.setPosition(0.0);
     driveEncoder.setMeasurementPeriod(10);
     driveEncoder.setAverageDepth(2);
-
-    turnRelativeEncoder.setMeasurementPeriod(10);
-    turnRelativeEncoder.setAverageDepth(2);
 
     driveSparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, (int)(1000.0 / SwerveModule.ODOMETRY_FREQUENCY));
     turnSparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, (int)(1000.0 / SwerveModule.ODOMETRY_FREQUENCY));
@@ -86,7 +87,7 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     );
     turnPositionQueue = SparkMaxOdometryThread.getInstance().registerSignal(
       () -> {
-        double value = turnRelativeEncoder.getPosition();
+        double value = turnAbsoluteEncoder.getPosition();
         if (driveSparkMax.getLastError() == REVLibError.kOk) {
           return OptionalDouble.of(value);
         } else {
@@ -101,7 +102,7 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
   public void resetToAbsolute(EncoderIO encoder) {
     EncoderIOInputs inputs = new EncoderIOInputs();
     encoder.updateInputs(inputs);
-    turnRelativeEncoder.setPosition(inputs.absoluteTurnPosition.getRotations() * Constants.Swerve.angleGearRatio);
+    turnAbsoluteEncoder.setZeroOffset(inputs.absoluteTurnPosition.getRotations() * Constants.Swerve.angleGearRatio);
   }
 
   @Override
@@ -110,8 +111,8 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     inputs.driveVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(driveEncoder.getVelocity()) / Constants.Swerve.driveGearRatio;
     inputs.driveCurrentAmps = driveSparkMax.getOutputCurrent();
     
-    inputs.turnPosition = Rotation2d.fromRotations(turnRelativeEncoder.getPosition() / Constants.Swerve.angleGearRatio);
-    inputs.turnVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(turnRelativeEncoder.getVelocity()) / Constants.Swerve.angleGearRatio;
+    inputs.turnPosition = Rotation2d.fromRotations(turnAbsoluteEncoder.getPosition() / Constants.Swerve.angleGearRatio);
+    inputs.turnVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(turnAbsoluteEncoder.getVelocity()) / Constants.Swerve.angleGearRatio;
     inputs.turnCurrentAmps = turnSparkMax.getOutputCurrent();
 
     inputs.driveAppliedVolts = driveSparkMax.getAppliedOutput() * driveSparkMax.getBusVoltage();
