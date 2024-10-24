@@ -6,7 +6,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -42,7 +41,7 @@ public class Controls {
     }
     
     /* Controllers */
-    private final CommandXboxController driver = new CommandXboxController(0);
+    private final CommandXboxController driver = new NTEmulatedCommandXboxController();
     private final CommandXboxController operator = new CommandXboxController(1);
 
     private Controls() {
@@ -51,12 +50,14 @@ public class Controls {
 
     /** Sets the rumble on the driver controller. */
     public void setDriverRumble(double left, double right) {
+        if(driver instanceof NTEmulatedCommandXboxController) return; // Don't set rumble on the NT emulator
         driver.getHID().setRumble(RumbleType.kLeftRumble, left);
         driver.getHID().setRumble(RumbleType.kRightRumble, right);
     }
 
     /** Sets the rumble on the operator controller. */
     public void setOperatorRumble(double left, double right) {
+        if(operator instanceof NTEmulatedCommandXboxController) return; // Don't set rumble on the NT emulator
         operator.getHID().setRumble(RumbleType.kLeftRumble, left);
         operator.getHID().setRumble(RumbleType.kRightRumble, right);
     }
