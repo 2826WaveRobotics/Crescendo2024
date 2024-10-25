@@ -50,19 +50,23 @@ public class Swerve extends SubsystemBase {
       switch (Constants.currentMode) {
         case REAL:
           // Real robot, instantiate hardware IO implementations
+          SwerveModuleIOSparkMaxWithEncoder module0 = new SwerveModuleIOSparkMaxWithEncoder(Constants.Swerve.mod0Constants);
           instance = new Swerve(
             new GyroIOPigeon2(),
             new SwerveModuleIO[] {
-              new SwerveModuleIOSparkMax(Constants.Swerve.mod0Constants),
-              new SwerveModuleIOSparkMax(Constants.Swerve.mod1Constants),
-              new SwerveModuleIOSparkMaxWithEncoder(Constants.Swerve.mod2Constants),
-              new SwerveModuleIOSparkMaxWithEncoder(Constants.Swerve.mod3Constants)
+              module0,
+              // new SwerveModuleIOSparkMax(Constants.Swerve.mod1Constants),
+              // new SwerveModuleIOSparkMax(Constants.Swerve.mod2Constants),
+              // new SwerveModuleIOSparkMax(Constants.Swerve.mod3Constants)
+              new SwerveModuleIOSim() {},
+              new SwerveModuleIOSim() {},
+              new SwerveModuleIOSim() {}
             },
             new EncoderIO[] {
-              new EncoderIOCANCoder(Constants.Swerve.mod0Constants),
+              new EncoderIOSparkMaxAnalogEncoder(Constants.Swerve.mod0Constants, module0.turnSparkMax.getAbsoluteEncoder()),
               new EncoderIOCANCoder(Constants.Swerve.mod1Constants),
-              new EncoderIOSparkMaxAnalogEncoder(Constants.Swerve.mod2Constants),
-              new EncoderIOSparkMaxAnalogEncoder(Constants.Swerve.mod3Constants)
+              new EncoderIOCANCoder(Constants.Swerve.mod2Constants),
+              new EncoderIOCANCoder(Constants.Swerve.mod3Constants)
             }
           );
           return instance;
