@@ -4,11 +4,14 @@ import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
+import com.revrobotics.SparkAnalogSensor.Mode;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAbsoluteEncoder;
+import com.revrobotics.SparkAnalogSensor;
 import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANAnalog.AnalogMode;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -36,7 +39,7 @@ public class SwerveModuleIOSparkMaxWithEncoder implements SwerveModuleIO {
   private final SparkPIDController turnPIDController;
 
   private final RelativeEncoder driveEncoder;
-  private final SparkAbsoluteEncoder turnAbsoluteEncoder;
+  private final SparkAnalogSensor turnAbsoluteEncoder;
   private final Queue<Double> timestampQueue;
   private final Queue<Double> drivePositionQueue;
   private final Queue<Double> turnPositionQueue;
@@ -46,7 +49,6 @@ public class SwerveModuleIOSparkMaxWithEncoder implements SwerveModuleIO {
     turnSparkMax = new CANSparkMax(moduleConstants.angleMotorID, MotorType.kBrushless);
 
     driveEncoder = driveSparkMax.getEncoder();
-    turnAbsoluteEncoder = turnSparkMax.getAbsoluteEncoder();
 
     drivePIDController = driveSparkMax.getPIDController();
     turnPIDController = turnSparkMax.getPIDController();
@@ -57,8 +59,9 @@ public class SwerveModuleIOSparkMaxWithEncoder implements SwerveModuleIO {
     turnPIDController.setPositionPIDWrappingEnabled(true);
     turnPIDController.setPositionPIDWrappingMinInput(0.0);
     turnPIDController.setPositionPIDWrappingMaxInput(Constants.Swerve.angleGearRatio);
+    
+    turnAbsoluteEncoder = turnSparkMax.getAnalog(Mode.kAbsolute);
     turnPIDController.setFeedbackDevice(turnAbsoluteEncoder);
-    turnAbsoluteEncoder.setPositionConversionFactor(Constants.Swerve.angleGearRatio);
 
     driveEncoder.setPosition(0.0);
     driveEncoder.setMeasurementPeriod(10);
@@ -96,12 +99,10 @@ public class SwerveModuleIOSparkMaxWithEncoder implements SwerveModuleIO {
     );
   }
 
-  /** Resets the relative angle encoder to the CANCoder's absolute position. */
+  /** Resets the relative angle encoder to the encoder's absolute position. */
   @Override
   public void resetToAbsolute(EncoderIO encoder) {
-    EncoderIOInputs inputs = new EncoderIOInputs();
-    encoder.updateInputs(inputs);
-    turnAbsoluteEncoder.setZeroOffset(inputs.absoluteTurnPosition.getRotations() * Constants.Swerve.angleGearRatio);
+    // No reset needed
   }
 
   @Override
