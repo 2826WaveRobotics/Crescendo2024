@@ -175,26 +175,28 @@ public class NTEmulatedCommandXboxController extends CommandXboxController {
         return rightTrigger(loop);
     } // Compatibility
 
+    private static double SPEED = 0.45;
+
     // TODO: non-boolean stick values? I'm not sure what the best way to handle this
     // is.
     @Override
     public double getLeftX() {
-        return (getButtonValue("LEFT_X_NEG") ? -0.1 : 0) + (getButtonValue("LEFT_X_POS") ? 0.1 : 0);
+        return (getButtonValue("LEFT_X_NEG") ? -SPEED : 0) + (getButtonValue("LEFT_X_POS") ? SPEED : 0);
     }
 
     @Override
     public double getRightX() {
-        return (getButtonValue("RIGHT_X_NEG") ? -0.1 : 0) + (getButtonValue("RIGHT_X_POS") ? 0.1 : 0);
+        return (getButtonValue("RIGHT_X_NEG") ? -SPEED : 0) + (getButtonValue("RIGHT_X_POS") ? SPEED : 0);
     }
 
     @Override
     public double getLeftY() {
-        return (getButtonValue("LEFT_Y_NEG") ? -0.1 : 0) + (getButtonValue("LEFT_Y_POS") ? 0.1 : 0);
+        return (getButtonValue("LEFT_Y_NEG") ? -SPEED : 0) + (getButtonValue("LEFT_Y_POS") ? SPEED : 0);
     }
 
     @Override
     public double getRightY() {
-        return (getButtonValue("RIGHT_Y_NEG") ? -0.1 : 0) + (getButtonValue("RIGHT_Y_POS") ? 0.1 : 0);
+        return (getButtonValue("RIGHT_Y_NEG") ? -SPEED : 0) + (getButtonValue("RIGHT_Y_POS") ? SPEED : 0);
     }
 
     @Override

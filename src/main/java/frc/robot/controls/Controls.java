@@ -41,7 +41,6 @@ public class Controls {
     }
     
     /* Controllers */
-    // TEMPORARY
     // private final CommandXboxController driver = new NTEmulatedCommandXboxController();
     private final CommandXboxController driver = new CommandXboxController(0);
     private final CommandXboxController operator = new CommandXboxController(1);
